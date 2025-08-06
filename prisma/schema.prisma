@@ -1,0 +1,64 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model EmailSubmission {
+  id         String   @id @default(cuid())
+  email      String   @unique
+  createdAt  DateTime @default(now()) @map("created_at")
+  userAgent  String?  @map("user_agent")
+  ipAddress  String?  @map("ip_address") // Will be encrypted
+  source     String?  // UTM tracking
+  status     Status   @default(ACTIVE)
+
+  @@map("email_submissions")
+  @@index([email])
+  @@index([createdAt])
+}
+
+model SubmissionAttempt {
+  id          String   @id @default(cuid())
+  ipAddress   String?  @map("ip_address") // Will be encrypted
+  attemptedAt DateTime @default(now()) @map("attempted_at")
+  success     Boolean  @default(false)
+  userAgent   String?  @map("user_agent")
+  email       String?  // Track failed attempts
+  reason      String?  // Failed attempt reason
+
+  @@map("submission_attempts")
+  @@index([ipAddress])
+  @@index([attemptedAt])
+}
+
+model AdminUser {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  role         AdminRole @default(ADMIN)
+  lastLogin    DateTime? @map("last_login")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  @@map("admin_users")
+}
+
+enum Status {
+  ACTIVE
+  UNSUBSCRIBED
+}
+
+enum AdminRole {
+  ADMIN
+  SUPER_ADMIN
+}
