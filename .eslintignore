@@ -1,0 +1,10 @@
+# Generated files
+src/generated/**
+prisma/migrations/**
+# Dependencies
+node_modules/**
+# Build outputs
+.next/**
+out/**
+dist/**
+build/**

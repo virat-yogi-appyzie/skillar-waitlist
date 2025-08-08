@@ -9,6 +9,8 @@ const prisma = new PrismaClient()
 export interface WaitlistSubmissionResult {
   success: boolean
   message: string
+  userPosition?: number // Add user position for successful submissions
+  totalUsers?: number // Add total users count
   errors?: {
     email?: string
     captcha?: string
@@ -144,6 +146,23 @@ export async function submitToWaitlist(
       }
     })
 
+    // Get the user's position in the waitlist and total count
+    const totalUsers = await prisma.emailSubmission.count({
+      where: {
+        status: 'ACTIVE'
+      }
+    })
+
+    // Get user's position by counting submissions created before or at the same time
+    const userPosition = await prisma.emailSubmission.count({
+      where: {
+        createdAt: {
+          lte: newSubmission.createdAt
+        },
+        status: 'ACTIVE'
+      }
+    })
+
     // Log successful attempt
     await logSubmissionAttempt(ipAddress, userAgent, email, true)
 
@@ -152,7 +171,9 @@ export async function submitToWaitlist(
 
     return {
       success: true,
-      message: 'Successfully joined the waitlist!'
+      message: 'Successfully joined the waitlist!',
+      userPosition,
+      totalUsers
     }
 
   } catch (error) {
@@ -270,6 +291,22 @@ export async function getWaitlistStats() {
       successfulAttempts: 0,
       conversionRate: 0
     }
+  }
+}
+
+// Get total waitlist count for display
+export async function getWaitlistCount(): Promise<number> {
+  try {
+    const totalUsers = await prisma.emailSubmission.count({
+      where: {
+        status: 'ACTIVE'
+      }
+    })
+    
+    return totalUsers
+  } catch (error) {
+    console.error('Error getting waitlist count:', error)
+    return 0
   }
 }
 

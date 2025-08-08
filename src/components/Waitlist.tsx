@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { submitToWaitlist, type WaitlistSubmissionResult } from "@/lib/actions";
+import { submitToWaitlist, getWaitlistCount, type WaitlistSubmissionResult } from "@/lib/actions";
 
 interface CaptchaQuestion {
   question: string;
@@ -17,6 +17,8 @@ export default function Waitlist() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [totalUsers, setTotalUsers] = useState<number>(0);
+  const [userPosition, setUserPosition] = useState<number>(0);
   const [errors, setErrors] = useState({
     email: "",
     captcha: "",
@@ -52,9 +54,19 @@ export default function Waitlist() {
     setCaptcha("");
   };
 
-  // Initialize captcha on component mount
+  // Load total users count on component mount
   useEffect(() => {
+    const loadWaitlistCount = async () => {
+      try {
+        const count = await getWaitlistCount();
+        setTotalUsers(count);
+      } catch (error) {
+        console.error('Error loading waitlist count:', error);
+      }
+    };
+
     generateCaptcha();
+    loadWaitlistCount();
   }, []);
 
   // Handle form submission
@@ -76,6 +88,10 @@ export default function Waitlist() {
       );
 
       if (result.success) {
+        // Store user position and total users for success message
+        if (result.userPosition) setUserPosition(result.userPosition);
+        if (result.totalUsers) setTotalUsers(result.totalUsers);
+        
         // Show success message
         setShowSuccess(true);
         
@@ -121,6 +137,8 @@ export default function Waitlist() {
   const resetForm = () => {
     setShowSuccess(false);
     generateCaptcha();
+    // Reload waitlist count when returning to form
+    getWaitlistCount().then(setTotalUsers).catch(console.error);
   };
 
   if (showSuccess) {
@@ -131,7 +149,26 @@ export default function Waitlist() {
             <div className="success-message show">
               <div className="success-icon">✓</div>
               <h3>Welcome to Skillar.ai!</h3>
-              <p>Thanks for joining our waitlist. We'll notify you when we launch!</p>
+              <p>Thanks for joining our waitlist. We&apos;ll notify you when we launch!</p>
+              {userPosition > 0 && (
+                <div className="user-position" style={{ 
+                  margin: 'var(--space-16) 0',
+                  padding: 'var(--space-12)',
+                  background: 'rgba(99, 102, 241, 0.1)',
+                  borderRadius: 'var(--border-radius)',
+                  border: '1px solid rgba(99, 102, 241, 0.2)'
+                }}>
+                  <p style={{ 
+                    color: '#6366f1',
+                    fontSize: '1.1rem',
+                    fontWeight: '600',
+                    marginBottom: 'var(--space-8)'
+                  }}>
+                    🎉 You&apos;re #{userPosition} on the waitlist!
+                  </p>
+                  
+                </div>
+              )}
               <button
                 onClick={resetForm}
                 className="btn btn--outline"
@@ -155,8 +192,34 @@ export default function Waitlist() {
             Be among the first to experience the future of AI-powered learning
           </p>
           
+          {/* Show total users count if greater than 0 */}
+          {totalUsers > 0 && (
+            <div className="waitlist-stats" style={{
+              textAlign: 'center',
+              margin: 'var(--space-24) 0',
+              padding: 'var(--space-16)',
+              background: 'rgba(255, 255, 255, 0.05)',
+              borderRadius: 'var(--border-radius)',
+              border: '1px solid rgba(255, 255, 255, 0.1)'
+            }}>
+              <p style={{
+                color: 'var(--color-primary)',
+                fontSize: '1.2rem',
+                fontWeight: '600',
+                marginBottom: 'var(--space-4)'
+              }}>
+                🚀 {totalUsers.toLocaleString()} users already joined!
+              </p>
+              <p style={{
+                color: 'var(--color-text-secondary)',
+                fontSize: '0.9rem'
+              }}>
+                Join others waiting for early access
+              </p>
+            </div>
+          )}
+          
           <form className="waitlist-form" onSubmit={handleSubmit}>
-            {/* Email Input */}
             <div className="form-group">
               <label htmlFor="email" className="form-label">
                 Email Address
@@ -181,7 +244,7 @@ export default function Waitlist() {
             {/* CAPTCHA */}
             <div className="form-group captcha-group">
               <label htmlFor="captcha" className="form-label">
-                Verify you're human
+                Verify you&apos;re human
               </label>
               <div className="captcha-container">
                 <span className="captcha-question">

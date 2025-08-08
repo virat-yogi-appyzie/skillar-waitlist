@@ -3,72 +3,6 @@
 import { useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 
-interface TestimonialCardProps {
-  content: string;
-  authorName: string;
-  authorTitle: string;
-  authorInitials: string;
-  delay?: number;
-}
-
-function TestimonialCard({ 
-  content, 
-  authorName, 
-  authorTitle, 
-  authorInitials, 
-  delay = 0 
-}: TestimonialCardProps) {
-  const cardRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setTimeout(() => {
-            entry.target.classList.add("slide-up");
-          }, delay);
-        }
-      },
-      { threshold: 0.1, rootMargin: "50px" }
-    );
-
-    if (cardRef.current) {
-      observer.observe(cardRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, [delay]);
-
-  return (
-    <div 
-      ref={cardRef}
-      className="opacity-0 translate-y-8"
-    >
-      <Card className="testimonial-card p-8 hover:shadow-2xl hover:shadow-accent-blue/5 transition-all duration-300 group">
-        <div className="mb-6">
-          <p className="text-lg leading-relaxed text-text-secondary italic group-hover:text-text-primary transition-colors duration-300">
-            "{content}"
-          </p>
-        </div>
-        
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-full bg-gradient-primary flex items-center justify-center text-white font-semibold text-sm">
-            {authorInitials}
-          </div>
-          <div>
-            <div className="font-semibold text-text-primary">
-              {authorName}
-            </div>
-            <div className="text-sm text-text-secondary">
-              {authorTitle}
-            </div>
-          </div>
-        </div>
-      </Card>
-    </div>
-  );
-}
-
 export default function Testimonials() {
   return (
     <section id="testimonials" className="testimonials">
@@ -77,7 +11,7 @@ export default function Testimonials() {
         <div className="testimonials-grid">
           <div className="testimonial-card">
             <div className="testimonial-content">
-              <p>"I've transformed my career trajectory. I went from struggling with complex concepts to mastering new frameworks in weeks, not months."</p>
+              <p>&ldquo;I&apos;ve transformed my career trajectory. I went from struggling with complex concepts to mastering new frameworks in weeks, not months.&rdquo;</p>
             </div>
             <div className="testimonial-author">
               <div className="author-avatar">SC</div>
@@ -90,7 +24,7 @@ export default function Testimonials() {
           
           <div className="testimonial-card">
             <div className="testimonial-content">
-              <p>"The personalized learning paths are game-changing! My specific learning style drives—changing to professional development."</p>
+              <p>&ldquo;The personalized learning paths are game-changing! My specific learning style drives&mdash;changing to professional development.&rdquo;</p>
             </div>
             <div className="testimonial-author">
               <div className="author-avatar">MR</div>
