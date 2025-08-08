@@ -1,8 +1,5 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { Card } from "@/components/ui/card";
-
 export default function Testimonials() {
   return (
     <section id="testimonials" className="testimonials">
