@@ -1,58 +1,23 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import ReCAPTCHA from "react-google-recaptcha";
 import { submitToWaitlist, getWaitlistCount, type WaitlistSubmissionResult } from "@/lib/actions";
-
-interface CaptchaQuestion {
-  question: string;
-  answer: number;
-}
 
 export default function Waitlist() {
   const [email, setEmail] = useState("");
-  const [captcha, setCaptcha] = useState("");
-  const [captchaQuestion, setCaptchaQuestion] = useState<CaptchaQuestion>({
-    question: "",
-    answer: 0,
-  });
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [totalUsers, setTotalUsers] = useState<number>(0);
   const [userPosition, setUserPosition] = useState<number>(0);
   const [errors, setErrors] = useState({
     email: "",
-    captcha: "",
+    recaptcha: "",
     general: "",
   });
-
-  // Generate a simple math captcha
-  const generateCaptcha = () => {
-    const num1 = Math.floor(Math.random() * 10) + 1;
-    const num2 = Math.floor(Math.random() * 10) + 1;
-    const operators = ['+', '-', '*'];
-    const operator = operators[Math.floor(Math.random() * operators.length)];
-    
-    let question = "";
-    let answer = 0;
-    
-    switch (operator) {
-      case '+':
-        question = `${num1} + ${num2} = ?`;
-        answer = num1 + num2;
-        break;
-      case '-':
-        question = `${num1} - ${num2} = ?`;
-        answer = num1 - num2;
-        break;
-      case '*':
-        question = `${num1} × ${num2} = ?`;
-        answer = num1 * num2;
-        break;
-    }
-    
-    setCaptchaQuestion({ question, answer });
-    setCaptcha("");
-  };
+  
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
 
   // Load total users count on component mount
   useEffect(() => {
@@ -65,25 +30,44 @@ export default function Waitlist() {
       }
     };
 
-    generateCaptcha();
     loadWaitlistCount();
   }, []);
+
+  // Handle reCAPTCHA change
+  const handleRecaptchaChange = (token: string | null) => {
+    setRecaptchaToken(token);
+    if (token && errors.recaptcha) {
+      setErrors(prev => ({ ...prev, recaptcha: "" }));
+    }
+  };
+
+  // Reset reCAPTCHA
+  const resetRecaptcha = () => {
+    if (recaptchaRef.current) {
+      recaptchaRef.current.reset();
+    }
+    setRecaptchaToken(null);
+  };
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     setIsLoading(true);
-    setErrors({ email: "", captcha: "", general: "" });
+    setErrors({ email: "", recaptcha: "", general: "" });
+
+    // Validate reCAPTCHA token
+    if (!recaptchaToken) {
+      setErrors(prev => ({ ...prev, recaptcha: "Please complete the reCAPTCHA verification" }));
+      setIsLoading(false);
+      return;
+    }
 
     try {
-      const captchaAnswer = parseInt(captcha);
-      
-      // Call server action
+      // Call server action with reCAPTCHA token
       const result: WaitlistSubmissionResult = await submitToWaitlist(
         email,
-        captchaAnswer,
-        captchaQuestion.answer,
+        recaptchaToken,
         'waitlist-form'
       );
 
@@ -97,37 +81,36 @@ export default function Waitlist() {
         
         // Reset form
         setEmail("");
-        setCaptcha("");
-        generateCaptcha();
+        resetRecaptcha();
       } else {
         // Handle validation errors
         if (result.errors) {
           setErrors({
             email: result.errors.email || "",
-            captcha: result.errors.captcha || "",
+            recaptcha: result.errors.recaptcha || "",
             general: result.errors.general || "",
           });
         } else {
           setErrors({
             email: "",
-            captcha: "",
+            recaptcha: "",
             general: result.message || "Something went wrong. Please try again.",
           });
         }
         
-        // Regenerate captcha on error
-        if (result.errors?.captcha) {
-          generateCaptcha();
+        // Reset reCAPTCHA on error
+        if (result.errors?.recaptcha) {
+          resetRecaptcha();
         }
       }
     } catch (error) {
       console.error('Submission error:', error);
       setErrors({
         email: "",
-        captcha: "",
+        recaptcha: "",
         general: "Something went wrong. Please try again.",
       });
-      generateCaptcha();
+      resetRecaptcha();
     } finally {
       setIsLoading(false);
     }
@@ -136,7 +119,7 @@ export default function Waitlist() {
   // Reset success message and show form again
   const resetForm = () => {
     setShowSuccess(false);
-    generateCaptcha();
+    resetRecaptcha();
     // Reload waitlist count when returning to form
     getWaitlistCount().then(setTotalUsers).catch(console.error);
   };
@@ -241,37 +224,22 @@ export default function Waitlist() {
               )}
             </div>
 
-            {/* CAPTCHA */}
-            <div className="form-group captcha-group">
-              <label htmlFor="captcha" className="form-label">
+            {/* Google reCAPTCHA */}
+            <div className="form-group">
+              <label className="form-label">
                 Verify you&apos;re human
               </label>
-              <div className="captcha-container">
-                <span className="captcha-question">
-                  {captchaQuestion.question}
-                </span>
-                <button
-                  type="button"
-                  onClick={generateCaptcha}
-                  className="captcha-refresh"
-                  title="Refresh captcha"
-                >
-                  ↻
-                </button>
+              <div style={{ display: 'flex', justifyContent: 'center', margin: '16px 0' }}>
+                <ReCAPTCHA
+                  ref={recaptchaRef}
+                  sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
+                  onChange={handleRecaptchaChange}
+                  theme="dark" // You can change this to "light" if needed
+                />
               </div>
-              <input
-                type="number"
-                id="captcha"
-                name="captcha"
-                value={captcha}
-                onChange={(e) => setCaptcha(e.target.value)}
-                className="form-control"
-                placeholder="Enter answer"
-                required
-              />
-              {errors.captcha && (
+              {errors.recaptcha && (
                 <div className="error-message show">
-                  {errors.captcha}
+                  {errors.recaptcha}
                 </div>
               )}
             </div>

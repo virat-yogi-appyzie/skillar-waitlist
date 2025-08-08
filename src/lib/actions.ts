@@ -11,7 +11,7 @@ export interface WaitlistSubmissionResult {
   totalUsers?: number // Add total users count
   errors?: {
     email?: string
-    captcha?: string
+    recaptcha?: string
     general?: string
   }
 }
@@ -25,11 +25,35 @@ export interface EmailSubmissionData {
   status: 'ACTIVE' | 'UNSUBSCRIBED'
 }
 
-// Submit email to waitlist
+// Verify reCAPTCHA token with Google
+async function verifyRecaptcha(token: string): Promise<boolean> {
+  try {
+    const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+    if (!secretKey) {
+      console.error('RECAPTCHA_SECRET_KEY is not set in environment variables');
+      return false;
+    }
+
+    const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: `secret=${secretKey}&response=${token}`,
+    });
+
+    const data = await response.json();
+    return data.success;
+  } catch (error) {
+    console.error('Error verifying reCAPTCHA:', error);
+    return false;
+  }
+}
+
+// Submit email to waitlist with reCAPTCHA
 export async function submitToWaitlist(
   email: string,
-  captchaAnswer: number,
-  expectedAnswer: number,
+  recaptchaToken: string,
   source?: string
 ): Promise<WaitlistSubmissionResult> {
   try {
@@ -69,15 +93,16 @@ export async function submitToWaitlist(
       }
     }
 
-    // Validate CAPTCHA
-    if (captchaAnswer !== expectedAnswer) {
+    // Validate reCAPTCHA
+    const recaptchaValid = await verifyRecaptcha(recaptchaToken);
+    if (!recaptchaValid) {
       // Log failed attempt
-      await logSubmissionAttempt(ipAddress, userAgent, email, false, 'Invalid CAPTCHA')
+      await logSubmissionAttempt(ipAddress, userAgent, email, false, 'Invalid reCAPTCHA')
       
       return {
         success: false,
-        message: 'Invalid CAPTCHA',
-        errors: { captcha: 'Incorrect answer. Please try again.' }
+        message: 'Invalid reCAPTCHA',
+        errors: { recaptcha: 'reCAPTCHA verification failed. Please try again.' }
       }
     }
 
@@ -376,7 +401,13 @@ export async function exportEmailsToCSV(): Promise<string> {
     const csvHeader = 'Email,Date,Time,User Agent,Source,Status\n'
     
     // Create CSV rows
-    const csvRows = emails.map(submission => {
+    const csvRows = emails.map((submission: {
+      email: string;
+      createdAt: Date;
+      userAgent: string | null;
+      source: string | null;
+      status: string;
+    }) => {
       const date = submission.createdAt.toLocaleDateString()
       const time = submission.createdAt.toLocaleTimeString()
       const userAgent = submission.userAgent || 'Unknown'
