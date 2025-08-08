@@ -1,10 +1,8 @@
 'use server'
 
-import { PrismaClient } from '@/generated/prisma'
+import { prisma } from '@/lib/db'
 import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
-
-const prisma = new PrismaClient()
 
 export interface WaitlistSubmissionResult {
   success: boolean
