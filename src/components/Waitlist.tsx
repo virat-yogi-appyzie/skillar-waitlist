@@ -232,7 +232,7 @@ export default function Waitlist() {
               <div style={{ display: 'flex', justifyContent: 'center', margin: '16px 0' }}>
                 <ReCAPTCHA
                   ref={recaptchaRef}
-                  sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
+                  sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""}
                   onChange={handleRecaptchaChange}
                   theme="dark" // You can change this to "light" if needed
                 />
