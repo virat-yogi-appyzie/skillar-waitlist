@@ -15,17 +15,19 @@ datasource db {
 }
 
 model EmailSubmission {
-  id         String   @id @default(cuid())
-  email      String   @unique
-  createdAt  DateTime @default(now()) @map("created_at")
-  userAgent  String?  @map("user_agent")
-  ipAddress  String?  @map("ip_address") // Will be encrypted
-  source     String?  // UTM tracking
-  status     Status   @default(ACTIVE)
+  id             String   @id @default(cuid())
+  email          String   @unique
+  discoverySource String? @map("discovery_source") // How user discovered the service
+  createdAt      DateTime @default(now()) @map("created_at")
+  userAgent      String?  @map("user_agent")
+  ipAddress      String?  @map("ip_address") // Will be encrypted
+  source         String?  // UTM tracking
+  status         Status   @default(ACTIVE)
 
   @@map("email_submissions")
   @@index([email])
   @@index([createdAt])
+  @@index([discoverySource])
 }
 
 model SubmissionAttempt {

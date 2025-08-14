@@ -54,7 +54,8 @@ async function verifyRecaptcha(token: string): Promise<boolean> {
 export async function submitToWaitlist(
   email: string,
   recaptchaToken: string,
-  source?: string
+  source?: string,
+  discoverySource?: string
 ): Promise<WaitlistSubmissionResult> {
   try {
     // Get headers for tracking - await the headers function
@@ -165,7 +166,8 @@ export async function submitToWaitlist(
         email,
         userAgent,
         ipAddress, // Note: In production, you should encrypt this
-        source: source || 'waitlist-form'
+        source: source || 'waitlist-form',
+        discoverySource: discoverySource || null
       }
     })
 

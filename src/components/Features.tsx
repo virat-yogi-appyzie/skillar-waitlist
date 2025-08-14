@@ -30,9 +30,9 @@ export default function Features() {
             <div className="feature-icon">
               <Award size={48} color="#6bcf7f" />
             </div>
-            <h3 className="feature-title">Career-Focused Paths</h3>
+            <h3 className="feature-title">Skill-Focused Paths</h3>
             <p className="feature-description">
-              Personalized learning journeys aligned with your specific career goals and industry demands.
+              Personalized learning journeys aligned with your specific skill goals and industry demands.
             </p>
           </div>
         </div>

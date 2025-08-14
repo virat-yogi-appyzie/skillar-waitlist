@@ -4,11 +4,11 @@ export default function Testimonials() {
   return (
     <section id="testimonials" className="testimonials">
       <div className="container">
-        <h2 className="section-title">What Our Learners Say</h2>
+        <h2 className="section-title">What led to Skillar.ai</h2>
         <div className="testimonials-grid">
           <div className="testimonial-card">
             <div className="testimonial-content">
-              <p>&ldquo;I&apos;ve transformed my career trajectory. I went from struggling with complex concepts to mastering new frameworks in weeks, not months.&rdquo;</p>
+              <p>&ldquo;I&apos;ve been struggling with traditional learning methods that don&apos;t adapt to my pace. I need a more personalized approach that can accelerate my skill development in today&apos;s fast-changing tech landscape.&rdquo;</p>
             </div>
             <div className="testimonial-author">
               <div className="author-avatar">SC</div>
@@ -21,7 +21,7 @@ export default function Testimonials() {
           
           <div className="testimonial-card">
             <div className="testimonial-content">
-              <p>&ldquo;The personalized learning paths are game-changing! My specific learning style drives&mdash;changing to professional development.&rdquo;</p>
+              <p>&ldquo;The challenge of keeping up with rapidly evolving technologies while managing a full-time job is overwhelming. I need a solution that maximizes learning efficiency and fits into my busy schedule.&rdquo;</p>
             </div>
             <div className="testimonial-author">
               <div className="author-avatar">MR</div>

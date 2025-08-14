@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 
 export default function Hero() {
   const [stats, setStats] = useState({
-    learners: 0,
+    waitlistUsers: 0,
     speedMultiplier: 0,
-    successRate: 0,
+    aiPowered: 0,
   });
 
   useEffect(() => {
@@ -24,14 +24,14 @@ export default function Hero() {
         const progress = currentStep / steps;
         
         setStats({
-          learners: Math.floor(10000 * progress),
+          waitlistUsers: Math.floor(10000 * progress),
           speedMultiplier: Math.floor(3 * progress * 10) / 10,
-          successRate: Math.floor(95 * progress),
+          aiPowered: Math.floor(100 * progress),
         });
         
         if (currentStep >= steps) {
           clearInterval(timer);
-          setStats({ learners: 10000, speedMultiplier: 3, successRate: 95 });
+          setStats({ waitlistUsers: 10000, speedMultiplier: 3, aiPowered: 100 });
         }
       }, stepDuration);
       
@@ -54,12 +54,12 @@ export default function Hero() {
       <div className="container">
         <div className="hero-content">
           <h1 className="hero-title">
-            Accelerate your career with{" "}
+            Accelerate your skill with{" "}
             <span className="gradient-text">AI-powered learning</span>
           </h1>
 
           <p className="hero-description">
-            Join thousands of professionals who&apos;ve 3x their skill development speed 
+            Join thousands of professionals who will 3x their skill development speed 
             with personalized AI coaching that adapts to your unique learning style.
           </p>
 
@@ -73,10 +73,10 @@ export default function Hero() {
           <div className="hero-stats">
             <div className="stat">
               <span className="stat-number">
-                {stats.learners >= 1000 ? `${Math.floor(stats.learners / 1000)}K+` : stats.learners}
+                {stats.waitlistUsers >= 1000 ? `${Math.floor(stats.waitlistUsers / 1000)}K+` : stats.waitlistUsers}
               </span>
               <span className="stat-label">
-                Active Learners
+                Waitlist Users
               </span>
             </div>
             <div className="stat">
@@ -89,10 +89,10 @@ export default function Hero() {
             </div>
             <div className="stat">
               <span className="stat-number">
-                {stats.successRate}%
+                {stats.aiPowered}%
               </span>
               <span className="stat-label">
-                Success Rate
+                AI Powered
               </span>
             </div>
           </div>

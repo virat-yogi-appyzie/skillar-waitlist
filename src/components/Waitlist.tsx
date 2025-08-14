@@ -3,9 +3,11 @@
 import { useState, useEffect, useRef } from "react";
 import ReCAPTCHA from "react-google-recaptcha";
 import { submitToWaitlist, getWaitlistCount, type WaitlistSubmissionResult } from "@/lib/actions";
+import { DiscoveryCombobox } from "@/components/ui/discovery-combobox";
 
 export default function Waitlist() {
   const [email, setEmail] = useState("");
+  const [discoverySource, setDiscoverySource] = useState("");
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -13,6 +15,7 @@ export default function Waitlist() {
   const [userPosition, setUserPosition] = useState<number>(0);
   const [errors, setErrors] = useState({
     email: "",
+    discoverySource: "",
     recaptcha: "",
     general: "",
   });
@@ -49,12 +52,27 @@ export default function Waitlist() {
     setRecaptchaToken(null);
   };
 
+  // Handle discovery source change
+  const handleDiscoverySourceChange = (value: string) => {
+    setDiscoverySource(value);
+    if (value && errors.discoverySource) {
+      setErrors(prev => ({ ...prev, discoverySource: "" }));
+    }
+  };
+
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     setIsLoading(true);
-    setErrors({ email: "", recaptcha: "", general: "" });
+    setErrors({ email: "", discoverySource: "", recaptcha: "", general: "" });
+
+    // Validate discovery source
+    if (!discoverySource) {
+      setErrors(prev => ({ ...prev, discoverySource: "Please select how you discovered us" }));
+      setIsLoading(false);
+      return;
+    }
 
     // Validate reCAPTCHA token
     if (!recaptchaToken) {
@@ -64,11 +82,12 @@ export default function Waitlist() {
     }
 
     try {
-      // Call server action with reCAPTCHA token
+      // Call server action with reCAPTCHA token and discovery source
       const result: WaitlistSubmissionResult = await submitToWaitlist(
         email,
         recaptchaToken,
-        'waitlist-form'
+        'waitlist-form',
+        discoverySource
       );
 
       if (result.success) {
@@ -81,18 +100,21 @@ export default function Waitlist() {
         
         // Reset form
         setEmail("");
+        setDiscoverySource("");
         resetRecaptcha();
       } else {
         // Handle validation errors
         if (result.errors) {
           setErrors({
             email: result.errors.email || "",
+            discoverySource: "",
             recaptcha: result.errors.recaptcha || "",
             general: result.errors.general || "",
           });
         } else {
           setErrors({
             email: "",
+            discoverySource: "",
             recaptcha: "",
             general: result.message || "Something went wrong. Please try again.",
           });
@@ -107,6 +129,7 @@ export default function Waitlist() {
       console.error('Submission error:', error);
       setErrors({
         email: "",
+        discoverySource: "",
         recaptcha: "",
         general: "Something went wrong. Please try again.",
       });
@@ -220,6 +243,23 @@ export default function Waitlist() {
               {errors.email && (
                 <div className="error-message show">
                   {errors.email}
+                </div>
+              )}
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="discovery-source" className="form-label">
+                How did you discover us?*
+              </label>
+              <DiscoveryCombobox
+                value={discoverySource}
+                onChange={handleDiscoverySourceChange}
+                placeholder="—Please choose an option—"
+                className="form-control"
+              />
+              {errors.discoverySource && (
+                <div className="error-message show">
+                  {errors.discoverySource}
                 </div>
               )}
             </div>
