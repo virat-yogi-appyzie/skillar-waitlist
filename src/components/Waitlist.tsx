@@ -186,32 +186,39 @@ export default function Waitlist() {
             Be among the first to experience the future of AI-powered learning
           </p>
           
-          {/* Show total users count if greater than 0 */}
-          {waitlistCount > 0 && (
+            {/* Show total users count if greater than 0 */}
+            {waitlistCount > 0 && (
             <div className="waitlist-stats" style={{
               textAlign: 'center',
               margin: 'var(--space-24) 0',
               padding: 'var(--space-12) var(--space-16)',
               background: 'var(--bg-card)',
               borderRadius: 'var(--radius-base)',
-              border: '1px solid var(--border-color)'
+              border: '1px solid var(--border-color)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minHeight: '80px'
             }}>
               <p style={{
                 color: 'var(--color-primary)',
                 fontSize: '1.2rem',
                 fontWeight: '600',
-                marginBottom: 'var(--space-4)'
+                marginBottom: 'var(--space-4)',
+                margin: '0 0 var(--space-4) 0'
               }}>
                 🚀 {waitlistCount.toLocaleString()} users already joined!
               </p>
               <p style={{
                 color: 'var(--color-text-secondary)',
-                fontSize: '0.9rem'
+                fontSize: '0.9rem',
+                margin: '0'
               }}>
                 Join others waiting for early access
               </p>
             </div>
-          )}
+            )}
           
           <form className="waitlist-form" onSubmit={handleSubmit}>
             <div className="form-group">
