@@ -5,12 +5,12 @@ export default function Footer() {
         <div className="footer-content">
           <div className="footer-section">
             <h3>Skillar.ai</h3>
-            <p>Accelerating careers through AI-powered learning</p>
+            <p>Accelerating skills through AI-powered learning</p>
           </div>
           <div className="footer-section">
             <h4>Contact</h4>
             <p>hello@skillar.ai</p>
-            <p>+1 (555) 123-4567</p>
+            <p>+91 9262218292</p>
           </div>
           <div className="footer-section">
             <h4>Follow Us</h4>

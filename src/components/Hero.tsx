@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { useWaitlist } from "@/lib/waitlist-context";
 
 export default function Hero() {
+  const { waitlistCount } = useWaitlist();
   const [stats, setStats] = useState({
     waitlistUsers: 0,
     speedMultiplier: 0,
@@ -11,7 +13,7 @@ export default function Hero() {
   });
 
   useEffect(() => {
-    // Animate the statistics numbers when component mounts
+    // Animate the statistics numbers when waitlistCount changes
     const animateStats = () => {
       const duration = 2000;
       const steps = 60;
@@ -24,23 +26,29 @@ export default function Hero() {
         const progress = currentStep / steps;
         
         setStats({
-          waitlistUsers: Math.floor(10000 * progress),
+          waitlistUsers: Math.floor(waitlistCount * progress),
           speedMultiplier: Math.floor(3 * progress * 10) / 10,
           aiPowered: Math.floor(100 * progress),
         });
         
         if (currentStep >= steps) {
           clearInterval(timer);
-          setStats({ waitlistUsers: 10000, speedMultiplier: 3, aiPowered: 100 });
+          setStats({ waitlistUsers: waitlistCount, speedMultiplier: 3, aiPowered: 100 });
         }
       }, stepDuration);
       
       return () => clearInterval(timer);
     };
 
-    const timeoutId = setTimeout(animateStats, 500);
-    return () => clearTimeout(timeoutId);
-  }, []);
+    // Only start animation if we have a waitlist count
+    if (waitlistCount > 0) {
+      const timeoutId = setTimeout(animateStats, 500);
+      return () => clearTimeout(timeoutId);
+    } else {
+      // If count is 0, set stats to 0 immediately
+      setStats({ waitlistUsers: 0, speedMultiplier: 3, aiPowered: 100 });
+    }
+  }, [waitlistCount]);
 
   const scrollToWaitlist = () => {
     const element = document.getElementById("waitlist");
@@ -55,12 +63,13 @@ export default function Hero() {
         <div className="hero-content">
           <h1 className="hero-title">
             Accelerate your skill with{" "}
+            <br />
             <span className="gradient-text">AI-powered learning</span>
           </h1>
 
           <p className="hero-description">
             Join thousands of professionals who will 3x their skill development speed 
-            with personalized AI coaching that adapts to your unique learning style.
+            with personalized learning journeys aligned with your specific skill goals and industry demands.
           </p>
 
           <Button 

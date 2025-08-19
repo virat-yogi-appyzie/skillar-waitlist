@@ -1,17 +1,18 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import ReCAPTCHA from "react-google-recaptcha";
-import { submitToWaitlist, getWaitlistCount, type WaitlistSubmissionResult } from "@/lib/actions";
+import { submitToWaitlist, type WaitlistSubmissionResult } from "@/lib/actions";
 import { DiscoveryCombobox } from "@/components/ui/discovery-combobox";
+import { useWaitlist } from "@/lib/waitlist-context";
 
 export default function Waitlist() {
+  const { waitlistCount, incrementWaitlistCount } = useWaitlist();
   const [email, setEmail] = useState("");
   const [discoverySource, setDiscoverySource] = useState("");
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [totalUsers, setTotalUsers] = useState<number>(0);
   const [userPosition, setUserPosition] = useState<number>(0);
   const [errors, setErrors] = useState({
     email: "",
@@ -21,20 +22,6 @@ export default function Waitlist() {
   });
   
   const recaptchaRef = useRef<ReCAPTCHA>(null);
-
-  // Load total users count on component mount
-  useEffect(() => {
-    const loadWaitlistCount = async () => {
-      try {
-        const count = await getWaitlistCount();
-        setTotalUsers(count);
-      } catch (error) {
-        console.error('Error loading waitlist count:', error);
-      }
-    };
-
-    loadWaitlistCount();
-  }, []);
 
   // Handle reCAPTCHA change
   const handleRecaptchaChange = (token: string | null) => {
@@ -91,9 +78,11 @@ export default function Waitlist() {
       );
 
       if (result.success) {
-        // Store user position and total users for success message
+        // Store user position for success message
         if (result.userPosition) setUserPosition(result.userPosition);
-        if (result.totalUsers) setTotalUsers(result.totalUsers);
+        
+        // Update the shared waitlist count immediately
+        incrementWaitlistCount();
         
         // Show success message
         setShowSuccess(true);
@@ -143,8 +132,6 @@ export default function Waitlist() {
   const resetForm = () => {
     setShowSuccess(false);
     resetRecaptcha();
-    // Reload waitlist count when returning to form
-    getWaitlistCount().then(setTotalUsers).catch(console.error);
   };
 
   if (showSuccess) {
@@ -199,7 +186,7 @@ export default function Waitlist() {
           </p>
           
           {/* Show total users count if greater than 0 */}
-          {totalUsers > 0 && (
+          {waitlistCount > 0 && (
             <div className="waitlist-stats" style={{
               textAlign: 'center',
               margin: 'var(--space-24) 0',
@@ -214,7 +201,7 @@ export default function Waitlist() {
                 fontWeight: '600',
                 marginBottom: 'var(--space-4)'
               }}>
-                🚀 {totalUsers.toLocaleString()} users already joined!
+                🚀 {waitlistCount.toLocaleString()} users already joined!
               </p>
               <p style={{
                 color: 'var(--color-text-secondary)',
@@ -254,7 +241,7 @@ export default function Waitlist() {
               <DiscoveryCombobox
                 value={discoverySource}
                 onChange={handleDiscoverySourceChange}
-                placeholder="—Please choose an option—"
+                placeholder="Please choose an option"
                 className="form-control"
               />
               {errors.discoverySource && (

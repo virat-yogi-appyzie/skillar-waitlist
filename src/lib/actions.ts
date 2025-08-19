@@ -110,7 +110,57 @@ export async function submitToWaitlist(
     // Check for disposable email domains
     const disposableDomains = [
       '10minutemail.com', 'tempmail.org', 'guerrillamail.com',
-      'mailinator.com', 'yopmail.com', 'temp-mail.org', 'throwaway.email'
+      'mailinator.com', 'yopmail.com', 'temp-mail.org', 'throwaway.email',
+      // Yopmail variants
+      'yopmail.com', 'yopmail.fr', 'yopmail.net',
+      // Mailinator variants
+      'mailinator.net', 'mailinator.org',
+      // 10MinuteMail variants
+      '10minutemail.net', '10minutemail.co.uk',
+      // Guerrilla Mail variants
+      'guerrillamailblock.com', 'sharklasers.com',
+      // TempMail variants
+      'tempmail.com', 'tempmailo.com', 'tempmail.net',
+      // TrashMail variants
+      'trashmail.com', 'trashmail.net', 'trashmail.de',
+      // Getnada / Inboxbear
+      'getnada.com', 'inboxbear.com', 'nada.email',
+      // EmailOnDeck
+      'emailondeck.com',
+      // FakeInbox
+      'fakeinbox.com', 'fakeinbox.net',
+      // Mohmal
+      'mohmal.com',
+      // Dispostable
+      'dispostable.com',
+      // ThrowawayMail
+      'throwawaymail.com',
+      // MailDrop
+      'maildrop.cc',
+      // BurnerMail
+      'burnermail.io',
+      // Guerillamail Variants
+      'pokemail.net', 'grr.la',
+      // Tempail
+      'tempail.com',
+      // Spamgourmet
+      'spamgourmet.com',
+      // AnonAddy
+      'anonaddy.me',
+      // Mailnesia
+      'mailnesia.com',
+      // MinuteInbox
+      'minutemail.com', 'minutemail.net', 'minutemail.org',
+      // MyTempEmail
+      'mytempmail.com',
+      // TMail
+      'tmail.ws',
+      // MailCatch
+      'mailcatch.com',
+      // ThrowAwayMail Variants
+      'trash-mail.com', 'trash-mail.de', 'rcpt.at',
+      // Other Known
+      'spambog.com', 'bugmenot.com', 'mailtothis.com', 'instantemailaddress.com'
     ]
     
     const domain = email.split('@')[1]?.toLowerCase()

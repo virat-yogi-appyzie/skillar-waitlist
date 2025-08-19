@@ -4,18 +4,21 @@ import Features from "@/components/Features";
 import Testimonials from "@/components/Testimonials";
 import Waitlist from "@/components/Waitlist";
 import Footer from "@/components/Footer";
+import { WaitlistProvider } from "@/lib/waitlist-context";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-background-primary text-foreground">
-      <Header />
-      <main>
-        <Hero />
-        <Features />
-        <Testimonials />
-        <Waitlist />
-      </main>
-      <Footer />
-    </div>
+    <WaitlistProvider>
+      <div className="min-h-screen bg-background-primary text-foreground">
+        <Header />
+        <main>
+          <Hero />
+          <Features />
+          <Testimonials />
+          <Waitlist />
+        </main>
+        <Footer />
+      </div>
+    </WaitlistProvider>
   );
 }
