@@ -62,7 +62,7 @@ export default function Hero() {
       <div className="container">
         <div className="hero-content">
           <h1 className="hero-title">
-            Accelerate your skill with{" "}
+            Accelerate your skills with{" "}
             <br />
             <span className="gradient-text">AI-powered learning</span>
           </h1>
