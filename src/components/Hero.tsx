@@ -45,7 +45,7 @@ export default function Hero() {
       const timeoutId = setTimeout(animateStats, 500);
       return () => clearTimeout(timeoutId);
     } else {
-      // If count is 0, set stats to 0 immediately
+      // If no count loaded yet, show 0
       setStats({ waitlistUsers: 0, speedMultiplier: 3, aiPowered: 100 });
     }
   }, [waitlistCount]);

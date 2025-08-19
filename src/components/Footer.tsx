@@ -10,7 +10,7 @@ export default function Footer() {
           <div className="footer-section">
             <h4>Contact</h4>
             <p>hello@skillar.ai</p>
-            <p>+91 9262218292</p>
+            <p>+91 9256219292</p>
           </div>
           <div className="footer-section">
             <h4>Follow Us</h4>

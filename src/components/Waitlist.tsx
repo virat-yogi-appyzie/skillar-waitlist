@@ -132,6 +132,7 @@ export default function Waitlist() {
   const resetForm = () => {
     setShowSuccess(false);
     resetRecaptcha();
+    // No need to reload waitlist count - it's managed by the shared context
   };
 
   if (showSuccess) {
@@ -190,10 +191,10 @@ export default function Waitlist() {
             <div className="waitlist-stats" style={{
               textAlign: 'center',
               margin: 'var(--space-24) 0',
-              padding: 'var(--space-16)',
-              background: 'rgba(255, 255, 255, 0.05)',
-              borderRadius: 'var(--border-radius)',
-              border: '1px solid rgba(255, 255, 255, 0.1)'
+              padding: 'var(--space-12) var(--space-16)',
+              background: 'var(--bg-card)',
+              borderRadius: 'var(--radius-base)',
+              border: '1px solid var(--border-color)'
             }}>
               <p style={{
                 color: 'var(--color-primary)',
@@ -215,7 +216,7 @@ export default function Waitlist() {
           <form className="waitlist-form" onSubmit={handleSubmit}>
             <div className="form-group">
               <label htmlFor="email" className="form-label">
-                Email Address
+                Email Address*
               </label>
               <input
                 type="email"

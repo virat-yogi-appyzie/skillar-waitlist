@@ -114,8 +114,8 @@ async function main() {
   
   console.log(`Current active emails in database: ${currentCount}`)
   
-  // Calculate how many emails to add to reach ~150
-  const targetCount = 150
+  // Calculate how many emails to add to reach ~162
+  const targetCount = 162
   const emailsToAdd = Math.max(0, targetCount - currentCount)
   
   if (emailsToAdd === 0) {
