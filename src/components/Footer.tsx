@@ -11,13 +11,13 @@ export default function Footer() {
             <h4>Contact</h4>
             <p>hello@skillar.ai</p>
             <p>+91 9256219292</p>
+
           </div>
           <div className="footer-section">
             <h4>Follow Us</h4>
             <div className="social-links">
-              <a href="#" target="_blank">Twitter</a>
-              <a href="#" target="_blank">LinkedIn</a>
-              <a href="#" target="_blank">GitHub</a>
+              <a href="https://www.linkedin.com/company/skillar-ai" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+              <a href="http://instagram.com/skillar.ai" target="_blank" rel="noopener noreferrer">Instagram</a>
             </div>
           </div>
         </div>
