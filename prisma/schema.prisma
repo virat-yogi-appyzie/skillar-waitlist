@@ -17,17 +17,32 @@ datasource db {
 model EmailSubmission {
   id             String   @id @default(cuid())
   email          String   @unique
+  emailNormalized String  @unique @map("email_normalized") // Normalized email for deduplication
   discoverySource String? @map("discovery_source") // How user discovered the service
   createdAt      DateTime @default(now()) @map("created_at")
   userAgent      String?  @map("user_agent")
   ipAddress      String?  @map("ip_address") // Will be encrypted
   source         String?  // UTM tracking
   status         Status   @default(ACTIVE)
+  
+  // New email service fields
+  confirmedAt    DateTime? @map("confirmed_at") // When email was confirmed (immediate for single opt-in)
+  messageProvider String?  @map("message_provider") // e.g., "gmail", "resend", "postmark"
+  firstMessageId String?   @map("first_message_id") // Provider message ID of first confirmation email
+  lastDeliveryStatus DeliveryStatus @default(NONE) @map("last_delivery_status")
+  lastDeliveryAt DateTime? @map("last_delivery_at")
+  lastErrorCode  String?   @map("last_error_code")
+  lastErrorMessage String? @map("last_error_message")
+  
+  // Relationships
+  deliveries     EmailDelivery[]
 
   @@map("email_submissions")
   @@index([email])
+  @@index([emailNormalized])
   @@index([createdAt])
   @@index([discoverySource])
+  @@index([lastDeliveryStatus])
 }
 
 model SubmissionAttempt {
@@ -55,9 +70,63 @@ model AdminUser {
   @@map("admin_users")
 }
 
+model EmailDelivery {
+  id                String   @id @default(cuid())
+  emailSubmissionId String   @map("email_submission_id")
+  toEmailNormalized String   @map("to_email_normalized")
+  provider          String   // e.g., "gmail", "resend", "postmark"
+  templateName      String   @map("template_name")
+  subject           String
+  messageId         String?  @map("message_id") // Provider message ID
+  sentAt            DateTime? @map("sent_at")
+  status            DeliveryStatus @default(QUEUED)
+  errorCode         String?  @map("error_code")
+  errorMessage      String?  @map("error_message")
+  metadata          Json?    // Additional provider-specific data
+  createdAt         DateTime @default(now()) @map("created_at")
+  
+  // Relationships
+  emailSubmission   EmailSubmission @relation(fields: [emailSubmissionId], references: [id], onDelete: Cascade)
+
+  @@map("email_deliveries")
+  @@index([emailSubmissionId])
+  @@index([messageId])
+  @@index([sentAt])
+  @@index([status])
+  @@index([toEmailNormalized])
+}
+
+model EmailSuppression {
+  id              String   @id @default(cuid())
+  emailNormalized String   @unique @map("email_normalized")
+  reason          SuppressionReason
+  provider        String?  // Which provider reported the issue
+  firstSeenAt     DateTime @default(now()) @map("first_seen_at")
+  lastSeenAt      DateTime @default(now()) @map("last_seen_at")
+  evidence        Json?    // Store provider error codes, messages, etc.
+
+  @@map("email_suppressions")
+  @@index([reason])
+  @@index([firstSeenAt])
+}
+
 enum Status {
   ACTIVE
   UNSUBSCRIBED
+}
+
+enum DeliveryStatus {
+  NONE       // No delivery attempted
+  QUEUED     // Queued for delivery
+  SENT       // Successfully sent
+  FAILED     // Failed to send (transient)
+  SUPPRESSED // Suppressed (hard bounce, complaint)
+}
+
+enum SuppressionReason {
+  HARD_BOUNCE // Invalid recipient, mailbox doesn't exist
+  COMPLAINT   // Spam complaint
+  MANUAL      // Manually suppressed
 }
 
 enum AdminRole {
