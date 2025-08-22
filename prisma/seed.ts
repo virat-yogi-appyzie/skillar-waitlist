@@ -1,14 +1,17 @@
 import { PrismaClient } from '@prisma/client'
+import { normalizeEmail } from '../src/lib/email-utils'
 
 const prisma = new PrismaClient()
 
 // Generate realistic dummy emails
 const generateDummyEmails = (count: number): Array<{
   email: string
+  emailNormalized: string
   discoverySource: string
   userAgent: string
   source: string
   createdAt: Date
+  confirmedAt: Date
 }> => {
   const firstNames = [
     'Alex', 'Sarah', 'Michael', 'Emma', 'David', 'Jessica', 'John', 'Ashley', 
@@ -52,10 +55,12 @@ const generateDummyEmails = (count: number): Array<{
   
   const emails: Array<{
     email: string
+    emailNormalized: string
     discoverySource: string
     userAgent: string
     source: string
     createdAt: Date
+    confirmedAt: Date
   }> = []
   
   const usedEmails = new Set<string>()
@@ -92,12 +97,17 @@ const generateDummyEmails = (count: number): Array<{
     const minutesAgo = Math.floor(Math.random() * 60)
     const createdAt = new Date(Date.now() - (daysAgo * 24 * 60 * 60 * 1000) - (hoursAgo * 60 * 60 * 1000) - (minutesAgo * 60 * 1000))
     
+    // Normalize the email
+    const normalizedData = normalizeEmail(email)
+    
     emails.push({
       email,
+      emailNormalized: normalizedData.normalized,
       discoverySource: discoverySources[Math.floor(Math.random() * discoverySources.length)],
       userAgent: userAgents[Math.floor(Math.random() * userAgents.length)],
       source: sources[Math.floor(Math.random() * sources.length)],
-      createdAt
+      createdAt,
+      confirmedAt: createdAt // Single opt-in: confirmed immediately
     })
   }
   
@@ -138,10 +148,12 @@ async function main() {
       await prisma.emailSubmission.createMany({
         data: batch.map(emailData => ({
           email: emailData.email,
+          emailNormalized: emailData.emailNormalized,
           discoverySource: emailData.discoverySource,
           userAgent: emailData.userAgent,
           source: emailData.source,
           createdAt: emailData.createdAt,
+          confirmedAt: emailData.confirmedAt,
           status: 'ACTIVE'
         })),
         skipDuplicates: true
