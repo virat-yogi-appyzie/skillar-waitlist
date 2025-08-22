@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/db'
 import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
+import { WaitlistService } from '@/lib/waitlist-service'
 
 export interface WaitlistSubmissionResult {
   success: boolean
@@ -94,17 +95,24 @@ export async function submitToWaitlist(
       }
     }
 
-    // Validate reCAPTCHA
-    const recaptchaValid = await verifyRecaptcha(recaptchaToken);
-    if (!recaptchaValid) {
-      // Log failed attempt
-      await logSubmissionAttempt(ipAddress, userAgent, email, false, 'Invalid reCAPTCHA')
-      
-      return {
-        success: false,
-        message: 'Invalid reCAPTCHA',
-        errors: { recaptcha: 'reCAPTCHA verification failed. Please try again.' }
+    // Skip reCAPTCHA validation for localhost/development
+    const isLocalhost = ipAddress === 'localhost' || process.env.NODE_ENV === 'development'
+    
+    if (!isLocalhost && recaptchaToken !== 'dev-bypass') {
+      // Validate reCAPTCHA only in production
+      const recaptchaValid = await verifyRecaptcha(recaptchaToken);
+      if (!recaptchaValid) {
+        // Log failed attempt
+        await logSubmissionAttempt(ipAddress, userAgent, email, false, 'Invalid reCAPTCHA')
+        
+        return {
+          success: false,
+          message: 'Invalid reCAPTCHA',
+          errors: { recaptcha: 'reCAPTCHA verification failed. Please try again.' }
+        }
       }
+    } else {
+      console.log('🔧 Development mode: Skipping reCAPTCHA validation for localhost')
     }
 
     // Check for disposable email domains
@@ -195,60 +203,77 @@ export async function submitToWaitlist(
       }
     }
 
-    // Check if email already exists
-    const existingSubmission = await prisma.emailSubmission.findUnique({
-      where: { email }
+    // Use the new email service for submission and sending
+    const waitlistService = new WaitlistService()
+    const result = await waitlistService.joinWaitlistAndSend({
+      email,
+      source,
+      discoverySource,
+      userAgent,
+      ipAddress
     })
 
-    if (existingSubmission) {
-      await logSubmissionAttempt(ipAddress, userAgent, email, false, 'Email already exists')
-      
-      return {
-        success: false,
-        message: 'Email already registered',
-        errors: { email: 'This email is already on our waitlist!' }
-      }
+    // Log submission attempt based on result
+    const success = result.result === 'ok' || result.result === 'exists'
+    let reason: string | undefined
+    
+    switch (result.result) {
+      case 'suppressed':
+        reason = 'Email suppressed (hard bounce)'
+        break
+      case 'invalid':
+        reason = 'Invalid email address'
+        break
+      case 'failed':
+        reason = 'Email sending failed'
+        break
+      case 'exists':
+        reason = 'Email already exists'
+        break
     }
 
-    // Create new email submission
-    const newSubmission = await prisma.emailSubmission.create({
-      data: {
-        email,
-        userAgent,
-        ipAddress, // Note: In production, you should encrypt this
-        source: source || 'waitlist-form',
-        discoverySource: discoverySource || null
-      }
-    })
+    await logSubmissionAttempt(ipAddress, userAgent, email, success, reason)
 
-    // Get the user's position in the waitlist and total count
-    const totalUsers = await prisma.emailSubmission.count({
-      where: {
-        status: 'ACTIVE'
-      }
-    })
+    // Handle different results
+    switch (result.result) {
+      case 'ok':
+        // Revalidate any cached data
+        revalidatePath('/')
+        return {
+          success: true,
+          message: 'Successfully joined the waitlist!',
+          userPosition: result.userPosition,
+          totalUsers: result.totalUsers
+        }
 
-    // Get user's position by counting submissions created before or at the same time
-    const userPosition = await prisma.emailSubmission.count({
-      where: {
-        createdAt: {
-          lte: newSubmission.createdAt
-        },
-        status: 'ACTIVE'
-      }
-    })
+      case 'exists':
+        return {
+          success: false,
+          message: 'Email already registered',
+          errors: { email: 'This email is already on our waitlist!' }
+        }
 
-    // Log successful attempt
-    await logSubmissionAttempt(ipAddress, userAgent, email, true)
+      case 'suppressed':
+        return {
+          success: false,
+          message: 'Email not allowed',
+          errors: { email: 'This email address cannot receive emails.' }
+        }
 
-    // Revalidate any cached data
-    revalidatePath('/')
+      case 'invalid':
+        return {
+          success: false,
+          message: 'Invalid email address',
+          errors: { email: 'The email address appears to be invalid.' }
+        }
 
-    return {
-      success: true,
-      message: 'Successfully joined the waitlist!',
-      userPosition,
-      totalUsers
+      case 'failed':
+      default:
+        return {
+          success: false,
+          message: 'Server error',
+          errors: { general: 'Something went wrong. Please try again.' }
+        }
     }
 
   } catch (error) {

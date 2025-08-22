@@ -61,18 +61,20 @@ export default function Waitlist() {
       return;
     }
 
-    // Validate reCAPTCHA token
-    if (!recaptchaToken) {
+    // Skip reCAPTCHA validation in development mode
+    const isDevelopment = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost';
+    
+    if (!isDevelopment && !recaptchaToken) {
       setErrors(prev => ({ ...prev, recaptcha: "Please complete the reCAPTCHA verification" }));
       setIsLoading(false);
       return;
     }
 
     try {
-      // Call server action with reCAPTCHA token and discovery source
+      // Call server action with reCAPTCHA token (or 'dev-bypass' for development)
       const result: WaitlistSubmissionResult = await submitToWaitlist(
         email,
-        recaptchaToken,
+        recaptchaToken || 'dev-bypass',
         'waitlist-form',
         discoverySource
       );
