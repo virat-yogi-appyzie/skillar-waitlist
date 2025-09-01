@@ -111,6 +111,8 @@ export class WaitlistService {
       }
 
       // Step 5: Send welcome email for new submissions
+      // TEMPORARILY DISABLED: Email sending turned off
+      /*
       const emailResult = await this.sendWelcomeEmail(
         submissionResult.submission.id,
         normalizedData.original,
@@ -143,13 +145,25 @@ export class WaitlistService {
           lastErrorMessage: null,
         }
       });
+      */
+
+      // Step 6: Skip email sending - just update submission as confirmed
+      await prisma.emailSubmission.update({
+        where: { id: submissionResult.submission.id },
+        data: {
+          lastDeliveryStatus: 'NONE', // No email sent
+          lastDeliveryAt: null,
+          lastErrorCode: null,
+          lastErrorMessage: null,
+        }
+      });
 
       // Get user stats for response
       const stats = await this.getUserStats(submissionResult.submission.id);
 
       return {
         result: 'ok',
-        messageId: emailResult.messageId,
+        // messageId: emailResult.messageId, // Commented out since no email sent
         userPosition: stats.userPosition,
         totalUsers: stats.totalUsers,
       };
