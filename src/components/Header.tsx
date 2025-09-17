@@ -26,8 +26,8 @@ export default function Header() {
             <a href="#testimonials" onClick={(e) => { e.preventDefault(); scrollToSection("testimonials"); }}>
               Testimonials
             </a>
-            <a href="#waitlist" onClick={(e) => { e.preventDefault(); scrollToSection("waitlist"); }}>
-              Join Waitlist
+            <a href="https://app.skillar.ai/" target="_blank" rel="noopener noreferrer">
+              Login / Signup
             </a>
             <a href="#contact" onClick={(e) => { e.preventDefault(); scrollToSection("contact"); }}>
               Contact
