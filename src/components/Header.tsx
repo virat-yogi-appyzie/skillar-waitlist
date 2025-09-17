@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default function Header() {
   const scrollToSection = (sectionId: string) => {
@@ -26,12 +27,12 @@ export default function Header() {
             <a href="#testimonials" onClick={(e) => { e.preventDefault(); scrollToSection("testimonials"); }}>
               Testimonials
             </a>
-            <a href="https://app.skillar.ai/" target="_blank" rel="noopener noreferrer">
-              Login / Signup
-            </a>
             <a href="#contact" onClick={(e) => { e.preventDefault(); scrollToSection("contact"); }}>
               Contact
             </a>
+            <Button asChild className="btn btn--primary btn--lg">
+              <a className="nav-cta" href="https://app.skillar.ai/" target="_blank" rel="noopener noreferrer">Login / Signup</a>
+            </Button>
           </nav>
         </div>
       </div>

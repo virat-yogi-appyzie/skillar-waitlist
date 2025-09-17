@@ -219,6 +219,7 @@ a:hover {
 .nav {
   display: flex;
   gap: var(--space-32);
+  align-items: center; /* ensure all nav items (links + button) vertically centered */
 }
 
 .nav a {
@@ -230,6 +231,16 @@ a:hover {
 
 .nav a:hover {
   color: var(--text-primary);
+}
+
+/* Added stronger style so Login/Signup button inside nav matches hero button appearance */
+.nav .nav-cta {
+  color: #fff; /* override faded link color */
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+}
+.nav .nav-cta:hover {
+  color: #fff;
 }
 
 /* Hero Section - Updated with proper spacing */
@@ -488,7 +499,7 @@ textarea:focus-visible {
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-color);
   transition: transform var(--duration-normal) var(--ease-standard),
-              box-shadow var(--duration-normal) var(--ease-standard);
+              box-shadow var(--duration-normal) var (--ease-standard);
 }
 
 .testimonial-card:hover {
@@ -536,7 +547,7 @@ textarea:focus-visible {
 
 .author-title {
   font-size: var(--font-size-sm);
-  color: var(--text-secondary);
+  color: var (--text-secondary);
 }
 
 /* Responsive testimonials */
@@ -598,7 +609,7 @@ textarea:focus-visible {
   font-size: var(--font-size-md);
   line-height: 1.5;
   transition: border-color var(--duration-fast) var(--ease-standard),
-              box-shadow var(--duration-fast) var(--ease-standard);
+              box-shadow var(--duration-fast) var (--ease-standard);
 }
 
 .form-control:focus {
