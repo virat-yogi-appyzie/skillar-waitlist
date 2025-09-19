@@ -50,6 +50,14 @@ export default function Hero() {
     }
   }, [waitlistCount]);
 
+  // Restore original smooth scroll handler
+  const scrollToWaitlist = () => {
+    const element = document.getElementById("waitlist");
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <section className="hero">
       <div className="container">
@@ -65,8 +73,11 @@ export default function Hero() {
             with personalized learning journeys aligned with your specific skill goals and industry demands.
           </p>
 
-          <Button asChild className="btn btn--primary btn--lg mb-8">
-            <a href="https://app.skillar.ai/" target="_blank" rel="noopener noreferrer">Go to Skillar</a>
+          <Button 
+            onClick={scrollToWaitlist}
+            className="btn btn--primary btn--lg mb-8"
+          >
+            Join the Waitlist
           </Button>
 
           <div className="hero-stats">
