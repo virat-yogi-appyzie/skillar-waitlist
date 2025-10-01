@@ -6,6 +6,11 @@ export default function Footer() {
           <div className="footer-section">
             <h3>Skillar.ai</h3>
             <p>Accelerating skills through AI-powered learning</p>
+            <p className="text-text-secondary">
+              <a href="/privacy-policy" style={{ textDecoration: "underline", cursor: "pointer" }} className="text-text-secondary">
+                Privacy Policy
+              </a>
+            </p>
           </div>
           <div className="footer-section">
             <h4>Contact</h4>
