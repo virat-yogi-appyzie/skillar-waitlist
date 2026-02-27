@@ -17,6 +17,19 @@ export interface WaitlistSubmissionResult {
   }
 }
 
+export interface SkillsGapAssessmentPayload {
+  name: string
+  email: string
+  industryName: string
+  roleName: string
+  userGoal: string
+  selectedSkills: { name: string; proficiency: number }[]
+  timeToBuildLabel: string
+  businessImpact: string
+  companySize: string
+  criticalFlag: boolean
+}
+
 export interface EmailSubmissionData {
   id: string
   email: string
@@ -48,6 +61,225 @@ async function verifyRecaptcha(token: string): Promise<boolean> {
   } catch (error) {
     console.error('Error verifying reCAPTCHA:', error);
     return false;
+  }
+}
+
+export async function saveSkillsGapAssessment(
+  payload: SkillsGapAssessmentPayload
+): Promise<{ success: boolean }> {
+  const {
+    name,
+    email,
+    industryName,
+    roleName,
+    userGoal,
+    selectedSkills,
+    timeToBuildLabel,
+    businessImpact,
+    companySize,
+    criticalFlag,
+  } = payload
+
+  // Basic guard: require minimal fields
+  if (!email || !industryName || !roleName) {
+    return { success: false }
+  }
+
+  // Map the user-facing time-to-build label to an approximate month count
+  const timeToBuildMonths = (() => {
+    switch (timeToBuildLabel) {
+      case 'Less than 1 month':
+        return 1
+      case '1-3 months':
+        return 3
+      case '3-6 months':
+        return 6
+      case '6-12 months':
+        return 12
+      case 'More than 12 months':
+        return 18
+      default:
+        return 0
+    }
+  })()
+
+  // NOTE: Avoid interactive transactions in Next.js server actions.
+  // A sequential write flow is more reliable here.
+
+  // Find existing user by email, or create if not present
+  let user = await prisma.user.findFirst({
+    where: { email },
+  })
+
+  if (!user) {
+    user = await prisma.user.create({
+      data: {
+        email,
+        name,
+      },
+    })
+  } else if (name && name !== user.name) {
+    user = await prisma.user.update({
+      where: { id: user.id },
+      data: { name },
+    })
+  }
+
+  const industry = await prisma.industry.upsert({
+    where: { name: industryName },
+    update: {},
+    create: {
+      name: industryName,
+      isUserGenerated: true,
+    },
+  })
+
+  // Find or create role linked to industry (handles race conditions safely)
+  let role = await prisma.role.findFirst({
+    where: { name: roleName, industryId: industry.id },
+  })
+
+  if (!role) {
+    try {
+      role = await prisma.role.create({
+        data: {
+          name: roleName,
+          industryId: industry.id,
+        },
+      })
+    } catch {
+      role = await prisma.role.findFirst({
+        where: { name: roleName, industryId: industry.id },
+      })
+    }
+  }
+
+  if (!role) {
+    return { success: false }
+  }
+
+  const assessment = await prisma.userAssessment.create({
+    data: {
+      userId: user.id,
+      industryId: industry.id,
+      roleId: role.id,
+      timeToBuildMonths,
+      businessImpact,
+      companySize,
+      criticalFlag,
+    },
+  })
+
+  for (const { name: skillName, proficiency } of selectedSkills) {
+    if (!skillName) continue
+
+    const skill = await prisma.skill.upsert({
+      where: { name: skillName },
+      update: {},
+      create: {
+        name: skillName,
+      },
+    })
+
+    await prisma.skillAssessment.create({
+      data: {
+        assessmentId: assessment.id,
+        skillId: skill.id,
+        proficiency,
+      },
+    })
+  }
+
+  return { success: true }
+}
+
+export interface SkillsGapReportPayload {
+  userGoal: string
+  userIndustry: string
+  userRole: string
+  lowestScoringSkill: string
+  skillScore: number
+  timeToBuild: string
+  businessImpact: string
+  companySize: string
+}
+
+export async function generateSkillsGapReport(
+  payload: SkillsGapReportPayload
+): Promise<{ success: boolean; report?: string; error?: string }> {
+  const apiKey = process.env.GEMINI_API_KEY
+  if (!apiKey) {
+    return { success: false, error: 'GEMINI_API_KEY is not set' }
+  }
+
+  const model = process.env.GEMINI_MODEL || 'gemini-2.0-flash'
+
+  const prompt = `You are an elite Chief Learning Officer (CLO) and an expert in corporate instructional design. Your job is to analyze data from a "Strategic L&D Alignment Audit" and generate a hard-hitting, highly personalized, 3-section diagnostic report for a corporate L&D leader. 
+
+Your tone must be authoritative, diagnostic, and urgent. Do not use corporate fluff. Speak directly to the business cost of delayed training.
+
+Here is the user's diagnostic data:
+- Primary Goal: ${payload.userGoal}
+- Industry: ${payload.userIndustry}
+- Target Role: ${payload.userRole}
+- Most Critical Skill Gap Identified: ${payload.lowestScoringSkill} (Score: ${payload.skillScore}/5)
+- Time it currently takes them to build a course: ${payload.timeToBuild}
+- Primary Business Impact of this gap: ${payload.businessImpact}
+- Company Size: ${payload.companySize} employees
+
+Structure the report using the following three sections EXACTLY. 
+
+### Section 1: The Strategic Diagnosis (Focus on the Gap)
+Write one paragraph analyzing the severe disconnect between their [Primary Goal] and their low proficiency in [Most Critical Skill Gap] for their [Target Role]. Explain why failing to train this specific role effectively in this specific skill will directly cause [Primary Business Impact] within the [Industry] sector. Make the stakes clear.
+
+### Section 2: The Bottleneck (Focus on the Cost of Time)
+Write one paragraph aggressively challenging their [Time to build] timeframe. Explain that taking [Time to build] to deploy a custom training module for [Most Critical Skill Gap] is too slow for a company of [Company Size] people. Emphasize that while they are spending months drafting content, the business is actively bleeding money/efficiency due to the [Primary Business Impact]. 
+
+### Section 3: The Skillar Bridge (The Solution)
+Write a final, punchy paragraph pitching a better way. Explain that they do not have to choose between slow, custom training or fast, irrelevant off-the-shelf courses. Explicitly state that using an AI-powered curriculum engine can generate a highly customized, industry-specific module for [Target Role] focusing on [Most Critical Skill Gap] in a matter of days, allowing their instructional designers to edit and deploy immediately.
+
+End the report with this exact Call to Action:
+"Stop letting manual curriculum design bottleneck your growth. Click the link below to see a live demo of how we can generate your custom ${payload.lowestScoringSkill} module today."`
+
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: 0.4,
+            maxOutputTokens: 2048,
+          },
+        }),
+      }
+    )
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => '')
+      return { success: false, error: `Gemini error (${res.status}): ${text}` }
+    }
+
+    const data = (await res.json()) as any
+    const report: string | undefined =
+      data?.candidates?.[0]?.content?.parts?.map((p: any) => p?.text).filter(Boolean).join('') ||
+      data?.candidates?.[0]?.content?.parts?.[0]?.text
+
+    if (!report) {
+      return { success: false, error: 'Gemini returned empty response' }
+    }
+
+    // Log full report to server terminal for easy inspection
+    console.log('📝 GEMINI SKILLS GAP REPORT START =========================')
+    console.log(report)
+    console.log('📝 GEMINI SKILLS GAP REPORT END   =========================')
+
+    return { success: true, report }
+  } catch (e: any) {
+    console.error('⚠️ Gemini report generation failed:', e)
+    return { success: false, error: e?.message || 'Failed to call Gemini' }
   }
 }
 

@@ -133,3 +133,101 @@ enum AdminRole {
   ADMIN
   SUPER_ADMIN
 }
+
+model User {
+  id        String   @id @default(cuid())
+  name      String?
+  email     String?
+  createdAt DateTime @default(now())
+
+  assessments UserAssessment[]
+
+}
+model Industry {
+  id            String   @id @default(cuid())
+  name          String   @unique
+  isUserGenerated Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  roles         Role[]
+  assessments    UserAssessment[]
+  @@map("industries")
+}
+model Role {
+  id          String   @id @default(cuid())
+  name        String
+  industryId  String
+  createdAt   DateTime @default(now())
+
+  industry    Industry @relation(fields: [industryId], references: [id], onDelete: Cascade)
+  roleSkills  RoleSkill[]
+  assessments UserAssessment[]
+ 
+
+  @@unique([name, industryId])
+ 
+}
+model Skill {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+ skillAssessments SkillAssessment[]
+  roleSkills  RoleSkill[]
+  
+
+
+}
+model RoleSkill {
+  roleId  String
+  skillId String
+
+  role    Role  @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  skill   Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, skillId])
+ 
+}
+model UserAssessment {
+  id                String   @id @default(cuid())
+  userId            String
+  industryId        String
+  roleId            String
+
+  timeToBuildMonths Int
+  businessImpact    String
+  companySize       String
+
+  criticalFlag      Boolean  @default(false)
+
+  reportStatus      ReportStatus @default(PENDING)
+  emailSent         Boolean  @default(false)
+
+  createdAt         DateTime @default(now())
+
+  user       User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  industry    Industry       @relation(fields: [industryId], references: [id])
+  role        Role           @relation(fields: [roleId], references: [id])
+
+  skillAssessments  SkillAssessment[]
+}
+enum ReportStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+model SkillAssessment {
+  id            String   @id @default(cuid())
+
+  assessmentId  String
+  skillId       String
+
+  proficiency   Int
+  createdAt     DateTime @default(now())
+
+  assessment    UserAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  skill         Skill          @relation(fields: [skillId], references: [id])
+
+  @@unique([assessmentId, skillId])
+  @@index([skillId])
+  @@map("skill_assessments")
+}
