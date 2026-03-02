@@ -8,7 +8,7 @@
  import { Input } from "@/components/ui/input";
  import { Label } from "@/components/ui/label";
  import { cn } from "@/lib/utils";
- import { generateSkillsGapReport, saveSkillsGapAssessment } from "@/lib/actions";
+import {generateSkillsGapReport, generatePuppeteerPdf, saveSkillsGapAssessment, sendSkillsGapReportEmail } from "@/lib/actions";
 
  const INDUSTRIES = [
    "Heavy Manufacturing",
@@ -212,6 +212,7 @@ const GENERIC_SKILLS = [
    const [isSubmitting, setIsSubmitting] = useState(false);
   const [aiReport, setAiReport] = useState<string>("");
   const [aiReportError, setAiReportError] = useState<string>("");
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
 
    const availableRoles = useMemo(
      () => (form.industry ? ROLES_BY_INDUSTRY[form.industry] ?? [] : []),
@@ -349,8 +350,31 @@ const GENERIC_SKILLS = [
         companySize: form.companySize,
       });
 
-      if (reportResult.success && reportResult.report) {
-        setAiReport(reportResult.report);
+      if (reportResult.success && reportResult.fullReport) {
+        setAiReport(reportResult.fullReport);
+
+        // Send PDF report via email in the background (non-blocking)
+        sendSkillsGapReportEmail({
+          name: form.name,
+          email: form.workEmail,
+          userGoal: form.primaryBusinessGoal,
+          userIndustry: form.industry,
+          userRole: form.role,
+          lowestScoringSkill: lowestSkillName,
+          skillScore: lowestSkillScore,
+          timeToBuild: form.timeToBuild,
+          businessImpact: form.businessImpact,
+          companySize: form.companySize,
+          aiReport: reportResult.fullReport,
+        }).then((emailResult) => {
+          if (emailResult.success) {
+            console.log('✅ Report email sent to:', form.workEmail);
+          } else {
+            console.error('❌ Email send failed:', emailResult.error);
+          }
+        }).catch((err) => {
+          console.error('❌ Email send error:', err);
+        });
       } else {
         setAiReportError(reportResult.error || "Failed to generate report.");
       }
@@ -448,6 +472,70 @@ const GENERIC_SKILLS = [
                     lowestScoringSkill={lowestScoringSkill}
                     hasCriticalVulnerability={hasCriticalVulnerability}
                   />
+
+                  <div className="flex justify-end">
+                    <Button
+                      type="button"
+                      size="sm"
+                      disabled={isDownloadingPdf}
+                      onClick={async () => {
+                        try {
+                          if (!lowestScoringSkill) return;
+                      
+                          setIsDownloadingPdf(true);
+                      
+                          const base64 = await generatePuppeteerPdf({
+                            name: form.name || "Skills Gap Diagnostic Participant",
+                            userGoal: form.primaryBusinessGoal,
+                            userIndustry: form.industry,
+                            userRole: form.role,
+                            lowestScoringSkill: lowestScoringSkill.skill,
+                            skillScore: lowestScoringSkill.score,
+                            timeToBuild: form.timeToBuild,
+                            businessImpact: form.businessImpact,
+                            companySize: form.companySize,
+                            aiReport: aiReport,
+                          });
+                      
+                          if (!base64) throw new Error("Empty PDF response");
+                      
+                          // ✅ Better base64 → Blob conversion (safer for larger PDFs)
+                          const byteCharacters = window.atob(base64);
+                          const byteArrays: any[] = [];
+                      
+                          for (let offset = 0; offset < byteCharacters.length; offset += 1024) {
+                            const slice = byteCharacters.slice(offset, offset + 1024);
+                            const byteNumbers = new Array(slice.length);
+                      
+                            for (let i = 0; i < slice.length; i++) {
+                              byteNumbers[i] = slice.charCodeAt(i);
+                            }
+                      
+                            byteArrays.push(new Uint8Array(byteNumbers));
+                          }
+                      
+                          const blob = new Blob(byteArrays, { type: "application/pdf" });
+                      
+                          const url = URL.createObjectURL(blob);
+                      
+                          const link = document.createElement("a");
+                          link.href = url;
+                          link.download = "skills-gap-report.pdf";
+                          document.body.appendChild(link);
+                          link.click(); 
+                      
+                          document.body.removeChild(link);
+                          URL.revokeObjectURL(url);
+                        } catch (err) {
+                          console.error("PDF download failed:", err);
+                        } finally {
+                          setIsDownloadingPdf(false);
+                        }
+                      }}
+                    >
+                      {isDownloadingPdf ? "Preparing PDF..." : "Download PDF report"}
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>
