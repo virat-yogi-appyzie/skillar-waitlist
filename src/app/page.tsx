@@ -15,7 +15,7 @@ export default function Home() {
           <Hero />
           <Features />
           <Testimonials />
-          <Waitlist />
+          {/* <Waitlist /> */}
         </main>
         <Footer />
       </div>

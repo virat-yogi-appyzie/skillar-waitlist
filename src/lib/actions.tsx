@@ -1,5 +1,6 @@
 'use server'
 
+import { aiService } from './ai-service/ai-service 1'
 import { SKILLAR_LOGO_DATA_URI } from './logo'
 
 /* =====================================================
@@ -475,143 +476,150 @@ export async function generateSkillsGapReport(input: {
   companySize: string
 }): Promise<{ success: boolean; fullReport?: string; error?: string }> {
   try {
-    // Get API key and model from environment
-    const apiKey = process.env.GEMINI_API_KEY
-    const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash'
-    
-    if (!apiKey) {
-      console.warn('⚠️ GEMINI_API_KEY not set - returning placeholder')
-      return getPlaceholderReport(input)
+
+    const result = await aiService.generateSkillGap(input)
+    if (!result.success) {
+      return { success: false, error: result.message }
     }
 
-    // Import Gemini SDK
-    const { GoogleGenerativeAI } = await import('@google/generative-ai')
-    const client = new GoogleGenerativeAI(apiKey)
+    // Get API key and model from environment
+    // const apiKey = process.env.GEMINI_API_KEY
+    // const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash'
+    
+    // if (!apiKey) {
+    //   console.warn('⚠️ GEMINI_API_KEY not set - returning placeholder')
+    //   return getPlaceholderReport(input)
+    // }
+
+    // // Import Gemini SDK
+    // const { GoogleGenerativeAI } = await import('@google/generative-ai')
+    // const client = new GoogleGenerativeAI(apiKey)
     
     // Use configured model
-    const model = client.getGenerativeModel({ model: modelName })
+    // const model = client.getGenerativeModel({ model: modelName })
 
     // Create the prompt with tables and lists
-    const skillRiskLevel = input.skillScore <= 2 ? 'CRITICAL' : 'HIGH'
-    const trainingRiskLevel = input.timeToBuild.includes('6') || input.timeToBuild.includes('12') ? 'CRITICAL' : 'HIGH'
-    const proficiencyLabel = input.skillScore === 1 ? 'Critical' : input.skillScore === 2 ? 'Major Gap' : 'Moderate Gap'
-    const timeSavings = input.timeToBuild.includes('6') || input.timeToBuild.includes('12') ? '5-6 months' : '3-4 months'
-    const impactSavings = input.timeToBuild.includes('6') || input.timeToBuild.includes('12') ? '8-11 months' : '5-8 months'
-    const speedImprovement = input.timeToBuild.includes('6') || input.timeToBuild.includes('12') ? '95%+ faster' : '90%+ faster'
-    const deploySpeed = input.timeToBuild.includes('6') || input.timeToBuild.includes('12') ? '12x faster' : '8x faster'
+//     const skillRiskLevel = input.skillScore <= 2 ? 'CRITICAL' : 'HIGH'
+//     const trainingRiskLevel = input.timeToBuild.includes('6') || input.timeToBuild.includes('12') ? 'CRITICAL' : 'HIGH'
+//     const proficiencyLabel = input.skillScore === 1 ? 'Critical' : input.skillScore === 2 ? 'Major Gap' : 'Moderate Gap'
+//     const timeSavings = input.timeToBuild.includes('6') || input.timeToBuild.includes('12') ? '5-6 months' : '3-4 months'
+//     const impactSavings = input.timeToBuild.includes('6') || input.timeToBuild.includes('12') ? '8-11 months' : '5-8 months'
+//     const speedImprovement = input.timeToBuild.includes('6') || input.timeToBuild.includes('12') ? '95%+ faster' : '90%+ faster'
+//     const deploySpeed = input.timeToBuild.includes('6') || input.timeToBuild.includes('12') ? '12x faster' : '8x faster'
     
-    const prompt = `You are an elite Chief Learning Officer (CLO) and an expert in corporate instructional design. Your job is to analyze data from a "Strategic L&D Alignment Audit" and generate a hard-hitting, highly personalized, 3-section diagnostic report for a corporate L&D leader. 
+//     const prompt = `You are an elite Chief Learning Officer (CLO) and an expert in corporate instructional design. Your job is to analyze data from a "Strategic L&D Alignment Audit" and generate a hard-hitting, highly personalized, 3-section diagnostic report for a corporate L&D leader. 
 
-Your tone must be authoritative, diagnostic, and urgent. Do not use corporate fluff. Speak directly to the business cost of delayed training.
+// Your tone must be authoritative, diagnostic, and urgent. Do not use corporate fluff. Speak directly to the business cost of delayed training.
 
-Here is the user's diagnostic data:
-- Primary Goal: ${input.userGoal}
-- Industry: ${input.userIndustry}
-- Target Role: ${input.userRole}
-- Most Critical Skill Gap Identified: ${input.lowestScoringSkill} (Score: ${input.skillScore}/5)
-- Time it currently takes them to build a course: ${input.timeToBuild}
-- Primary Business Impact of this gap: ${input.businessImpact}
-- Company Size: ${input.companySize} employees
+// Here is the user's diagnostic data:
+// - Primary Goal: ${input.userGoal}
+// - Industry: ${input.userIndustry}
+// - Target Role: ${input.userRole}
+// - Most Critical Skill Gap Identified: ${input.lowestScoringSkill} (Score: ${input.skillScore}/5)
+// - Time it currently takes them to build a course: ${input.timeToBuild}
+// - Primary Business Impact of this gap: ${input.businessImpact}
+// - Company Size: ${input.companySize} employees
 
-Structure the report using the following three sections EXACTLY. Use numbered points, bullet lists, and tables. DO NOT write long paragraphs. Break everything into scannable numbered points with proper subheadings.
+// Structure the report using the following three sections EXACTLY. Use numbered points, bullet lists, and tables. DO NOT write long paragraphs. Break everything into scannable numbered points with proper subheadings.
 
-### Section 1: The Strategic Diagnosis
+// ### Section 1: The Strategic Diagnosis
 
-**1.1 Executive Summary**
-Write 3-4 numbered points analyzing the disconnect between their goal and skill gap:
-1. [First key insight about the gap between ${input.userGoal} and ${input.lowestScoringSkill}]
-2. [Second point about why ${input.userRole} needs this skill]
-3. [Third point about business risk in ${input.userIndustry}]
-4. [Fourth point about ${input.businessImpact} consequences]
+// **1.1 Executive Summary**
+// Write 3-4 numbered points analyzing the disconnect between their goal and skill gap:
+// 1. [First key insight about the gap between ${input.userGoal} and ${input.lowestScoringSkill}]
+// 2. [Second point about why ${input.userRole} needs this skill]
+// 3. [Third point about business risk in ${input.userIndustry}]
+// 4. [Fourth point about ${input.businessImpact} consequences]
 
-**1.2 Risk Assessment**
-| Metric | Current State | Risk Level |
-|--------|---------------|------------|
-| Skill Proficiency | ${input.skillScore}/5 | ${skillRiskLevel} |
-| Training Timeline | ${input.timeToBuild} | ${trainingRiskLevel} |
-| Business Exposure | ${input.businessImpact} | HIGH |
-| Workforce Impact | ${input.companySize} employees | ${skillRiskLevel} |
+// **1.2 Risk Assessment**
+// | Metric | Current State | Risk Level |
+// |--------|---------------|------------|
+// | Skill Proficiency | ${input.skillScore}/5 | ${skillRiskLevel} |
+// | Training Timeline | ${input.timeToBuild} | ${trainingRiskLevel} |
+// | Business Exposure | ${input.businessImpact} | HIGH |
+// | Workforce Impact | ${input.companySize} employees | ${skillRiskLevel} |
 
-**1.3 Key Risk Indicators**
-- Critical Skill Gap: ${input.lowestScoringSkill}
-- Current Proficiency: ${input.skillScore}/5 (${proficiencyLabel})
-- Business Impact Zone: ${input.businessImpact}
-- Target Role: ${input.userRole}
-- Industry: ${input.userIndustry}
+// **1.3 Key Risk Indicators**
+// - Critical Skill Gap: ${input.lowestScoringSkill}
+// - Current Proficiency: ${input.skillScore}/5 (${proficiencyLabel})
+// - Business Impact Zone: ${input.businessImpact}
+// - Target Role: ${input.userRole}
+// - Industry: ${input.userIndustry}
 
-### Section 2: The Bottleneck
+// ### Section 2: The Bottleneck
 
-**2.1 Time Analysis**
-Write 3-4 numbered points challenging their timeline:
-1. [First point about why ${input.timeToBuild} is too slow for ${input.companySize} employees]
-2. [Second point about opportunity cost during development]
-3. [Third point about ${input.businessImpact} compounding daily]
-4. [Fourth point about competitive disadvantage]
+// **2.1 Time Analysis**
+// Write 3-4 numbered points challenging their timeline:
+// 1. [First point about why ${input.timeToBuild} is too slow for ${input.companySize} employees]
+// 2. [Second point about opportunity cost during development]
+// 3. [Third point about ${input.businessImpact} compounding daily]
+// 4. [Fourth point about competitive disadvantage]
 
-**2.2 Cost of Delay**
-| Factor | Your Current State | Business Impact |
-|--------|-------------------|----------------|
-| Development Time | ${input.timeToBuild} | Extended exposure |
-| Workforce Gap | ${input.companySize} employees | Productivity loss |
-| Skill Deficit | ${input.lowestScoringSkill} at ${input.skillScore}/5 | Performance drag |
-| Business Risk | ${input.businessImpact} | Revenue/safety impact |
+// **2.2 Cost of Delay**
+// | Factor | Your Current State | Business Impact |
+// |--------|-------------------|----------------|
+// | Development Time | ${input.timeToBuild} | Extended exposure |
+// | Workforce Gap | ${input.companySize} employees | Productivity loss |
+// | Skill Deficit | ${input.lowestScoringSkill} at ${input.skillScore}/5 | Performance drag |
+// | Business Risk | ${input.businessImpact} | Revenue/safety impact |
 
-**2.3 The Real Cost**
-- Training Development Time: ${input.timeToBuild}
-- Affected Workforce: ${input.companySize} employees
-- Critical Skill Gap: ${input.lowestScoringSkill} (${input.skillScore}/5)
-- Ongoing Business Impact: ${input.businessImpact}
+// **2.3 The Real Cost**
+// - Training Development Time: ${input.timeToBuild}
+// - Affected Workforce: ${input.companySize} employees
+// - Critical Skill Gap: ${input.lowestScoringSkill} (${input.skillScore}/5)
+// - Ongoing Business Impact: ${input.businessImpact}
 
-### Section 3: The Skillar Bridge
+// ### Section 3: The Skillar Bridge
 
-**3.1 The Solution**
-Write 3-4 numbered points about the AI-powered approach:
-1. [First point about AI curriculum generation in days vs months]
-2. [Second point about industry-specific customization for ${input.userIndustry}]
-3. [Third point about immediate deployment to ${input.companySize} employees]
-4. [Fourth point about measurable impact on ${input.lowestScoringSkill}]
+// **3.1 The Solution**
+// Write 3-4 numbered points about the AI-powered approach:
+// 1. [First point about AI curriculum generation in days vs months]
+// 2. [Second point about industry-specific customization for ${input.userIndustry}]
+// 3. [Third point about immediate deployment to ${input.companySize} employees]
+// 4. [Fourth point about measurable impact on ${input.lowestScoringSkill}]
 
-**3.2 Implementation Framework**
-1. **Rapid Generation** — AI creates ${input.lowestScoringSkill} curriculum for ${input.userRole} (3-5 days)
-2. **Industry Customization** — Content tailored for ${input.userIndustry} compliance and best practices
-3. **Instant Editing** — Your instructional designers refine and brand immediately
-4. **Fast Deployment** — Launch to ${input.companySize} employees within 2-3 weeks
-5. **Measurable Results** — Track closure of ${input.lowestScoringSkill} gap in real-time
+// **3.2 Implementation Framework**
+// 1. **Rapid Generation** — AI creates ${input.lowestScoringSkill} curriculum for ${input.userRole} (3-5 days)
+// 2. **Industry Customization** — Content tailored for ${input.userIndustry} compliance and best practices
+// 3. **Instant Editing** — Your instructional designers refine and brand immediately
+// 4. **Fast Deployment** — Launch to ${input.companySize} employees within 2-3 weeks
+// 5. **Measurable Results** — Track closure of ${input.lowestScoringSkill} gap in real-time
 
-**3.3 ROI Comparison**
-| Metric | Traditional Approach | With Skillar | Improvement |
-|--------|---------------------|--------------|-------------|
-| Development | ${input.timeToBuild} | 3-5 days | ${speedImprovement} |
-| Deployment | 6-12 months | 2-3 weeks | ${deploySpeed} |
-| Relevance | Generic content | ${input.userIndustry}-specific | 100% targeted |
-| Impact | Delayed mitigation | Immediate action | Same week |
+// **3.3 ROI Comparison**
+// | Metric | Traditional Approach | With Skillar | Improvement |
+// |--------|---------------------|--------------|-------------|
+// | Development | ${input.timeToBuild} | 3-5 days | ${speedImprovement} |
+// | Deployment | 6-12 months | 2-3 weeks | ${deploySpeed} |
+// | Relevance | Generic content | ${input.userIndustry}-specific | 100% targeted |
+// | Impact | Delayed mitigation | Immediate action | Same week |
 
-**3.4 Next Step**
-Stop letting manual curriculum design bottleneck your growth. Book a live demo to see how we can generate your custom ${input.lowestScoringSkill} module for ${input.userRole} in ${input.userIndustry} today.
+// **3.4 Next Step**
+// Stop letting manual curriculum design bottleneck your growth. Book a live demo to see how we can generate your custom ${input.lowestScoringSkill} module for ${input.userRole} in ${input.userIndustry} today.
 
-IMPORTANT FORMATTING RULES:
-- Use **bold** for all subheadings (e.g., **1.1 Executive Summary**)
-- Use numbered points (1. 2. 3. 4.) for all analysis - NO long paragraphs
-- Use bullet points (-) for simple lists
-- Use tables (|) for comparative data
-- Keep each point to 1-2 sentences maximum
-- Every section must have numbered subheadings (1.1, 1.2, 2.1, 2.2, etc.)
-- Be direct and punchy - no filler words`
+// IMPORTANT FORMATTING RULES:
+// - Use **bold** for all subheadings (e.g., **1.1 Executive Summary**)
+// - Use numbered points (1. 2. 3. 4.) for all analysis - NO long paragraphs
+// - Use bullet points (-) for simple lists
+// - Use tables (|) for comparative data
+// - Keep each point to 1-2 sentences maximum
+// - Every section must have numbered subheadings (1.1, 1.2, 2.1, 2.2, etc.)
+// - Be direct and punchy - no filler words`
 
-    console.log('📤 Calling Gemini API...')
+//     console.log('📤 Calling Gemini API...')
     
-    // Call Gemini and get response
-    const response = await model.generateContent(prompt)
-    const fullReport = response.response.text()
+//     // Call Gemini and get response
+//     const response = await model.generateContent(prompt)
+//     const fullReport = response.response.text()
 
     console.log('✅ Gemini response received')
-    console.log('📊 Response length:', fullReport.length, 'characters')
+    // console.log('📊 Response length:', fullReport.length, 'characters')
 
-    if (!fullReport || fullReport.trim().length === 0) {
+    if (!result || result.message.trim().length === 0) {
       console.warn('⚠️ Empty response from Gemini')
       return getPlaceholderReport(input)
     }
     // Paste the code here
+    const fullReport = result.message
     console.log('📄 Gemini Report Preview:', fullReport.substring(0, 500), '...')
     return {
       success: true,
@@ -687,9 +695,7 @@ NOTE: This is a placeholder analysis. Configure GEMINI_API_KEY environment varia
 }
 
 
-/* =====================================================
-   SEND SKILLS GAP REPORT VIA EMAIL
-===================================================== */
+
 
 export async function sendSkillsGapReportEmail(input: {
   name: string
