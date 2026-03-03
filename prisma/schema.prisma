@@ -24,7 +24,7 @@ model EmailSubmission {
   ipAddress      String?  @map("ip_address") // Will be encrypted
   source         String?  // UTM tracking
   status         Status   @default(ACTIVE)
-  
+
   // New email service fields
   confirmedAt    DateTime? @map("confirmed_at") // When email was confirmed (immediate for single opt-in)
   messageProvider String?  @map("message_provider") // e.g., "gmail", "resend", "postmark"
@@ -33,7 +33,7 @@ model EmailSubmission {
   lastDeliveryAt DateTime? @map("last_delivery_at")
   lastErrorCode  String?   @map("last_error_code")
   lastErrorMessage String? @map("last_error_message")
-  
+
   // Relationships
   deliveries     EmailDelivery[]
 
@@ -84,7 +84,7 @@ model EmailDelivery {
   errorMessage      String?  @map("error_message")
   metadata          Json?    // Additional provider-specific data
   createdAt         DateTime @default(now()) @map("created_at")
-  
+
   // Relationships
   emailSubmission   EmailSubmission @relation(fields: [emailSubmissionId], references: [id], onDelete: Cascade)
 
@@ -134,64 +134,75 @@ enum AdminRole {
   SUPER_ADMIN
 }
 
+ 
+
 model User {
-  id        String   @id @default(cuid())
+  id        Int      @id @default(autoincrement())
   name      String?
   email     String?
   createdAt DateTime @default(now())
 
   assessments UserAssessment[]
-
 }
 model Industry {
-  id            String   @id @default(cuid())
-  name          String   @unique
+  id              Int      @id @default(autoincrement())
+  name            String   @unique
   isUserGenerated Boolean  @default(false)
-  createdAt     DateTime @default(now())
+  isCustom        Boolean  @default(false)  // For "Other" option - user-entered custom industry
+  createdAt       DateTime @default(now())
 
-  roles         Role[]
-  assessments    UserAssessment[]
+  roles           Role[]
+  skills          Skill[]  // Direct relation for cascading dropdowns
+  assessments     UserAssessment[]
+  
   @@map("industries")
 }
 model Role {
-  id          String   @id @default(cuid())
+  id          Int      @id @default(autoincrement())
   name        String
-  industryId  String
+  industryId  Int
+  isCustom    Boolean  @default(false)  // For "Other" option - user-entered custom role
+  isGeneric   Boolean  @default(false)  // Generic roles available for custom industries
   createdAt   DateTime @default(now())
 
   industry    Industry @relation(fields: [industryId], references: [id], onDelete: Cascade)
   roleSkills  RoleSkill[]
+  skills      Skill[]  // Direct relation for cascading dropdowns
   assessments UserAssessment[]
- 
 
   @@unique([name, industryId])
- 
 }
 model Skill {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  createdAt DateTime @default(now())
- skillAssessments SkillAssessment[]
-  roleSkills  RoleSkill[]
-  
+  id           Int      @id @default(autoincrement())
+  name         String
+  industryId   Int?     // Optional: for cascading from industry
+  roleId       Int?     // Optional: for cascading from role
+  isCustom     Boolean  @default(false)  // For "Other" option - user-entered custom skill
+  createdAt    DateTime @default(now())
 
+  industry     Industry? @relation(fields: [industryId], references: [id], onDelete: Cascade)
+  role         Role?     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  skillAssessments SkillAssessment[]
+  roleSkills   RoleSkill[]  // Keep for backward compatibility
 
+  @@unique([name, industryId, roleId])  // Same skill name allowed across different industry/role combos
+  @@index([industryId])
+  @@index([roleId])
 }
 model RoleSkill {
-  roleId  String
-  skillId String
+  roleId  Int
+  skillId Int
 
   role    Role  @relation(fields: [roleId], references: [id], onDelete: Cascade)
   skill   Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
 
   @@id([roleId, skillId])
- 
 }
 model UserAssessment {
-  id                String   @id @default(cuid())
-  userId            String
-  industryId        String
-  roleId            String
+  id                Int      @id @default(autoincrement())
+  userId            Int
+  industryId        Int
+  roleId            Int
 
   timeToBuildMonths Int
   businessImpact    String
@@ -201,7 +212,7 @@ model UserAssessment {
 
   reportStatus      ReportStatus @default(PENDING)
   emailSent         Boolean  @default(false)
-
+  emailFailureReason String?  @db.Text 
   createdAt         DateTime @default(now())
 
   user       User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -216,10 +227,10 @@ enum ReportStatus {
   FAILED
 }
 model SkillAssessment {
-  id            String   @id @default(cuid())
+  id            Int      @id @default(autoincrement())
 
-  assessmentId  String
-  skillId       String
+  assessmentId  Int
+  skillId       Int
 
   proficiency   Int
   createdAt     DateTime @default(now())

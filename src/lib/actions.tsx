@@ -1,5 +1,7 @@
 'use server'
 
+import { SKILLAR_LOGO_DATA_URI } from './logo'
+
 /* =====================================================
    PDF GENERATION (WORKS LOCALLY & ON VERCEL)
 ===================================================== */
@@ -158,207 +160,209 @@ function buildHtmlTemplate({
   const sections = parseGeminiSections(aiReport)
   const currentDate = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
 
-  return `
+  
+return `
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Strategic L&D Alignment Audit - Skillar.ai</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Strategic L&D Alignment Audit - Skillar.ai</title>
 
-        @page {
-            size: A4;
-            margin: 8mm 10mm 15mm 10mm;
-        }
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #2c3e50;
-            background: white;
-        }
+@page {
+    size: A4;
+    margin: 25mm 10mm 20mm 10mm;
+}
 
-        /* Header Styles - Fixed on every page */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #3498db;
-            margin-bottom: 15px;
-            position: running(header);
-        }
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #2c3e50;
+    background: white;
+}
 
-        .logo-section {
-            display: flex;
-            align-items: center;
-        }
+/* ================= HEADER ================= */
 
-        .logo {
-            max-width: 100px;
-            height: auto;
-        }
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 70px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 10mm;
+    border-bottom: 2px solid #333;
+    background: white;
+    z-index: 1000;
+}
 
-        .report-date {
-            text-align: right;
-            color: #7f8c8d;
-            font-size: 11px;
-        }
+.logo-img {
+    width: 120px;
+    height: auto;
+}
 
-        .report-date strong {
-            color: #2c3e50;
-            font-size: 12px;
-        }
+.report-date {
+    text-align: right;
+    font-size: 11px;
+    color: #7f8c8d;
+}
 
-        /* Title Section */
-        .report-title {
-            text-align: left;
-            margin: 20px 0 30px 0;
-        }
+.report-date strong {
+    color: #2c3e50;
+    font-size: 12px;
+}
 
-        .report-title h1 {
-            font-size: 28px;
-            color: #2c3e50;
-            margin-bottom: 0;
-        }
+/* ================= CONTENT ================= */
 
-        /* Section Styles */
-        .section-header {
-            font-size: 22px;
-            color: #2c3e50;
-            margin-bottom: 15px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #e0e0e0;
-            margin-top: 25px;
-            page-break-after: avoid;
-            page-break-inside: avoid;
-        }
+.content {
+    margin-top: 90px;   /* prevents overlap with fixed header */
+    margin-bottom: 60px; /* prevents overlap with footer */
+}
 
-        .section-content {
-            background: #f8f9fa;
-            border-left: 4px solid #3498db;
-            padding: 20px;
-            margin: 15px 0;
-            border-radius: 5px;
-            font-size: 14px;
-            line-height: 1.8;
-            color: #2c3e50;
-            text-align: justify;
-            page-break-inside: avoid;
-        }
+.report-title {
+    margin-bottom: 20px;
+}
 
-        .section-content p {
-            margin-bottom: 15px;
-        }
+.report-title h1 {
+    font-size: 26px;
+    color: #2c3e50;
+}
 
-        /* Footer - Fixed on every page */
-        .footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 12px 10mm;
-            border-top: 2px solid #e0e0e0;
-            text-align: center;
-            color: #7f8c8d;
-            font-size: 10px;
-            background: white;
-        }
+/* Section Headers */
 
-        .footer-logo {
-            font-weight: bold;
-            color: #3498db;
-        }
+.section-header {
+    font-size: 18px;
+    margin: 24px 0 12px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #2c3e50;
+    font-weight: 600;
+    page-break-after: avoid;
+}
 
-        /* Content area to account for fixed footer */
-        .content {
-            margin-bottom: 50px;
-        }
+/* Section Content */
 
-        @media print {
-            .header {
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                padding: 8px 10mm;
-                background: white;
-                z-index: 1000;
-            }
+.section-content {
+    font-size: 11px;
+    line-height: 1.7;
+    margin-bottom: 20px;
+}
 
-            .footer {
-                position: fixed;
-                bottom: 0;
-            }
+.section-content p {
+    margin-bottom: 10px;
+}
 
-            .content {
-                margin-top: 60px;
-                margin-bottom: 60px;
-            }
+/* Lists */
 
-            .section-header {
-                page-break-after: avoid;
-                page-break-inside: avoid;
-                page-break-before: auto;
-            }
+ul.bullet-list {
+    margin: 10px 0 12px 20px;
+}
 
-            .section-content {
-                page-break-inside: avoid;
-            }
-        }
-    </style>
+ol.numbered-list {
+    margin: 10px 0 12px 20px;
+}
+
+.numbered-item {
+    margin-bottom: 6px;
+}
+
+/* Tables */
+
+table.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0 14px 0;
+    font-size: 10px;
+    border: 1px solid #ddd;
+}
+
+table.data-table th {
+    background: #444;
+    color: white;
+    padding: 8px;
+    text-align: left;
+}
+
+table.data-table td {
+    padding: 8px;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+table.data-table tr:nth-child(even) {
+    background: #fafafa;
+}
+
+.risk-critical { color: #c0392b; font-weight: 600; }
+.risk-high { color: #d35400; font-weight: 600; }
+.highlight-positive { color: #27ae60; font-weight: 600; }
+
+/* ================= FOOTER ================= */
+
+.footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 10px 10mm;
+    border-top: 2px solid #e0e0e0;
+    text-align: center;
+    font-size: 9px;
+    color: #7f8c8d;
+    background: white;
+}
+</style>
 </head>
+
 <body>
-    <!-- Header - Fixed on every page -->
-    <div class="header">
-        <div class="logo-section">
-            <img src="https://app.skillar.ai/full-skillar-logo.png" alt="Skillar.ai" class="logo" />
-        </div>
-        <div class="report-date">
-            <div>Prepared for</div>
-            <div><strong>${escapeHtml(name)}</strong></div>
-        </div>
+
+<!-- HEADER -->
+<div class="header">
+    <div>
+        <img src="${SKILLAR_LOGO_DATA_URI}" class="logo-img" />
+    </div>
+    <div class="report-date">
+        <div>Prepared for</div>
+        <div><strong>${escapeHtml(name)}</strong></div>
+    </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+    <div class="report-title">
+        <h1>Strategic L&D Alignment Audit</h1>
     </div>
 
-    <!-- Main Content -->
-    <div class="content">
-        <!-- Report Title -->
-        <div class="report-title">
-            <h1>Strategic L&D Alignment Audit</h1>
-        </div>
-
-        <!-- Section 1: The Strategic Diagnosis -->
-        <h2 class="section-header">The Strategic Diagnosis</h2>
-        <div class="section-content">
-            ${escapeHtml(sections.section1)}
-        </div>
-
-        <!-- Section 2: The Bottleneck -->
-        <h2 class="section-header">The Bottleneck</h2>
-        <div class="section-content">
-            ${escapeHtml(sections.section2)}
-        </div>
-
-        <!-- Section 3: The Skillar Bridge -->
-        <h2 class="section-header">The Skillar Bridge</h2>
-        <div class="section-content">
-            ${escapeHtml(sections.section3)}
-        </div>
+    <h2 class="section-header">1. The Strategic Diagnosis</h2>
+    <div class="section-content">
+        ${markdownToHtml(sections.section1)}
     </div>
 
-    <!-- Footer - Fixed on every page -->
-    <div class="footer">
-        <p><span class="footer-logo">skillar.ai</span> — Confidential Strategic Advisory</p>
+    <h2 class="section-header">2. The Bottleneck</h2>
+    <div class="section-content">
+        ${markdownToHtml(sections.section2)}
     </div>
+
+    <h2 class="section-header">3. The Skillar Bridge</h2>
+    <div class="section-content">
+        ${markdownToHtml(sections.section3)}
+    </div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+    skillar.ai — Confidential Strategic Advisory | ${currentDate}
+</div>
+
 </body>
 </html>
 `
@@ -375,6 +379,85 @@ function escapeHtml(input: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;')
+}
+
+/* =====================================================
+   MARKDOWN TO HTML CONVERTER
+===================================================== */
+
+function markdownToHtml(markdown: string): string {
+  if (!markdown) return ''
+  
+  let html = markdown
+  
+  // Escape basic HTML first (but preserve our formatting)
+  html = html
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+  
+  // Convert tables (must be done before other conversions)
+  html = html.replace(/\|(.+)\|\n\|[-|\s]+\|\n((?:\|.+\|\n?)+)/g, (match, headerRow, bodyRows) => {
+    const headers = headerRow.split('|').map((h: string) => h.trim()).filter((h: string) => h)
+    const rows = bodyRows.trim().split('\n').map((row: string) => 
+      row.split('|').map((cell: string) => cell.trim()).filter((cell: string) => cell)
+    )
+    
+    let table = '<table class="data-table"><thead><tr>'
+    headers.forEach((h: string) => {
+      table += `<th>${h}</th>`
+    })
+    table += '</tr></thead><tbody>'
+    rows.forEach((row: string[]) => {
+      table += '<tr>'
+      row.forEach((cell: string, index: number) => {
+        // Apply risk level styling
+        let cellClass = ''
+        if (cell === 'CRITICAL') cellClass = ' class="risk-critical"'
+        else if (cell === 'HIGH') cellClass = ' class="risk-high"'
+        else if (cell.includes('faster') || cell === 'Immediate' || cell === '100% targeted') cellClass = ' class="highlight-positive"'
+        table += `<td${cellClass}>${cell}</td>`
+      })
+      table += '</tr>'
+    })
+    table += '</tbody></table>'
+    return table
+  })
+  
+  // Convert bold headers like **Key Risk Indicators:**
+  html = html.replace(/\*\*([^*]+):\*\*/g, '<h4 class="subsection-header">$1</h4>')
+  
+  // Convert remaining bold text
+  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+  
+  // Convert numbered lists
+  html = html.replace(/^(\d+)\.\s+(.+)$/gm, '<li class="numbered-item"><span class="list-number">$1.</span> $2</li>')
+  html = html.replace(/(<li class="numbered-item">.*<\/li>\n?)+/g, '<ol class="numbered-list">$&</ol>')
+  
+  // Convert bullet lists (- item)
+  html = html.replace(/^-\s+(.+)$/gm, '<li>$1</li>')
+  html = html.replace(/(<li>(?!<span class="list-number").*<\/li>\n?)+/g, (match) => {
+    if (!match.includes('numbered-item')) {
+      return '<ul class="bullet-list">' + match + '</ul>'
+    }
+    return match
+  })
+  
+  // Convert paragraphs (double newlines)
+  html = html.replace(/\n\n+/g, '</p><p>')
+  html = '<p>' + html + '</p>'
+  
+  // Clean up empty paragraphs and fix structure
+  html = html.replace(/<p>\s*<\/p>/g, '')
+  html = html.replace(/<p>\s*(<h4|<table|<ul|<ol)/g, '$1')
+  html = html.replace(/(<\/h4>|<\/table>|<\/ul>|<\/ol>)\s*<\/p>/g, '$1')
+  html = html.replace(/<p>\s*<h4/g, '<h4')
+  html = html.replace(/<\/h4>\s*<\/p>/g, '</h4>')
+  
+  // Fix any remaining single newlines to line breaks within paragraphs
+  html = html.replace(/([^>])\n([^<])/g, '$1<br/>$2')
+  
+  return html
 }
 
 /* =====================================================
@@ -408,7 +491,15 @@ export async function generateSkillsGapReport(input: {
     // Use configured model
     const model = client.getGenerativeModel({ model: modelName })
 
-    // Create the prompt
+    // Create the prompt with tables and lists
+    const skillRiskLevel = input.skillScore <= 2 ? 'CRITICAL' : 'HIGH'
+    const trainingRiskLevel = input.timeToBuild.includes('6') || input.timeToBuild.includes('12') ? 'CRITICAL' : 'HIGH'
+    const proficiencyLabel = input.skillScore === 1 ? 'Critical' : input.skillScore === 2 ? 'Major Gap' : 'Moderate Gap'
+    const timeSavings = input.timeToBuild.includes('6') || input.timeToBuild.includes('12') ? '5-6 months' : '3-4 months'
+    const impactSavings = input.timeToBuild.includes('6') || input.timeToBuild.includes('12') ? '8-11 months' : '5-8 months'
+    const speedImprovement = input.timeToBuild.includes('6') || input.timeToBuild.includes('12') ? '95%+ faster' : '90%+ faster'
+    const deploySpeed = input.timeToBuild.includes('6') || input.timeToBuild.includes('12') ? '12x faster' : '8x faster'
+    
     const prompt = `You are an elite Chief Learning Officer (CLO) and an expert in corporate instructional design. Your job is to analyze data from a "Strategic L&D Alignment Audit" and generate a hard-hitting, highly personalized, 3-section diagnostic report for a corporate L&D leader. 
 
 Your tone must be authoritative, diagnostic, and urgent. Do not use corporate fluff. Speak directly to the business cost of delayed training.
@@ -422,19 +513,90 @@ Here is the user's diagnostic data:
 - Primary Business Impact of this gap: ${input.businessImpact}
 - Company Size: ${input.companySize} employees
 
-Structure the report using the following three sections EXACTLY. 
+Structure the report using the following three sections EXACTLY. Use numbered points, bullet lists, and tables. DO NOT write long paragraphs. Break everything into scannable numbered points with proper subheadings.
 
-### Section 1: The Strategic Diagnosis (Focus on the Gap)
-Write one paragraph analyzing the severe disconnect between their [Primary Goal] and their low proficiency in [Most Critical Skill Gap] for their [Target Role]. Explain why failing to train this specific role effectively in this specific skill will directly cause [Primary Business Impact] within the [Industry] sector. Make the stakes clear.
+### Section 1: The Strategic Diagnosis
 
-### Section 2: The Bottleneck (Focus on the Cost of Time)
-Write one paragraph aggressively challenging their [Time to build] timeframe. Explain that taking [Time to build] to deploy a custom training module for [Most Critical Skill Gap] is too slow for a company of [Company Size] people. Emphasize that while they are spending months drafting content, the business is actively bleeding money/efficiency due to the [Primary Business Impact]. 
+**1.1 Executive Summary**
+Write 3-4 numbered points analyzing the disconnect between their goal and skill gap:
+1. [First key insight about the gap between ${input.userGoal} and ${input.lowestScoringSkill}]
+2. [Second point about why ${input.userRole} needs this skill]
+3. [Third point about business risk in ${input.userIndustry}]
+4. [Fourth point about ${input.businessImpact} consequences]
 
-### Section 3: The Skillar Bridge (The Solution)
-Write a final, punchy paragraph pitching a better way. Explain that they do not have to choose between slow, custom training or fast, irrelevant off-the-shelf courses. Explicitly state that using an AI-powered curriculum engine can generate a highly customized, industry-specific module for [Target Role] focusing on [Most Critical Skill Gap] in a matter of days, allowing their instructional designers to edit and deploy immediately.
+**1.2 Risk Assessment**
+| Metric | Current State | Risk Level |
+|--------|---------------|------------|
+| Skill Proficiency | ${input.skillScore}/5 | ${skillRiskLevel} |
+| Training Timeline | ${input.timeToBuild} | ${trainingRiskLevel} |
+| Business Exposure | ${input.businessImpact} | HIGH |
+| Workforce Impact | ${input.companySize} employees | ${skillRiskLevel} |
 
-End the report with this exact Call to Action:
-"Stop letting manual curriculum design bottleneck your growth. Click the link below to see a live demo of how we can generate your custom ${input.lowestScoringSkill} module today."`
+**1.3 Key Risk Indicators**
+- Critical Skill Gap: ${input.lowestScoringSkill}
+- Current Proficiency: ${input.skillScore}/5 (${proficiencyLabel})
+- Business Impact Zone: ${input.businessImpact}
+- Target Role: ${input.userRole}
+- Industry: ${input.userIndustry}
+
+### Section 2: The Bottleneck
+
+**2.1 Time Analysis**
+Write 3-4 numbered points challenging their timeline:
+1. [First point about why ${input.timeToBuild} is too slow for ${input.companySize} employees]
+2. [Second point about opportunity cost during development]
+3. [Third point about ${input.businessImpact} compounding daily]
+4. [Fourth point about competitive disadvantage]
+
+**2.2 Cost of Delay**
+| Factor | Your Current State | Business Impact |
+|--------|-------------------|----------------|
+| Development Time | ${input.timeToBuild} | Extended exposure |
+| Workforce Gap | ${input.companySize} employees | Productivity loss |
+| Skill Deficit | ${input.lowestScoringSkill} at ${input.skillScore}/5 | Performance drag |
+| Business Risk | ${input.businessImpact} | Revenue/safety impact |
+
+**2.3 The Real Cost**
+- Training Development Time: ${input.timeToBuild}
+- Affected Workforce: ${input.companySize} employees
+- Critical Skill Gap: ${input.lowestScoringSkill} (${input.skillScore}/5)
+- Ongoing Business Impact: ${input.businessImpact}
+
+### Section 3: The Skillar Bridge
+
+**3.1 The Solution**
+Write 3-4 numbered points about the AI-powered approach:
+1. [First point about AI curriculum generation in days vs months]
+2. [Second point about industry-specific customization for ${input.userIndustry}]
+3. [Third point about immediate deployment to ${input.companySize} employees]
+4. [Fourth point about measurable impact on ${input.lowestScoringSkill}]
+
+**3.2 Implementation Framework**
+1. **Rapid Generation** — AI creates ${input.lowestScoringSkill} curriculum for ${input.userRole} (3-5 days)
+2. **Industry Customization** — Content tailored for ${input.userIndustry} compliance and best practices
+3. **Instant Editing** — Your instructional designers refine and brand immediately
+4. **Fast Deployment** — Launch to ${input.companySize} employees within 2-3 weeks
+5. **Measurable Results** — Track closure of ${input.lowestScoringSkill} gap in real-time
+
+**3.3 ROI Comparison**
+| Metric | Traditional Approach | With Skillar | Improvement |
+|--------|---------------------|--------------|-------------|
+| Development | ${input.timeToBuild} | 3-5 days | ${speedImprovement} |
+| Deployment | 6-12 months | 2-3 weeks | ${deploySpeed} |
+| Relevance | Generic content | ${input.userIndustry}-specific | 100% targeted |
+| Impact | Delayed mitigation | Immediate action | Same week |
+
+**3.4 Next Step**
+Stop letting manual curriculum design bottleneck your growth. Book a live demo to see how we can generate your custom ${input.lowestScoringSkill} module for ${input.userRole} in ${input.userIndustry} today.
+
+IMPORTANT FORMATTING RULES:
+- Use **bold** for all subheadings (e.g., **1.1 Executive Summary**)
+- Use numbered points (1. 2. 3. 4.) for all analysis - NO long paragraphs
+- Use bullet points (-) for simple lists
+- Use tables (|) for comparative data
+- Keep each point to 1-2 sentences maximum
+- Every section must have numbered subheadings (1.1, 1.2, 2.1, 2.2, etc.)
+- Be direct and punchy - no filler words`
 
     console.log('📤 Calling Gemini API...')
     
@@ -541,6 +703,7 @@ export async function sendSkillsGapReportEmail(input: {
   businessImpact: string
   companySize: string
   aiReport: string
+  assessmentId?: number // Optional assessment ID for tracking
 }): Promise<{ success: boolean; error?: string }> {
   try {
     const nodemailer = await import('nodemailer')
@@ -561,7 +724,15 @@ export async function sendSkillsGapReportEmail(input: {
     })
 
     if (!base64Pdf) {
-      throw new Error('PDF generation returned empty result')
+      const errorMsg = 'PDF generation returned empty result'
+      if (input.assessmentId) {
+        await updateAssessmentStatus({
+          assessmentId: input.assessmentId,
+          emailSent: false,
+          emailFailureReason: errorMsg
+        })
+      }
+      throw new Error(errorMsg)
     }
 
     // 2. Convert base64 to Buffer for attachment
@@ -582,83 +753,172 @@ export async function sendSkillsGapReportEmail(input: {
     // 4. Send the email with PDF attachment
     console.log('📧 Sending email to:', input.email)
     await transporter.sendMail({
-      from: `Skillar.ai <${process.env.EMAIL_USER}>`,
+      from: `Skillar.ai <${process.env.MAIL_USER}>`,
       to: input.email,
       subject: `Your Strategic L&D Alignment Audit — ${input.name}`,
-     html: `
-<div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-  
-  <div style="text-align: center; margin-bottom: 30px;">
-    <img src="https://app.skillar.ai/full-skillar-logo.png" 
-         alt="Skillar.ai" 
-         style="max-width: 150px; height: auto;" />
+      html: `
+<div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:#f8fafc; padding:30px 10px;">
+  <div style="max-width:800px; margin:0 auto; background:#ffffff; border-radius:20px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,0.06);">
+
+    <!-- CONTENT -->
+    <div style="padding:40px 35px;">
+
+      <h2 style="color:#1e293b; font-size:26px; margin-bottom:15px;">
+        Hi ${escapeHtml(input.name)},
+      </h2>
+
+      <p style="color:#475569; font-size:17px; line-height:1.7; margin-bottom:20px;">
+        Thank you for completing the 
+        <a href="https://app.skillar.ai"
+           target="_blank"
+           title="Click to visit Skillar.ai"
+           style="color:#667eea; text-decoration:underline; font-weight:600;">
+           Skillar.ai
+        </a> 
+        Skills Gap Diagnostic.
+      </p>
+
+      <p style="color:#475569; font-size:17px; line-height:1.7; margin-bottom:20px;">
+        Attached to this email, you'll find your personalized 
+        <strong>Strategic L&D Alignment Audit</strong> — a tailored PDF report that breaks down:
+      </p>
+
+      <ul style="color:#475569; font-size:16px; line-height:1.8; padding-left:20px;">
+        <li>
+          <strong>The Strategic Diagnosis</strong> — why your critical skill gap in 
+          <em>${escapeHtml(input.lowestScoringSkill)}</em> is a business risk
+        </li>
+        <li>
+          <strong>The Bottleneck</strong> — the real cost of your current 
+          ${escapeHtml(input.timeToBuild)} build timeline
+        </li>
+        <li>
+          <strong>The Skillar Bridge</strong> — how to compress months into days with AI-powered curriculum design
+        </li>
+      </ul>
+
+      <p style="color:#475569; font-size:17px; line-height:1.7; margin-top:25px;">
+        Ready to see how fast we can build your custom training module?
+      </p>
+
+      <div style="text-align:center; margin:35px 0;">
+        <a href="https://app.skillar.ai"
+           target="_blank"
+           title="Click to visit Skillar.ai"
+           style="display:inline-block;
+                  background:linear-gradient(135deg,#10b981 0%,#059669 100%);
+                  color:white;
+                  padding:16px 42px;
+                  border-radius:40px;
+                  font-size:17px;
+                  font-weight:600;
+                  text-decoration:none;
+                  box-shadow:0 6px 16px rgba(16,185,129,0.25);">
+          Book a Live Demo
+        </a>
+      </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <div style="background:#1e293b; padding:40px 20px; text-align:center; color:#cbd5e1;">
+
+      <div style="font-size:22px; font-weight:700; color:white;">
+        Skillar.ai
+      </div>
+
+      <div style="font-size:14px; margin-top:5px; margin-bottom:25px; opacity:0.9;">
+        Accelerating skills through AI-powered learning
+      </div>
+
+      <!-- CONTACT + SOCIAL -->
+      <table align="center" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px; margin:30px auto;">
+        <tr>
+          <td align="center" style="padding:20px; font-size:14px;">
+
+            <a href="mailto:hello@skillar.ai"
+               style="color:#cbd5e1; text-decoration:none;">
+              ✉️ hello@skillar.ai
+            </a>
+
+            &nbsp;&nbsp;|&nbsp;&nbsp;
+
+            <a href="tel:+919256219292"
+               style="color:#cbd5e1; text-decoration:none;">
+              📞 +91 9256219292
+            </a>
+
+            <div style="margin-top:20px;">
+              <a href="https://www.linkedin.com/company/skillar-ai"
+                 style="display:inline-block;
+                        width:40px;
+                        height:40px;
+                        line-height:40px;
+                        text-align:center;
+                        background:rgba(255,255,255,0.1);
+                        border-radius:50%;
+                        color:white;
+                        text-decoration:none;
+                        margin-right:8px;">
+                in
+              </a>
+
+              <a href="https://instagram.com/skillar.ai"
+                 style="display:inline-block;
+                        width:40px;
+                        height:40px;
+                        line-height:40px;
+                        text-align:center;
+                        background:rgba(255,255,255,0.1);
+                        border-radius:50%;
+                        color:white;
+                        text-decoration:none;">
+                📸
+              </a>
+            </div>
+
+          </td>
+        </tr>
+      </table>
+
+      <!-- PRIVACY -->
+      <div style="margin-top:15px;">
+        <a href="https://skillar.ai/privacy-policy"
+           style="color:#94a3b8; font-size:14px; text-decoration:none;">
+          Privacy Policy
+        </a>
+      </div>
+
+      <!-- COPYRIGHT -->
+      <div style="font-size:12px; opacity:0.6; margin-top:30px; padding-top:20px; border-top:1px solid rgba(255,255,255,0.1);">
+        © 2025 Skillar.ai. All rights reserved.<br/>
+        <span style="font-size:11px; opacity:0.7;">
+          This email was sent to ${escapeHtml(input.email)} as part of your Skillar.ai Skills Gap Diagnostic.
+        </span>
+      </div>
+
+    </div>
+
   </div>
-
-  <h2 style="color: #2c3e50; margin-bottom: 10px;">
-    Hi ${escapeHtml(input.name)},
-  </h2>
-
-  <p style="color: #555; line-height: 1.6;">
-    Thank you for completing the Skillar.ai Skills Gap Diagnostic.
-  </p>
-
-  <p style="color: #555; line-height: 1.6;">
-    Attached to this email, you'll find your personalized 
-    <strong>Strategic L&D Alignment Audit</strong> — a tailored PDF report that breaks down:
-  </p>
-
-  <ul style="color: #555; line-height: 1.8; padding-left: 20px;">
-    <li>
-      <strong>The Strategic Diagnosis</strong> — why your critical skill gap in 
-      <em>${escapeHtml(input.lowestScoringSkill)}</em> is a business risk
-    </li>
-    <li>
-      <strong>The Bottleneck</strong> — the real cost of your current 
-      ${escapeHtml(input.timeToBuild)} build timeline
-    </li>
-    <li>
-      <strong>The Skillar Bridge</strong> — how to compress months into days with AI-powered curriculum design
-    </li>
-  </ul>
-
-  <p style="color: #555; line-height: 1.6;">
-    Ready to see how fast we can build your custom training module?
-  </p>
-
-  <div style="text-align: center; margin: 30px 0;">
-    <a href="https://app.skillar.ai" 
-       target="_blank"
-       title="Click to visit Skillar.ai"
-       style="background: linear-gradient(135deg, #3498db, #2980b9); 
-              color: white; 
-              padding: 14px 30px; 
-              text-decoration: none; 
-              border-radius: 8px; 
-              font-weight: 600; 
-              display: inline-block;">
-      Book a Live Demo
-    </a>
-  </div>
-
-  <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;" />
-
-  <p style="color: #999; font-size: 12px; text-align: center;">
-    Skillar.ai — Confidential Strategic Advisory<br/>
-    This email was sent because you completed a Skills Gap Diagnostic on 
-    <a href="https://app.skillar.ai" 
-       target="_blank"
-       title="Click to visit Skillar.ai"
-       style="color:#3498db; text-decoration: underline; font-weight:500;">
-       skillar.ai
-    </a>
-  </p>
-
 </div>
 `,
-      text: `Hi ${input.name},\n\nThank you for completing the <a href="https://app.skillar.ai" 
-       target="_blank"
-       title="Click to visit Skillar.ai"
-       style="color:#3498db; text-decoration: underline; font-weight:500;">Skillar.ai </a> Skills Gap Diagnostic. Attached is your personalized Strategic L&D Alignment Audit.\n\nSkillar.ai — Confidential Strategic Advisory`,
+      text: `Hi ${input.name},
+
+Thank you for completing the Skillar.ai Skills Gap Diagnostic.
+
+Attached to this email, you'll find your personalized Strategic L&D Alignment Audit — a tailored PDF report that breaks down:
+
+• The Strategic Diagnosis — why your critical skill gap in ${input.lowestScoringSkill} is a business risk
+• The Bottleneck — the real cost of your current ${input.timeToBuild} build timeline
+• The Skillar Bridge — how to compress months into days with AI-powered curriculum design
+
+Ready to see how fast we can build your custom training module?
+Visit: https://app.skillar.ai
+
+---
+Skillar.ai - Accelerating skills through AI-powered learning
+Contact: hello@skillar.ai | +91 9256219292
+© 2025 Skillar.ai. All rights reserved.`,
       attachments: [
         {
           filename: `Skillar-AI-Skills-Gap-Report-${input.name.replace(/\s+/g, '-')}.pdf`,
@@ -669,10 +929,30 @@ export async function sendSkillsGapReportEmail(input: {
     })
 
     console.log('✅ Email sent successfully to:', input.email)
+    
+    // Mark email as sent in database
+    if (input.assessmentId) {
+      await updateAssessmentStatus({
+        assessmentId: input.assessmentId,
+        emailSent: true,
+        emailFailureReason: null as any // Clear any previous error
+      })
+    }
+    
     return { success: true }
 
   } catch (error) {
     console.error('❌ Failed to send skills gap report email:', error)
+    
+    // Store email failure reason in database
+    if (input.assessmentId) {
+      await updateAssessmentStatus({
+        assessmentId: input.assessmentId,
+        emailSent: false,
+        emailFailureReason: error instanceof Error ? error.message : 'Failed to send email'
+      })
+    }
+    
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to send email',
@@ -684,52 +964,196 @@ export async function sendSkillsGapReportEmail(input: {
    SKILLS GAP ASSESSMENT PERSISTENCE
 ===================================================== */
 
+/**
+ * Helper to parse time to build label into months
+ */
+function parseTimeToBuildMonths(timeToBuildLabel: string): number {
+  if (timeToBuildLabel.includes('Less than 1')) return 1
+  if (timeToBuildLabel.includes('1-3')) return 2
+  if (timeToBuildLabel.includes('3-6')) return 4
+  if (timeToBuildLabel.includes('6-12')) return 9
+  if (timeToBuildLabel.includes('More than 12')) return 18
+  return 3 // default
+}
+
 export async function saveSkillsGapAssessment(input: {
   name: string
   email: string
-  industryName: string
-  roleName: string
+  industryId: number
+  roleId: number
+  customIndustry?: string
+  customRole?: string
   userGoal: string
-  selectedSkills: Array<{ name: string; proficiency: number }>
+  selectedSkills: Array<{ id: number; name: string; proficiency: number }>
   timeToBuildLabel: string
   businessImpact: string
   companySize: string
   criticalFlag: boolean
-}): Promise<{ success: boolean; error?: string }> {
+}): Promise<{ success: boolean; assessmentId?: number; error?: string }> {
   try {
-    // TODO: Save assessment to database via Prisma
-    // For now, just log and return success
-    console.log('Saving skills gap assessment:', {
-      name: input.name,
-      email: input.email,
-      industry: input.industryName,
-      role: input.roleName,
-      skillsCount: input.selectedSkills.length,
-      criticalFlag: input.criticalFlag,
+    const { prisma } = await import('@/lib/db')
+
+    console.log('💾 Saving skills gap assessment to database...')
+
+    // Find or create user
+    let user = await prisma.user.findFirst({
+      where: { email: input.email }
     })
 
-    // This would normally save to database
-    // const assessment = await prisma.skillsGapAssessment.create({
-    //   data: {
-    //     name: input.name,
-    //     email: input.email,
-    //     industryName: input.industryName,
-    //     roleName: input.roleName,
-    //     userGoal: input.userGoal,
-    //     timeToBuildLabel: input.timeToBuildLabel,
-    //     businessImpact: input.businessImpact,
-    //     companySize: input.companySize,
-    //     criticalFlag: input.criticalFlag,
-    //     selectedSkills: input.selectedSkills,
-    //   }
-    // })
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          email: input.email,
+          name: input.name
+        }
+      })
+      console.log('👤 Created new user:', user.id)
+    }
 
-    return { success: true }
+    // Handle industry (create custom if needed)
+    let industryId = input.industryId
+    if (input.industryId === -1) {
+      if (!input.customIndustry || input.customIndustry.trim() === '') {
+        throw new Error('Custom industry name is required')
+      }
+      const customIndustry = await prisma.industry.create({
+        data: {
+          name: input.customIndustry.trim(),
+          isCustom: true
+        }
+      })
+      industryId = customIndustry.id
+      console.log('✅ Created custom industry:', customIndustry.id, customIndustry.name)
+    }
+
+    // Validate industry exists (if not custom)
+    const industry = await prisma.industry.findUnique({
+      where: { id: industryId }
+    })
+
+    if (!industry) {
+      throw new Error(`Industry not found: ${industryId}`)
+    }
+
+    // Handle role (create custom if needed)
+    let roleId = input.roleId
+    if (input.roleId === -1) {
+      if (!input.customRole || input.customRole.trim() === '') {
+        throw new Error('Custom role name is required')
+      }
+      const customRole = await prisma.role.create({
+        data: {
+          name: input.customRole.trim(),
+          industryId: industryId,
+          isCustom: true
+        }
+      })
+      roleId = customRole.id
+      console.log('✅ Created custom role:', customRole.id, customRole.name)
+    }
+
+    // Validate role exists (if not custom)
+    const role = await prisma.role.findUnique({
+      where: { id: roleId }
+    })
+
+    if (!role) {
+      throw new Error(`Role not found: ${roleId}`)
+    }
+
+    // Parse time to build to months
+    const timeToBuildMonths = parseTimeToBuildMonths(input.timeToBuildLabel)
+
+    // Create the assessment with PENDING status
+    const assessment = await prisma.userAssessment.create({
+      data: {
+        userId: user.id,
+        industryId: industryId,
+        roleId: roleId,
+        timeToBuildMonths,
+        businessImpact: input.businessImpact,
+        companySize: input.companySize,
+        criticalFlag: input.criticalFlag,
+        reportStatus: 'PENDING',
+        emailSent: false
+      }
+    })
+
+    console.log('✅ Assessment created:', assessment.id)
+
+    // Create skill assessments
+    for (const skillInput of input.selectedSkills) {
+      // Validate skill exists
+      const skill = await prisma.skill.findUnique({
+        where: { id: skillInput.id }
+      })
+
+      if (!skill) {
+        console.warn(`⚠️ Skill not found, skipping: ${skillInput.id}`)
+        continue
+      }
+
+      await prisma.skillAssessment.create({
+        data: {
+          assessmentId: assessment.id,
+          skillId: skill.id,
+          proficiency: skillInput.proficiency
+        }
+      })
+    }
+
+    console.log('✅ Skills saved for assessment')
+
+    return { success: true, assessmentId: assessment.id }
   } catch (error) {
-    console.error('Failed to save skills gap assessment:', error)
+    console.error('❌ Failed to save skills gap assessment:', error)
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error occurred',
+      error: error instanceof Error ? error.message : 'Failed to save assessment to database',
+    }
+  }
+}
+
+/**
+ * Update assessment report and email status
+ */
+export async function updateAssessmentStatus(input: {
+  assessmentId: number
+  reportStatus?: 'PENDING' | 'COMPLETED' | 'FAILED'
+  emailSent?: boolean
+  emailFailureReason?: string
+}): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { prisma } = await import('@/lib/db')
+    
+    const updateData: {
+      reportStatus?: 'PENDING' | 'COMPLETED' | 'FAILED'
+      emailSent?: boolean
+      emailFailureReason?: string | null
+    } = {}
+    
+    if (input.reportStatus !== undefined) {
+      updateData.reportStatus = input.reportStatus
+    }
+    if (input.emailSent !== undefined) {
+      updateData.emailSent = input.emailSent
+    }
+    if (input.emailFailureReason !== undefined) {
+      updateData.emailFailureReason = input.emailFailureReason
+    }
+    
+    await prisma.userAssessment.update({
+      where: { id: input.assessmentId },
+      data: updateData
+    })
+    
+    console.log('✅ Assessment status updated:', input.assessmentId)
+    return { success: true }
+  } catch (error) {
+    console.error('❌ Failed to update assessment status:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to update status'
     }
   }
 }

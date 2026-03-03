@@ -1,55 +1,28 @@
  "use client";
 
- import { useMemo, useState } from "react";
- import Header from "@/components/Header";
- import Footer from "@/components/Footer";
- import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
- import { Button } from "@/components/ui/button";
- import { Input } from "@/components/ui/input";
- import { Label } from "@/components/ui/label";
- import { cn } from "@/lib/utils";
-import {generateSkillsGapReport, generatePuppeteerPdf, saveSkillsGapAssessment, sendSkillsGapReportEmail } from "@/lib/actions";
+import { useMemo, useState, useEffect, useCallback } from "react";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
+import { generateSkillsGapReport, generatePuppeteerPdf, saveSkillsGapAssessment, sendSkillsGapReportEmail, updateAssessmentStatus } from "@/lib/actions";
+import {
+  getIndustries,
+  getRolesByIndustry,
+  getSkillsByIndustryAndRole,
+  createCustomIndustry,
+  createCustomRole,
+  createMultipleCustomSkills,
+  type IndustryOption,
+  type RoleOption,
+  type SkillOption,
+} from "@/lib/dropdown-actions";
 
- const INDUSTRIES = [
-   "Heavy Manufacturing",
-   "Technology",
-   "Healthcare",
-   "Financial Services",
-   "Retail & E‑commerce",
- ];
-
- const ROLES_BY_INDUSTRY: Record<string, string[]> = {
-   "Heavy Manufacturing": [
-     "Chief Learning Officer",
-     "L&D Director",
-     "Plant HR Manager",
-     "Operations Excellence Lead",
-   ],
-   Technology: [
-     "Chief Learning Officer",
-     "L&D Director",
-     "Engineering Enablement Lead",
-     "HR Business Partner",
-   ],
-   Healthcare: [
-     "Chief Learning Officer",
-     "L&D Director",
-     "Clinical Training Manager",
-     "HR Manager",
-   ],
-   "Financial Services": [
-     "Chief Learning Officer",
-     "L&D Director",
-     "Risk & Compliance Training Lead",
-     "HR Manager",
-   ],
-   "Retail & E‑commerce": [
-     "Chief Learning Officer",
-     "L&D Director",
-     "Store Operations Training Lead",
-     "HR Manager",
-   ],
- };
+// Static options for non-database-driven fields
 
  const TIME_TO_BUILD_OPTIONS = [
    "Less than 1 month",
@@ -74,126 +47,37 @@ import {generateSkillsGapReport, generatePuppeteerPdf, saveSkillsGapAssessment, 
    "20,000+ employees",
  ];
 
-const SKILLS_BY_INDUSTRY_ROLE: Record<string, string[]> = {
-   "Heavy Manufacturing|Chief Learning Officer": [
-     "Frontline safety & compliance",
-     "Lean manufacturing fundamentals",
-     "Maintenance troubleshooting",
-     "Supervisor coaching skills",
-   ],
-   "Heavy Manufacturing|L&D Director": [
-     "Digital work instructions",
-     "On-the-job assessment design",
-     "Technical onboarding programs",
-     "Shift supervisor development",
-   ],
-   "Heavy Manufacturing|Plant HR Manager": [
-     "New hire ramp-up",
-     "Attendance & performance coaching",
-     "Union relations basics",
-     "Workforce planning analytics",
-   ],
-   "Technology|Chief Learning Officer": [
-     "Cloud architecture fundamentals",
-     "Secure coding practices",
-     "AI & data literacy",
-     "Product management excellence",
-   ],
-   "Technology|L&D Director": [
-     "Engineering onboarding",
-     "Manager as coach",
-     "Agile delivery practices",
-     "Customer success excellence",
-   ],
-   "Technology|Engineering Enablement Lead": [
-     "Code review best practices",
-     "DevOps & CI/CD",
-     "Platform reliability",
-     "Technical leadership",
-   ],
-   "Healthcare|Clinical Training Manager": [
-     "Clinical protocol updates",
-     "Patient safety procedures",
-     "Electronic health record usage",
-     "Interdisciplinary communication",
-   ],
-   "Healthcare|HR Manager": [
-     "Workforce wellbeing",
-     "Onboarding clinical & non-clinical",
-     "Compliance & privacy (HIPAA/GDPR)",
-     "Supervisor conversations",
-   ],
-   "Financial Services|Risk & Compliance Training Lead": [
-     "Regulatory updates",
-     "Anti‑money laundering (AML)",
-     "KYC & onboarding",
-     "Conduct risk & ethics",
-   ],
-  "Retail & E‑commerce|Store Operations Training Lead": [
-    "Store leadership",
-    "Omnichannel operations",
-    "Customer experience",
-    "Loss prevention & shrink",
-  ],
+// Selected skill with its database ID and display name
+type SelectedSkill = {
+  id: number;
+  name: string;
 };
 
-const DEFAULT_SKILLS_BY_INDUSTRY: Record<string, string[]> = {
-  "Heavy Manufacturing": [
-    "Frontline safety & compliance",
-    "Lean operations & continuous improvement",
-    "Supervisor coaching & feedback",
-    "Technical onboarding & cross‑skilling",
-  ],
-  Technology: [
-    "Cloud & architecture fundamentals",
-    "Secure engineering practices",
-    "AI & data literacy across teams",
-    "Product & customer success excellence",
-  ],
-  Healthcare: [
-    "Clinical protocol adherence",
-    "Patient safety & quality",
-    "EHR workflows & adoption",
-    "Interdisciplinary communication",
-  ],
-  "Financial Services": [
-    "Regulatory & compliance essentials",
-    "Risk culture & ethics",
-    "Customer onboarding & KYC",
-    "Data privacy & security awareness",
-  ],
-  "Retail & E‑commerce": [
-    "Store & frontline leadership",
-    "Omnichannel customer journeys",
-    "Sales conversion & upsell",
-    "Loss prevention & shrink reduction",
-  ],
-};
+type QuestionnairePhase = "questionnaire" | "processing" | "leadCapture" | "results";
 
-const GENERIC_SKILLS = [
-  "Manager coaching & feedback",
-  "Digital & AI fluency",
-  "Onboarding & ramp‑up effectiveness",
-  "Customer experience & service quality",
-];
-
- type QuestionnairePhase = "questionnaire" | "processing" | "leadCapture" | "results";
-
- type FormState = {
-   industry: string;
-   role: string;
-   selectedSkills: string[];
-   proficiencyBySkill: Record<string, number>;
+type FormState = {
+   industryId: number | null;
+   industry: string; // Display name
+   roleId: number | null;
+   role: string; // Display name
+   selectedSkills: SelectedSkill[];
+   proficiencyBySkill: Record<string, number>; // Keyed by skill name
    timeToBuild: string;
    businessImpact: string;
    primaryBusinessGoal: string;
    companySize: string;
    name: string;
    workEmail: string;
+   // For custom "Other" entries
+   customIndustry: string;
+   customRole: string;
+   customSkills: string;
  };
 
  const INITIAL_FORM_STATE: FormState = {
+   industryId: null,
    industry: "",
+   roleId: null,
    role: "",
    selectedSkills: [],
    proficiencyBySkill: {},
@@ -203,6 +87,9 @@ const GENERIC_SKILLS = [
    companySize: "",
    name: "",
    workEmail: "",
+   customIndustry: "",
+   customRole: "",
+   customSkills: "",
  };
 
  export default function SkillsGapDiagnosticPage() {
@@ -213,29 +100,80 @@ const GENERIC_SKILLS = [
   const [aiReport, setAiReport] = useState<string>("");
   const [aiReportError, setAiReportError] = useState<string>("");
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+  const [showEmailNotificationModal, setShowEmailNotificationModal] = useState(false);
+  const [failureReason, setFailureReason] = useState<string>("");
 
-   const availableRoles = useMemo(
-     () => (form.industry ? ROLES_BY_INDUSTRY[form.industry] ?? [] : []),
-     [form.industry]
-   );
+  // Database-driven dropdown state
+  const [industries, setIndustries] = useState<IndustryOption[]>([]);
+  const [roles, setRoles] = useState<RoleOption[]>([]);
+  const [skills, setSkills] = useState<SkillOption[]>([]);
+  const [isLoadingIndustries, setIsLoadingIndustries] = useState(true);
+  const [isLoadingRoles, setIsLoadingRoles] = useState(false);
+  const [isLoadingSkills, setIsLoadingSkills] = useState(false);
 
-  const availableSkills = useMemo(() => {
-    if (!form.industry || !form.role) return [];
-    const key = `${form.industry}|${form.role}`;
-    return (
-      SKILLS_BY_INDUSTRY_ROLE[key] ??
-      DEFAULT_SKILLS_BY_INDUSTRY[form.industry] ??
-      GENERIC_SKILLS
-    );
-  }, [form.industry, form.role]);
+  // Fetch industries on mount
+  useEffect(() => {
+    async function fetchIndustries() {
+      try {
+        setIsLoadingIndustries(true);
+        const data = await getIndustries();
+        setIndustries(data);
+      } catch (error) {
+        console.error("Failed to fetch industries:", error);
+      } finally {
+        setIsLoadingIndustries(false);
+      }
+    }
+    fetchIndustries();
+  }, []);
+
+  // Fetch roles when industry changes
+  useEffect(() => {
+    async function fetchRoles() {
+      if (!form.industryId) {
+        setRoles([]);
+        return;
+      }
+      try {
+        setIsLoadingRoles(true);
+        const data = await getRolesByIndustry(form.industryId);
+        setRoles(data);
+      } catch (error) {
+        console.error("Failed to fetch roles:", error);
+      } finally {
+        setIsLoadingRoles(false);
+      }
+    }
+    fetchRoles();
+  }, [form.industryId]);
+
+  // Fetch skills when industry and role change
+  useEffect(() => {
+    async function fetchSkills() {
+      if (!form.industryId || !form.roleId) {
+        setSkills([]);
+        return;
+      }
+      try {
+        setIsLoadingSkills(true);
+        const data = await getSkillsByIndustryAndRole(form.industryId, form.roleId);
+        setSkills(data);
+      } catch (error) {
+        console.error("Failed to fetch skills:", error);
+      } finally {
+        setIsLoadingSkills(false);
+      }
+    }
+    fetchSkills();
+  }, [form.industryId, form.roleId]);
 
    const lowestScoringSkill = useMemo(() => {
      if (!form.selectedSkills.length) return null;
      let lowest: { skill: string; score: number } | null = null;
-     for (const skill of form.selectedSkills) {
-       const score = form.proficiencyBySkill[skill] ?? 3;
+     for (const skillObj of form.selectedSkills) {
+       const score = form.proficiencyBySkill[skillObj.name] ?? 3;
        if (!lowest || score < lowest.score) {
-         lowest = { skill, score };
+         lowest = { skill: skillObj.name, score };
        }
      }
      return lowest;
@@ -246,8 +184,8 @@ const GENERIC_SKILLS = [
      const timeIndex = TIME_TO_BUILD_OPTIONS.indexOf(form.timeToBuild);
      const isSlowBuild = timeIndex >= 2; // 3-6 months or longer
 
-     const anyLow = form.selectedSkills.some((skill) => {
-       const score = form.proficiencyBySkill[skill] ?? 3;
+     const anyLow = form.selectedSkills.some((skillObj) => {
+       const score = form.proficiencyBySkill[skillObj.name] ?? 3;
        return score <= 2;
      });
 
@@ -278,18 +216,18 @@ const GENERIC_SKILLS = [
      }));
    };
 
-   const toggleSkill = (skill: string) => {
+   const toggleSkill = (skillOption: SkillOption) => {
      setForm((prev) => {
-       const isSelected = prev.selectedSkills.includes(skill);
+       const isSelected = prev.selectedSkills.some((s) => s.id === skillOption.id);
        const selectedSkills = isSelected
-         ? prev.selectedSkills.filter((s) => s !== skill)
-         : [...prev.selectedSkills, skill];
+         ? prev.selectedSkills.filter((s) => s.id !== skillOption.id)
+         : [...prev.selectedSkills, { id: skillOption.id, name: skillOption.name }];
        const proficiencyBySkill = { ...prev.proficiencyBySkill };
-       if (!isSelected && proficiencyBySkill[skill] == null) {
-         proficiencyBySkill[skill] = 3;
+       if (!isSelected && proficiencyBySkill[skillOption.name] == null) {
+         proficiencyBySkill[skillOption.name] = 3;
        }
        if (isSelected) {
-         delete proficiencyBySkill[skill];
+         delete proficiencyBySkill[skillOption.name];
        }
        return {
          ...prev,
@@ -311,24 +249,29 @@ const GENERIC_SKILLS = [
 
   const handleLeadCaptureSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.workEmail || !form.name) {
+    if (!form.workEmail || !form.name || !form.industryId || !form.roleId) {
       return;
     }
 
     setIsSubmitting(true);
     setAiReport("");
     setAiReportError("");
+    let assessmentId: number | undefined;
 
     try {
-      await saveSkillsGapAssessment({
+      // Step 1: Save assessment to database
+      const saveResult = await saveSkillsGapAssessment({
         name: form.name,
         email: form.workEmail,
-        industryName: form.industry,
-        roleName: form.role,
+        industryId: form.industryId,
+        roleId: form.roleId,
+        customIndustry: form.customIndustry,
+        customRole: form.customRole,
         userGoal: form.primaryBusinessGoal,
         selectedSkills: form.selectedSkills.map((skill) => ({
-          name: skill,
-          proficiency: form.proficiencyBySkill[skill] ?? 3,
+          id: skill.id,
+          name: skill.name,
+          proficiency: form.proficiencyBySkill[skill.name] ?? 3,
         })),
         timeToBuildLabel: form.timeToBuild,
         businessImpact: form.businessImpact,
@@ -336,9 +279,23 @@ const GENERIC_SKILLS = [
         criticalFlag: hasCriticalVulnerability,
       });
 
-      const lowestSkillName = lowestScoringSkill?.skill || form.selectedSkills[0] || "Unknown skill";
+      if (!saveResult.success) {
+        // Database save failed
+        const errorMsg = `Database Error: ${saveResult.error || 'Failed to save your assessment'}`;
+        setFailureReason(errorMsg);
+        setShowEmailNotificationModal(true);
+        setAiReportError(errorMsg);
+        setPhase("results");
+        return;
+      }
+
+      assessmentId = saveResult.assessmentId;
+      console.log('✅ Assessment saved with ID:', assessmentId);
+
+      const lowestSkillName = lowestScoringSkill?.skill || form.selectedSkills[0]?.name || "Unknown skill";
       const lowestSkillScore = lowestScoringSkill?.score ?? (form.proficiencyBySkill[lowestSkillName] ?? 3);
 
+      // Step 2: Generate AI report
       const reportResult = await generateSkillsGapReport({
         userGoal: form.primaryBusinessGoal,
         userIndustry: form.industry,
@@ -353,7 +310,15 @@ const GENERIC_SKILLS = [
       if (reportResult.success && reportResult.fullReport) {
         setAiReport(reportResult.fullReport);
 
-        // Send PDF report via email in the background (non-blocking)
+        // Update report status to COMPLETED
+        if (assessmentId) {
+          await updateAssessmentStatus({
+            assessmentId,
+            reportStatus: 'COMPLETED'
+          });
+        }
+
+        // Step 3: Send PDF report via email (non-blocking)
         sendSkillsGapReportEmail({
           name: form.name,
           email: form.workEmail,
@@ -366,19 +331,55 @@ const GENERIC_SKILLS = [
           businessImpact: form.businessImpact,
           companySize: form.companySize,
           aiReport: reportResult.fullReport,
+          assessmentId: assessmentId,
         }).then((emailResult) => {
           if (emailResult.success) {
             console.log('✅ Report email sent to:', form.workEmail);
           } else {
             console.error('❌ Email send failed:', emailResult.error);
+            // Show notification modal when email fails
+            setFailureReason(`Email Delivery Issue: ${emailResult.error || 'Failed to send your report'}`);
+            setShowEmailNotificationModal(true);
           }
         }).catch((err) => {
           console.error('❌ Email send error:', err);
+          // Show notification modal when email fails
+          const errorMsg = err instanceof Error ? err.message : 'Unknown email error';
+          setFailureReason(`Email System Error: ${errorMsg}`);
+          setShowEmailNotificationModal(true);
         });
       } else {
+        // AI Report generation failed
+        const errorMsg = `AI Report Generation Failed: ${reportResult.error || 'Failed to generate report'}`;
+        if (assessmentId) {
+          await updateAssessmentStatus({ 
+            assessmentId,
+            reportStatus: 'FAILED',
+            emailFailureReason: errorMsg
+          });
+        }
+        setFailureReason(errorMsg);
+        setShowEmailNotificationModal(true);
         setAiReportError(reportResult.error || "Failed to generate report.");
       }
 
+      setPhase("results");
+    } catch (error) {
+      // Catch any unexpected errors
+      console.error('❌ Unexpected error:', error);
+      const errorMsg = error instanceof Error ? error.message : 'An unexpected error occurred';
+      
+      if (assessmentId) {
+        await updateAssessmentStatus({
+          assessmentId,
+          reportStatus: 'FAILED',
+          emailFailureReason: `System Error: ${errorMsg}`
+        });
+      }
+      
+      setFailureReason(`System Error: ${errorMsg}`);
+      setShowEmailNotificationModal(true);
+      setAiReportError(errorMsg);
       setPhase("results");
     } finally {
       setIsSubmitting(false);
@@ -414,8 +415,12 @@ const GENERIC_SKILLS = [
                 <QuestionnaireStep
                   step={step}
                   form={form}
-                  availableRoles={availableRoles}
-                  availableSkills={availableSkills}
+                  industries={industries}
+                  roles={roles}
+                  skills={skills}
+                  isLoadingIndustries={isLoadingIndustries}
+                  isLoadingRoles={isLoadingRoles}
+                  isLoadingSkills={isLoadingSkills}
                   onUpdate={updateForm}
                   onToggleSkill={toggleSkill}
                   onUpdateProficiency={updateProficiency}
@@ -443,29 +448,13 @@ const GENERIC_SKILLS = [
 
               {phase === "results" && (
                 <div className="space-y-6">
-                  <Card className="bg-background-secondary/80 border-border/70 shadow-lg shadow-black/40 backdrop-blur">
-                    <CardHeader>
-                      <CardTitle className="text-lg md:text-xl">
-                        AI report draft (Gemini)
-                      </CardTitle>
-                      <CardDescription>
-                        This is the raw output from the prompt you provided.
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      {aiReportError ? (
+                  {aiReportError && (
+                    <Card className="bg-background-secondary/80 border-error/60 shadow-lg shadow-black/40 backdrop-blur">
+                      <CardContent className="pt-6">
                         <p className="text-sm text-error">{aiReportError}</p>
-                      ) : aiReport ? (
-                        <div className="whitespace-pre-wrap break-words text-sm text-text-secondary">
-                          {aiReport}
-                        </div>
-                      ) : (
-                        <p className="text-sm text-text-secondary">
-                          Report not generated yet.
-                        </p>
-                      )}
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
+                  )}
 
                   <ResultsSummary
                     form={form}
@@ -543,6 +532,76 @@ const GENERIC_SKILLS = [
         </section>
       </main>
       <Footer />
+
+      {/* Email Notification Modal */}
+      <Dialog open={showEmailNotificationModal} onOpenChange={setShowEmailNotificationModal}>
+        <DialogContent className="sm:max-w-md bg-background-secondary border-border">
+          <DialogHeader>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-accent-blue to-accent-purple flex items-center justify-center">
+                <svg
+                  className="w-6 h-6 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                  />
+                </svg>
+              </div>
+              <DialogTitle className="text-xl text-text-primary">
+                {failureReason.includes('Email') ? 'Report Processing Delayed 📧' : 'High Demand Notice 🚀'}
+              </DialogTitle>
+            </div>
+            <DialogDescription className="text-text-secondary text-base leading-relaxed pt-2">
+              <div className="space-y-3">
+                <p>
+                  We&apos;re experiencing <span className="text-primary font-semibold">high demand</span> right now! 
+                </p>
+                {failureReason.includes('Email') ? (
+                  <>
+                    <p>
+                      Your personalized <strong className="text-text-primary">Strategic L&D Alignment Audit</strong> will be sent to{" "}
+                      <span className="text-primary font-medium">{form.workEmail}</span> within the next few minutes.
+                    </p>
+                    <div className="bg-background-primary/50 border border-border/50 rounded-lg p-4 mt-4">
+                      <p className="text-sm text-text-secondary">
+                        💡 <span className="font-medium text-text-primary">Pro tip:</span> While you wait, you can download the PDF report directly from this page if your results are ready.
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p>
+                      We&apos;re working on generating your <strong className="text-text-primary">Strategic L&D Alignment Audit</strong>. 
+                      Once ready, it will be sent to <span className="text-primary font-medium">{form.workEmail}</span>.
+                    </p>
+                    <div className="bg-background-primary/50 border border-border/50 rounded-lg p-4 mt-4">
+                      <p className="text-sm text-text-secondary">
+                        <span className="font-medium text-text-primary">What&apos;s happening:</span> Our AI system is processing your assessment. 
+                        You&apos;ll receive your detailed report via email shortly.
+                      </p>
+                    </div>
+                  </>
+                )}
+              
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-3 mt-4">
+            <Button
+              onClick={() => setShowEmailNotificationModal(false)}
+              className="bg-gradient-to-r from-accent-blue to-accent-purple hover:opacity-90 text-white"
+            >
+              Got it, thanks!
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
  }
@@ -592,20 +651,111 @@ const GENERIC_SKILLS = [
  type QuestionnaireStepProps = {
    step: number;
    form: FormState;
-   availableRoles: string[];
-   availableSkills: string[];
+   industries: IndustryOption[];
+   roles: RoleOption[];
+   skills: SkillOption[];
+   isLoadingIndustries: boolean;
+   isLoadingRoles: boolean;
+   isLoadingSkills: boolean;
    onUpdate: <K extends keyof FormState>(key: K, value: FormState[K]) => void;
-   onToggleSkill: (skill: string) => void;
+   onToggleSkill: (skill: SkillOption) => void;
    onUpdateProficiency: (skill: string, value: number) => void;
    onNext: () => void;
    onBack: () => void;
  };
 
+ function ProgressBar({ currentStep, totalSteps }: { currentStep: number; totalSteps: number }) {
+   const progress = ((currentStep - 1) / (totalSteps - 1)) * 100;
+   
+   const steps = [
+     { label: "Industry", icon: "🏢" },
+     { label: "Role", icon: "👤" },
+     { label: "Skills", icon: "🎯" },
+     { label: "Proficiency", icon: "📊" },
+     { label: "Timeline", icon: "⏱️" },
+     { label: "Impact", icon: "💡" },
+     { label: "Company", icon: "🏛️" }
+   ];
+
+   return (
+     <div className="px-6 pt-5 pb-2">
+       {/* Modern step progress */}
+       <div className="relative">
+         {/* Background track line */}
+         <div className="absolute top-4 left-0 right-0 h-[2px] bg-border/40" />
+         
+         {/* Animated progress line */}
+         <div 
+           className="absolute top-4 left-0 h-[2px] bg-gradient-to-r from-primary-300 via-primary-400 to-primary-300 transition-all duration-500 ease-out"
+           style={{ width: `${progress}%` }}
+         >
+           <div className="absolute inset-0 bg-primary-300/50 blur-sm" />
+         </div>
+         
+         {/* Step indicators */}
+         <div className="relative flex justify-between">
+           {steps.map((step, index) => {
+             const stepNum = index + 1;
+             const isCompleted = stepNum < currentStep;
+             const isCurrent = stepNum === currentStep;
+             const isFuture = stepNum > currentStep;
+             
+             return (
+               <div 
+                 key={stepNum} 
+                 className="flex flex-col items-center"
+                 style={{ flex: '1', maxWidth: index === 0 || index === steps.length - 1 ? 'auto' : undefined }}
+               >
+                 {/* Step circle */}
+                 <div
+                   className={cn(
+                     "relative z-10 flex h-8 w-8 items-center justify-center rounded-full transition-all duration-300",
+                     isCompleted && "bg-primary-300 shadow-lg shadow-primary-300/30",
+                     isCurrent && "bg-background-secondary ring-2 ring-primary-300 ring-offset-2 ring-offset-background-secondary shadow-lg shadow-primary-300/20",
+                     isFuture && "bg-background-secondary border border-border/60"
+                   )}
+                 >
+                   {isCompleted ? (
+                     <svg className="w-4 h-4 text-background-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                     </svg>
+                   ) : (
+                     <span className={cn(
+                       "text-sm transition-all duration-300",
+                       isCurrent ? "grayscale-0" : "grayscale opacity-50"
+                     )}>
+                       {step.icon}
+                     </span>
+                   )}
+                 </div>
+                 
+                 {/* Step label */}
+                 <span className={cn(
+                   "mt-2 text-[10px] font-medium transition-all duration-300 text-center whitespace-nowrap",
+                   isCompleted && "text-primary-300",
+                   isCurrent && "text-primary-300",
+                   isFuture && "text-text-secondary/50"
+                 )}>
+                   {step.label}
+                 </span>
+               </div>
+             );
+           })}
+         </div>
+       </div>
+     </div>
+   );
+ }
+
  function QuestionnaireStep({
    step,
    form,
-   availableRoles,
-   availableSkills,
+   industries,
+   roles,
+   skills,
+   isLoadingIndustries,
+   isLoadingRoles,
+   isLoadingSkills,
    onUpdate,
    onToggleSkill,
    onUpdateProficiency,
@@ -616,7 +766,10 @@ const GENERIC_SKILLS = [
 
    return (
      <Card className="bg-background-secondary/80 border-border/70 shadow-lg shadow-black/40 backdrop-blur">
-       <CardHeader>
+       {/* Progress Bar */}
+       <ProgressBar currentStep={step} totalSteps={7} />
+       
+       <CardHeader className="pt-4">
          <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
            <div>
              <CardTitle className="text-lg md:text-xl">
@@ -634,18 +787,23 @@ const GENERIC_SKILLS = [
                <select
                  id="industry"
                  className="mt-2 h-9 w-full rounded-md border border-border bg-background-secondary px-3 text-sm outline-none ring-offset-background focus-visible:border-primary-300 focus-visible:ring-2 focus-visible:ring-primary-300/40"
-                 value={form.industry}
+                 value={form.industryId ?? ""}
                  onChange={(e) => {
-                   onUpdate("industry", e.target.value);
+                   const selectedId = e.target.value ? Number(e.target.value) : null;
+                   const selectedIndustry = industries.find((i) => i.id === selectedId);
+                   onUpdate("industryId", selectedId);
+                   onUpdate("industry", selectedIndustry?.name ?? "");
+                   onUpdate("roleId", null);
                    onUpdate("role", "");
                    onUpdate("selectedSkills", []);
                    onUpdate("proficiencyBySkill", {});
                  }}
+                 disabled={isLoadingIndustries}
                >
-                 <option value="">Select industry</option>
-                 {INDUSTRIES.map((industry) => (
-                   <option key={industry} value={industry}>
-                     {industry}
+                 <option value="">{isLoadingIndustries ? "Loading..." : "Select industry"}</option>
+                 {industries.map((industry) => (
+                   <option key={industry.id} value={industry.id}>
+                     {industry.name}
                    </option>
                  ))}
                </select>
@@ -663,24 +821,53 @@ const GENERIC_SKILLS = [
                <select
                  id="role"
                  className="mt-2 h-9 w-full rounded-md border border-border bg-background-secondary px-3 text-sm outline-none focus-visible:border-primary-300 focus-visible:ring-2 focus-visible:ring-primary-300/40"
-                 value={form.role}
+                 value={form.roleId === -1 ? "other" : (form.roleId ?? "")}
                  onChange={(e) => {
-                   onUpdate("role", e.target.value);
+                   if (e.target.value === "other") {
+                     onUpdate("roleId", -1);
+                     onUpdate("role", "");
+                     onUpdate("customRole", "");
+                   } else {
+                     const selectedId = e.target.value ? Number(e.target.value) : null;
+                     const selectedRole = roles.find((r) => r.id === selectedId);
+                     onUpdate("roleId", selectedId);
+                     onUpdate("role", selectedRole?.name ?? "");
+                     onUpdate("customRole", "");
+                   }
                    onUpdate("selectedSkills", []);
                    onUpdate("proficiencyBySkill", {});
+                   onUpdate("customSkills", "");
                  }}
-                 disabled={!form.industry}
+                 disabled={!form.industryId || isLoadingRoles}
                >
                  <option value="">
-                   {form.industry ? "Select role" : "Select an industry first"}
+                   {isLoadingRoles ? "Loading..." : (form.industryId ? "Select role" : "Select an industry first")}
                  </option>
-                 {availableRoles.map((role) => (
-                   <option key={role} value={role}>
-                     {role}
+                 {roles.map((role) => (
+                   <option key={role.id} value={role.id}>
+                     {role.name}
                    </option>
                  ))}
+                 <option value="other">Other (specify)</option>
                </select>
              </div>
+             
+             {form.roleId === -1 && (
+               <div>
+                 <Label htmlFor="customRole">Specify your role <span className="text-error">*</span></Label>
+                 <Input
+                   id="customRole"
+                   value={form.customRole}
+                   onChange={(e) => {
+                     onUpdate("customRole", e.target.value);
+                     onUpdate("role", e.target.value);
+                   }}
+                   placeholder="e.g. Training Coordinator, Skills Development Manager"
+                   className="mt-2"
+                   required
+                 />
+               </div>
+             )}
            </div>
          )}
 
@@ -691,17 +878,58 @@ const GENERIC_SKILLS = [
                most concerned about in the next 6–12 months?
              </p>
 
-             {!form.industry || !form.role ? (
+             {form.roleId === -1 ? (
+               /* Custom role - show text input for skills */
+               <div className="space-y-4">
+                 <div>
+                   <Label htmlFor="customSkills">Enter your priority skills <span className="text-error">*</span></Label>
+                   <textarea
+                     id="customSkills"
+                     value={form.customSkills}
+                     onChange={(e) => {
+                       onUpdate("customSkills", e.target.value);
+                       // Parse comma-separated skills into selectedSkills array for proficiency rating
+                       const skillNames = e.target.value.split(",").map(s => s.trim()).filter(s => s.length > 0);
+                       const customSelectedSkills = skillNames.map((name, index) => ({
+                         id: -(index + 1), // Negative IDs for custom skills
+                         name
+                       }));
+                       onUpdate("selectedSkills", customSelectedSkills);
+                       // Initialize proficiency for new skills
+                       const proficiency: Record<string, number> = {};
+                       skillNames.forEach((name) => {
+                         proficiency[name] = form.proficiencyBySkill[name] ?? 3;
+                       });
+                       onUpdate("proficiencyBySkill", proficiency);
+                     }}
+                     placeholder="e.g. Leadership Development, Digital Transformation, Change Management (separate with commas)"
+                     className="mt-2 w-full min-h-[100px] rounded-md border border-border bg-background-secondary px-3 py-2 text-sm outline-none focus-visible:border-primary-300 focus-visible:ring-2 focus-visible:ring-primary-300/40"
+                     required
+                   />
+                   <p className="mt-2 text-xs text-text-secondary">
+                     Enter the skills you want to assess, separated by commas.
+                   </p>
+                 </div>
+               </div>
+             ) : !form.industryId || !form.roleId ? (
                <p className="rounded-md border border-dashed border-border px-3 py-2 text-xs text-text-secondary">
                  Select an industry and role first to see tailored skill suggestions.
                </p>
+             ) : isLoadingSkills ? (
+               <p className="rounded-md border border-dashed border-border px-3 py-2 text-xs text-text-secondary">
+                 Loading skills...
+               </p>
+             ) : skills.length === 0 ? (
+               <p className="rounded-md border border-dashed border-border px-3 py-2 text-xs text-text-secondary">
+                 No skills found for this combination. You can add custom skills below.
+               </p>
              ) : (
                <div className="grid gap-3 md:grid-cols-2">
-                 {availableSkills.map((skill) => {
-                   const checked = form.selectedSkills.includes(skill);
+                 {skills.map((skill) => {
+                   const checked = form.selectedSkills.some((s) => s.id === skill.id);
                    return (
                      <button
-                       key={skill}
+                       key={skill.id}
                        type="button"
                        onClick={() => onToggleSkill(skill)}
                        className={cn(
@@ -716,7 +944,7 @@ const GENERIC_SKILLS = [
                            <span className="block size-full rounded-[3px] bg-primary-300" />
                          )}
                        </span>
-                       <span>{skill}</span>
+                       <span>{skill.name}</span>
                      </button>
                    );
                  })}
@@ -724,7 +952,7 @@ const GENERIC_SKILLS = [
              )}
 
              <p className="text-xs text-text-secondary">
-               You can pick multiple skills. We&apos;ll focus on the most exposed ones.
+               {form.roleId === -1 ? "Enter at least one skill to continue." : "You can pick multiple skills. We'll focus on the most exposed ones."}
              </p>
            </div>
          )}
@@ -743,15 +971,15 @@ const GENERIC_SKILLS = [
                    proficiency today?
                  </p>
                  <div className="space-y-4">
-                   {form.selectedSkills.map((skill) => {
-                     const value = form.proficiencyBySkill[skill] ?? 3;
+                   {form.selectedSkills.map((skillObj) => {
+                     const value = form.proficiencyBySkill[skillObj.name] ?? 3;
                      return (
                        <div
-                         key={skill}
+                         key={skillObj.id}
                          className="rounded-lg border border-border/70 bg-background-secondary px-3 py-3"
                        >
                          <div className="flex items-center justify-between gap-3">
-                           <p className="text-sm font-medium">{skill}</p>
+                           <p className="text-sm font-medium">{skillObj.name}</p>
                            <span className="text-xs text-text-secondary">
                              {value}/5
                            </span>
@@ -764,7 +992,7 @@ const GENERIC_SKILLS = [
                                <button
                                  key={score}
                                  type="button"
-                                 onClick={() => onUpdateProficiency(skill, score)}
+                                 onClick={() => onUpdateProficiency(skillObj.name, score)}
                                  className={cn(
                                    "flex h-7 w-7 items-center justify-center rounded-full border text-[11px] transition-all",
                                    isActive
@@ -945,10 +1173,15 @@ const GENERIC_SKILLS = [
  function canProceed(step: number, form: FormState): boolean {
    switch (step) {
      case 1:
-       return !!form.industry;
+       return form.industryId !== null;
      case 2:
-       return !!form.role;
+       // Either a valid role selected OR "Other" with custom role filled in
+       return form.roleId !== null && (form.roleId !== -1 || form.customRole.trim().length > 0);
      case 3:
+       // For custom role, check customSkills; otherwise check selectedSkills
+       if (form.roleId === -1) {
+         return form.customSkills.trim().length > 0;
+       }
        return form.selectedSkills.length > 0;
      case 4:
        return form.selectedSkills.length > 0;
