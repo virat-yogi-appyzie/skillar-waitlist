@@ -87,6 +87,7 @@ class LoadBalancedGeminiClient {
           totalTokens: result.totalTokens,
           success: true,
         };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         lastError = error;
         const isRateLimit = this.isRateLimitError(error);
@@ -167,6 +168,7 @@ class LoadBalancedGeminiClient {
           },
           success: true,
         };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         lastError = error;
         const isRateLimit = this.isRateLimitError(error);
@@ -237,6 +239,7 @@ class LoadBalancedGeminiClient {
           success: true,
           message: text.trim(),
         };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         lastError = error;
         const isRateLimit = this.isRateLimitError(error);
@@ -268,6 +271,7 @@ class LoadBalancedGeminiClient {
   /**
    * Check if an error is related to rate limiting
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private isRateLimitError(error: any): boolean {
     const errorMessage = error?.message?.toLowerCase() || "";
     return (

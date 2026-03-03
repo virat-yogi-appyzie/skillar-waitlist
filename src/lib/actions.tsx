@@ -605,14 +605,14 @@ export async function generateSkillsGapReport(input: {
 // - Every section must have numbered subheadings (1.1, 1.2, 2.1, 2.2, etc.)
 // - Be direct and punchy - no filler words`
 
-//     console.log('📤 Calling Gemini API...')
+//     // console.log('📤 Calling Gemini API...')
     
 //     // Call Gemini and get response
 //     const response = await model.generateContent(prompt)
 //     const fullReport = response.response.text()
 
-    console.log('✅ Gemini response received')
-    // console.log('📊 Response length:', fullReport.length, 'characters')
+    // console.log('✅ Gemini response received')
+    // // console.log('📊 Response length:', fullReport.length, 'characters')
 
     if (!result || result.message.trim().length === 0) {
       console.warn('⚠️ Empty response from Gemini')
@@ -620,7 +620,7 @@ export async function generateSkillsGapReport(input: {
     }
     // Paste the code here
     const fullReport = result.message
-    console.log('📄 Gemini Report Preview:', fullReport.substring(0, 500), '...')
+    // console.log('📄 Gemini Report Preview:', fullReport.substring(0, 500), '...')
     return {
       success: true,
       fullReport: fullReport.trim(),
@@ -715,7 +715,7 @@ export async function sendSkillsGapReportEmail(input: {
     const nodemailer = await import('nodemailer')
 
     // 1. Generate the PDF (returns base64)
-    console.log('📄 Generating PDF for email...')
+    // console.log('📄 Generating PDF for email...')
     const base64Pdf = await generatePuppeteerPdf({
       name: input.name,
       userGoal: input.userGoal,
@@ -743,7 +743,7 @@ export async function sendSkillsGapReportEmail(input: {
 
     // 2. Convert base64 to Buffer for attachment
     const pdfBuffer = Buffer.from(base64Pdf, 'base64')
-    console.log('📎 PDF generated, size:', pdfBuffer.length, 'bytes')
+    // console.log('📎 PDF generated, size:', pdfBuffer.length, 'bytes')
 
     // 3. Create SMTP transporter
     const transporter = nodemailer.default.createTransport({
@@ -757,7 +757,7 @@ export async function sendSkillsGapReportEmail(input: {
     })
 
     // 4. Send the email with PDF attachment
-    console.log('📧 Sending email to:', input.email)
+    // console.log('📧 Sending email to:', input.email)
     await transporter.sendMail({
       from: `Skillar.ai <${process.env.MAIL_USER}>`,
       to: input.email,
@@ -913,14 +913,14 @@ Contact: hello@skillar.ai | +91 9256219292
       ],
     })
 
-    console.log('✅ Email sent successfully to:', input.email)
+    // console.log('✅ Email sent successfully to:', input.email)
     
     // Mark email as sent in database
     if (input.assessmentId) {
       await updateAssessmentStatus({
         assessmentId: input.assessmentId,
         emailSent: true,
-        emailFailureReason: null as any // Clear any previous error
+        emailFailureReason: undefined // Clear any previous error
       })
     }
     
@@ -979,7 +979,7 @@ export async function saveSkillsGapAssessment(input: {
   try {
     const { prisma } = await import('@/lib/db')
 
-    console.log('💾 Saving skills gap assessment to database...')
+    // console.log('💾 Saving skills gap assessment to database...')
 
     // Find or create user
     let user = await prisma.user.findFirst({
@@ -994,7 +994,7 @@ export async function saveSkillsGapAssessment(input: {
           companyName: input.companyName
         }
       })
-      console.log('👤 Created new user:', user.id)
+      // console.log('👤 Created new user:', user.id)
     } else if (input.companyName && !user.companyName) {
       // Update user's company name if not already set
       user = await prisma.user.update({
@@ -1016,7 +1016,7 @@ export async function saveSkillsGapAssessment(input: {
         }
       })
       industryId = customIndustry.id
-      console.log('✅ Created custom industry:', customIndustry.id, customIndustry.name)
+      // console.log('✅ Created custom industry:', customIndustry.id, customIndustry.name)
     }
 
     // Validate industry exists (if not custom)
@@ -1042,7 +1042,7 @@ export async function saveSkillsGapAssessment(input: {
         }
       })
       roleId = customRole.id
-      console.log('✅ Created custom role:', customRole.id, customRole.name)
+      // console.log('✅ Created custom role:', customRole.id, customRole.name)
     }
 
     // Validate role exists (if not custom)
@@ -1072,7 +1072,7 @@ export async function saveSkillsGapAssessment(input: {
       }
     })
 
-    console.log('✅ Assessment created:', assessment.id)
+    // console.log('✅ Assessment created:', assessment.id)
 
     // Create skill assessments
     for (const skillInput of input.selectedSkills) {
@@ -1095,7 +1095,7 @@ export async function saveSkillsGapAssessment(input: {
       })
     }
 
-    console.log('✅ Skills saved for assessment')
+    // console.log('✅ Skills saved for assessment')
 
     return { success: true, assessmentId: assessment.id }
   } catch (error) {
@@ -1140,7 +1140,7 @@ export async function updateAssessmentStatus(input: {
       data: updateData
     })
     
-    console.log('✅ Assessment status updated:', input.assessmentId)
+    // console.log('✅ Assessment status updated:', input.assessmentId)
     return { success: true }
   } catch (error) {
     console.error('❌ Failed to update assessment status:', error)

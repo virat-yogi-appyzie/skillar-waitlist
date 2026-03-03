@@ -100,10 +100,10 @@ class AIService {
       //     };
       //   }
       // }
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         success: false,
-        message: error.message || "Failed to generate step content",
+        message: error instanceof Error ? error.message : "Failed to generate step content",
       };
     }
   }

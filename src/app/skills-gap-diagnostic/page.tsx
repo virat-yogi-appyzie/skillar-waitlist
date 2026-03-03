@@ -1,6 +1,6 @@
  "use client";
 
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useMemo, useState, useEffect } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -14,9 +14,6 @@ import {
   getIndustries,
   getRolesByIndustry,
   getSkillsByIndustryAndRole,
-  createCustomIndustry,
-  createCustomRole,
-  createMultipleCustomSkills,
   type IndustryOption,
   type RoleOption,
   type SkillOption,
@@ -293,7 +290,7 @@ type FormState = {
       }
 
       assessmentId = saveResult.assessmentId;
-      console.log('✅ Assessment saved with ID:', assessmentId);
+      // console.log('✅ Assessment saved with ID:', assessmentId);
 
       const lowestSkillName = lowestScoringSkill?.skill || form.selectedSkills[0]?.name || "Unknown skill";
       const lowestSkillScore = lowestScoringSkill?.score ?? (form.proficiencyBySkill[lowestSkillName] ?? 3);
@@ -337,7 +334,7 @@ type FormState = {
           assessmentId: assessmentId,
         }).then((emailResult) => {
           if (emailResult.success) {
-            console.log('✅ Report email sent to:', form.workEmail);
+            // console.log('✅ Report email sent to:', form.workEmail);
           } else {
             console.error('❌ Email send failed:', emailResult.error);
             // Show notification modal when email fails
@@ -493,7 +490,7 @@ type FormState = {
                       
                           // ✅ Better base64 → Blob conversion (safer for larger PDFs)
                           const byteCharacters = window.atob(base64);
-                          const byteArrays: any[] = [];
+                          const byteArrays: BlobPart[] = [];
                       
                           for (let offset = 0; offset < byteCharacters.length; offset += 1024) {
                             const slice = byteCharacters.slice(offset, offset + 1024);

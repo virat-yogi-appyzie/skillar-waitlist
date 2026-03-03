@@ -64,6 +64,7 @@ export const ReportTemplate = ({
       {/* Header */}
       <View style={styles.headerContainer}>
         <View style={styles.logoContainer}>
+          {/* eslint-disable-next-line jsx-a11y/alt-text */}
           <Image
             src={"https://app.skillar.ai/_next/static/media/full-skillar-logo.7cccab6b.svg"}
             style={{ width: 140 }}
