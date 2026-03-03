@@ -797,27 +797,6 @@ export async function sendSkillsGapReportEmail(input: {
         </li>
       </ul>
 
-      <p style="color:#475569; font-size:17px; line-height:1.7; margin-top:25px;">
-        Ready to see how fast we can build your custom training module?
-      </p>
-
-      <div style="text-align:center; margin:35px 0;">
-        <a href="https://app.skillar.ai"
-           target="_blank"
-           title="Click to visit Skillar.ai"
-           style="display:inline-block;
-                  background:linear-gradient(135deg,#10b981 0%,#059669 100%);
-                  color:white;
-                  padding:16px 42px;
-                  border-radius:40px;
-                  font-size:17px;
-                  font-weight:600;
-                  text-decoration:none;
-                  box-shadow:0 6px 16px rgba(16,185,129,0.25);">
-          Book a Live Demo
-        </a>
-      </div>
-
     </div>
 
     <!-- FOOTER -->
@@ -979,6 +958,7 @@ function parseTimeToBuildMonths(timeToBuildLabel: string): number {
 export async function saveSkillsGapAssessment(input: {
   name: string
   email: string
+  companyName?: string
   industryId: number
   roleId: number
   customIndustry?: string
@@ -1004,10 +984,17 @@ export async function saveSkillsGapAssessment(input: {
       user = await prisma.user.create({
         data: {
           email: input.email,
-          name: input.name
+          name: input.name,
+          companyName: input.companyName
         }
       })
       console.log('👤 Created new user:', user.id)
+    } else if (input.companyName && !user.companyName) {
+      // Update user's company name if not already set
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: { companyName: input.companyName }
+      })
     }
 
     // Handle industry (create custom if needed)

@@ -68,6 +68,7 @@ type FormState = {
    companySize: string;
    name: string;
    workEmail: string;
+   companyName: string;
    // For custom "Other" entries
    customIndustry: string;
    customRole: string;
@@ -87,6 +88,7 @@ type FormState = {
    companySize: "",
    name: "",
    workEmail: "",
+   companyName: "",
    customIndustry: "",
    customRole: "",
    customSkills: "",
@@ -249,7 +251,7 @@ type FormState = {
 
   const handleLeadCaptureSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.workEmail || !form.name || !form.industryId || !form.roleId) {
+    if (!form.workEmail || !form.name || !form.companyName || !form.industryId || !form.roleId) {
       return;
     }
 
@@ -263,6 +265,7 @@ type FormState = {
       const saveResult = await saveSkillsGapAssessment({
         name: form.name,
         email: form.workEmail,
+        companyName: form.companyName,
         industryId: form.industryId,
         roleId: form.roleId,
         customIndustry: form.customIndustry,
@@ -554,7 +557,7 @@ type FormState = {
                 </svg>
               </div>
               <DialogTitle className="text-xl text-text-primary">
-                {failureReason.includes('Email') ? 'Report Processing Delayed 📧' : 'High Demand Notice 🚀'}
+                {failureReason.includes('Email') ? 'Report Processing Delayed 📧' : 'High Demand Notice!!'}
               </DialogTitle>
             </div>
             <DialogDescription className="text-text-secondary text-base leading-relaxed pt-2">
@@ -1044,23 +1047,37 @@ type FormState = {
 
          {step === 6 && (
            <div className="space-y-4">
-             <Label htmlFor="businessImpact">
-               If these skills remain under‑developed for the next 6–12 months, what is
-               the likely business impact?
-             </Label>
-             <select
-               id="businessImpact"
-               className="mt-2 h-9 w-full rounded-md border border-border bg-background-secondary px-3 text-sm outline-none focus-visible:border-primary-300 focus-visible:ring-2 focus-visible:ring-primary-300/40"
-               value={form.businessImpact}
-               onChange={(e) => onUpdate("businessImpact", e.target.value)}
-             >
-               <option value="">Select impact level</option>
-               {BUSINESS_IMPACT_OPTIONS.map((option) => (
-                 <option key={option} value={option}>
-                   {option}
-                 </option>
-               ))}
-             </select>
+             <div className="space-y-2">
+               <Label htmlFor="companyName">
+                 Company name
+               </Label>
+               <Input
+                 id="companyName"
+                 value={form.companyName}
+                 onChange={(e) => onUpdate("companyName", e.target.value)}
+                 placeholder="e.g. Appyzie Inc."
+                 className="mt-2"
+               />
+             </div>
+             <div className="space-y-2">
+               <Label htmlFor="businessImpact">
+                 If these skills remain under‑developed for the next 6–12 months, what is
+                 the likely business impact?
+               </Label>
+               <select
+                 id="businessImpact"
+                 className="mt-2 h-9 w-full rounded-md border border-border bg-background-secondary px-3 text-sm outline-none focus-visible:border-primary-300 focus-visible:ring-2 focus-visible:ring-primary-300/40"
+                 value={form.businessImpact}
+                 onChange={(e) => onUpdate("businessImpact", e.target.value)}
+               >
+                 <option value="">Select impact level</option>
+                 {BUSINESS_IMPACT_OPTIONS.map((option) => (
+                   <option key={option} value={option}>
+                     {option}
+                   </option>
+                 ))}
+               </select>
+             </div>
            </div>
          )}
 
@@ -1188,7 +1205,7 @@ type FormState = {
      case 5:
        return !!form.timeToBuild;
      case 6:
-       return !!form.businessImpact;
+       return !!form.companyName.trim() && !!form.businessImpact;
      case 7:
       return !!form.companySize && !!form.primaryBusinessGoal;
      default:

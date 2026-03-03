@@ -137,10 +137,11 @@ enum AdminRole {
  
 
 model User {
-  id        Int      @id @default(autoincrement())
-  name      String?
-  email     String?
-  createdAt DateTime @default(now())
+  id          Int      @id @default(autoincrement())
+  name        String?
+  email       String?
+  companyName String?   
+  createdAt   DateTime  @default(now())
 
   assessments UserAssessment[]
 }
