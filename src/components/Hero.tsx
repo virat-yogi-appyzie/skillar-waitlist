@@ -1,62 +1,62 @@
-"use client";
+ "use client";
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { useWaitlist } from "@/lib/waitlist-context";
+ import { useState, useEffect } from "react";
+ import { Button } from "@/components/ui/button";
+ import { useWaitlist } from "@/lib/waitlist-context";
 
-export default function Hero() {
-  const { waitlistCount } = useWaitlist();
-  const [stats, setStats] = useState({
-    waitlistUsers: 0,
-    speedMultiplier: 0,
-    aiPowered: 0,
-  });
+ export default function Hero() {
+  // const { waitlistCount } = useWaitlist();
+  // const [stats, setStats] = useState({
+  //   waitlistUsers: 0,
+  //   speedMultiplier: 0,
+  //   aiPowered: 0,
+  // });
 
-  useEffect(() => {
-    // Animate the statistics numbers when waitlistCount changes
-    const animateStats = () => {
-      const duration = 2000;
-      const steps = 60;
-      const stepDuration = duration / steps;
+  // useEffect(() => {
+  //   // Animate the statistics numbers when waitlistCount changes
+  //   const animateStats = () => {
+  //     const duration = 2000;
+  //     const steps = 60;
+  //     const stepDuration = duration / steps;
       
-      let currentStep = 0;
+  //     let currentStep = 0;
       
-      const timer = setInterval(() => {
-        currentStep++;
-        const progress = currentStep / steps;
+  //     const timer = setInterval(() => {
+  //       currentStep++;
+  //       const progress = currentStep / steps;
         
-        setStats({
-          waitlistUsers: Math.floor(waitlistCount * progress),
-          speedMultiplier: Math.floor(3 * progress * 10) / 10,
-          aiPowered: Math.floor(100 * progress),
-        });
+  //       setStats({
+  //         waitlistUsers: Math.floor(waitlistCount * progress),
+  //         speedMultiplier: Math.floor(3 * progress * 10) / 10,
+  //         aiPowered: Math.floor(100 * progress),
+  //       });
         
-        if (currentStep >= steps) {
-          clearInterval(timer);
-          setStats({ waitlistUsers: waitlistCount, speedMultiplier: 3, aiPowered: 100 });
-        }
-      }, stepDuration);
+  //       if (currentStep >= steps) {
+  //         clearInterval(timer);
+  //         setStats({ waitlistUsers: waitlistCount, speedMultiplier: 3, aiPowered: 100 });
+  //       }
+  //     }, stepDuration);
       
-      return () => clearInterval(timer);
-    };
+  //     return () => clearInterval(timer);
+  //   };
 
-    // Only start animation if we have a waitlist count
-    if (waitlistCount > 0) {
-      const timeoutId = setTimeout(animateStats, 500);
-      return () => clearTimeout(timeoutId);
-    } else {
-      // If no count loaded yet, show 0
-      setStats({ waitlistUsers: 0, speedMultiplier: 3, aiPowered: 100 });
-    }
-  }, [waitlistCount]);
+  //   // Only start animation if we have a waitlist count
+  //   if (waitlistCount > 0) {
+  //     const timeoutId = setTimeout(animateStats, 500);
+  //     return () => clearTimeout(timeoutId);
+  //   } else {
+  //     // If no count loaded yet, show 0
+  //     setStats({ waitlistUsers: 0, speedMultiplier: 3, aiPowered: 100 });
+  //   }
+  // }, [waitlistCount]);
 
   // Restore original smooth scroll handler
-  const scrollToWaitlist = () => {
-    const element = document.getElementById("waitlist");
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-    }
-  };
+  // const scrollToWaitlist = () => {
+  //   const element = document.getElementById("waitlist");
+  //   if (element) {
+  //     element.scrollIntoView({ behavior: "smooth" });
+  //   }
+  // };
 
   return (
     <section className="hero">
@@ -73,7 +73,7 @@ export default function Hero() {
             with personalized learning journeys aligned with your specific skill goals and industry demands.
           </p>
 
-          <Button 
+          {/* <Button 
             onClick={scrollToWaitlist}
             className="btn btn--primary btn--lg mb-8"
           >
@@ -105,7 +105,7 @@ export default function Hero() {
                 AI Powered
               </span>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </section>

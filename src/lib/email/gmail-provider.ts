@@ -33,9 +33,9 @@ export class GmailProvider extends EmailProvider {
       return this.transporter;
     }
 
-    console.log('🔧 Attempting Gmail OAuth2 authentication...');
-    console.log('Client ID:', this.clientId?.substring(0, 20) + '...');
-    console.log('From Email:', this.fromEmail);
+    // console.log('🔧 Attempting Gmail OAuth2 authentication...');
+    // console.log('Client ID:', this.clientId?.substring(0, 20) + '...');
+    // console.log('From Email:', this.fromEmail);
 
     const oauth2Client = new google.auth.OAuth2(
       this.clientId,
@@ -48,10 +48,10 @@ export class GmailProvider extends EmailProvider {
     });
 
     try {
-      console.log('🔄 Getting access token...');
+      // console.log('🔄 Getting access token...');
       // Get fresh access token
       const { token } = await oauth2Client.getAccessToken();
-      console.log('✅ Access token obtained successfully');
+      // console.log('✅ Access token obtained successfully');
       
       this.transporter = nodemailer.createTransport({
         host: 'smtp.gmail.com',
@@ -67,7 +67,7 @@ export class GmailProvider extends EmailProvider {
         },
       });
 
-      console.log('✅ Gmail transporter created successfully');
+      // console.log('✅ Gmail transporter created successfully');
       return this.transporter;
     } catch (error) {
       const gmailError = error as GmailError;

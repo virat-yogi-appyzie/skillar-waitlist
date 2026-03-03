@@ -115,25 +115,25 @@ const generateDummyEmails = (count: number): Array<{
 }
 
 async function main() {
-  console.log('Starting to seed the database with dummy email data...')
+  // console.log('Starting to seed the database with dummy email data...')
   
   // Check current count
   const currentCount = await prisma.emailSubmission.count({
     where: { status: 'ACTIVE' }
   })
   
-  console.log(`Current active emails in database: ${currentCount}`)
+  // console.log(`Current active emails in database: ${currentCount}`)
   
   // Calculate how many emails to add to reach ~162
   const targetCount = 162
   const emailsToAdd = Math.max(0, targetCount - currentCount)
   
   if (emailsToAdd === 0) {
-    console.log(`Database already has ${currentCount} emails, which meets or exceeds target of ${targetCount}`)
+    // console.log(`Database already has ${currentCount} emails, which meets or exceeds target of ${targetCount}`)
     return
   }
   
-  console.log(`Adding ${emailsToAdd} dummy emails to reach target of ${targetCount}...`)
+  // console.log(`Adding ${emailsToAdd} dummy emails to reach target of ${targetCount}...`)
   
   const dummyEmails = generateDummyEmails(emailsToAdd)
   
@@ -160,7 +160,7 @@ async function main() {
       })
       
       inserted += batch.length
-      console.log(`Inserted batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(dummyEmails.length / batchSize)} (${inserted}/${dummyEmails.length} total)`)
+      // console.log(`Inserted batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(dummyEmails.length / batchSize)} (${inserted}/${dummyEmails.length} total)`)
     } catch (error) {
       console.error(`Error inserting batch ${Math.floor(i / batchSize) + 1}:`, error)
     }
@@ -170,8 +170,8 @@ async function main() {
     where: { status: 'ACTIVE' }
   })
   
-  console.log(`✅ Seeding completed! Total active emails: ${finalCount}`)
-  console.log(`📈 Added ${finalCount - currentCount} new emails`)
+  // console.log(`✅ Seeding completed! Total active emails: ${finalCount}`)
+  // console.log(`📈 Added ${finalCount - currentCount} new emails`)
 }
 
 main()
