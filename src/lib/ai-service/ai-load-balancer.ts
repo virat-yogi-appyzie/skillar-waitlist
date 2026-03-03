@@ -33,12 +33,12 @@ class GeminiKeyManager {
 
     // Collect all available API keys
     const apiKeys = [
-      env.NEXT_PUBLIC_GEMINI_API_KEY_1, // Primary key
-      env.NEXT_PUBLIC_GEMINI_API_KEY_2,
-      env.NEXT_PUBLIC_GEMINI_API_KEY_3,
-      env.NEXT_PUBLIC_GEMINI_API_KEY_4,
-      env.NEXT_PUBLIC_GEMINI_API_KEY_5,
-      env.NEXT_PUBLIC_GEMINI_API_KEY_6,
+      env.GEMINI_API_KEY_1, // Primary key
+      env.GEMINI_API_KEY_2,
+      env.GEMINI_API_KEY_3,
+      env.GEMINI_API_KEY_4,
+      env.GEMINI_API_KEY_5,
+      env.GEMINI_API_KEY_6,
     ].filter((key): key is string => Boolean(key));
 
     if (apiKeys.length === 0) {
