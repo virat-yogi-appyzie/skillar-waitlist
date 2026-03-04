@@ -74,12 +74,17 @@ export async function generatePuppeteerPdf(input?: {
     const pdfBuffer = await page.pdf({
       format: 'A4',
       printBackground: true,
-      margin: {
-        top: '40px',
-        bottom: '40px',
-        left: '40px',
-        right: '40px',
-      },
+      displayHeaderFooter: true,
+
+      headerTemplate: buildHeader(effective.name),
+      footerTemplate: buildFooter(),
+          margin: {
+            top: '110px',
+            bottom: '70px',
+            left: '40px',
+            right: '40px',
+          },
+
     })
 
     return Buffer.from(pdfBuffer).toString('base64')
@@ -179,7 +184,7 @@ return `
 
 @page {
     size: A4;
-    margin: 25mm 10mm 20mm 10mm;
+    margin: 20mm 10mm 10mm 10mm;
 }
 
 body {
@@ -192,16 +197,12 @@ body {
 /* ================= HEADER ================= */
 
 .header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
     height: 70px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 10mm;
-    border-bottom: 2px solid #333;
+
+   border-bottom: 2px solid #000;
     background: white;
     z-index: 1000;
 }
@@ -209,6 +210,8 @@ body {
 .logo-img {
     width: 120px;
     height: auto;
+    display: block;
+    margin:0
 }
 
 .report-date {
@@ -225,26 +228,36 @@ body {
 /* ================= CONTENT ================= */
 
 .content {
-    margin-top: 90px;   /* prevents overlap with fixed header */
-    margin-bottom: 60px; /* prevents overlap with footer */
+  display: flex;
+  flex-direction: column;
+  flex:  1;
+  margin-top: 30px;
+  margin-bottom: 10px;
 }
 
+
 .report-title {
-    margin-bottom: 20px;
+    margin-top: 10px;      /* 🔥 add this */
 }
 
 .report-title h1 {
-    font-size: 26px;
+    font-size: 28px;
+    font-weight: 700;
     color: #2c3e50;
+    margin-bottom: 10px;
 }
 
 /* Section Headers */
 
+.section-header:first-of-type {
+    margin-top: 45px;   
+}
+
 .section-header {
     font-size: 18px;
-    margin: 24px 0 12px 0;
-    padding-bottom: 8px;
-    border-bottom: 2px solid #2c3e50;
+    margin: 24px 0 14px 0;   
+    padding-bottom: 6px;     
+    border-bottom: 1px solid #dcdcdc;  /* lighter */
     font-weight: 600;
     page-break-after: avoid;
 }
@@ -304,36 +317,12 @@ table.data-table tr:nth-child(even) {
 .risk-critical { color: #c0392b; font-weight: 600; }
 .risk-high { color: #d35400; font-weight: 600; }
 .highlight-positive { color: #27ae60; font-weight: 600; }
-
-/* ================= FOOTER ================= */
-
-.footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 10px 10mm;
-    border-top: 2px solid #e0e0e0;
-    text-align: center;
-    font-size: 9px;
-    color: #7f8c8d;
-    background: white;
-}
 </style>
 </head>
 
 <body>
 
-<!-- HEADER -->
-<div class="header">
-    <div>
-        <img src="${SKILLAR_LOGO_DATA_URI}" class="logo-img" />
-    </div>
-    <div class="report-date">
-        <div>Prepared for</div>
-        <div><strong>${escapeHtml(name)}</strong></div>
-    </div>
-</div>
+
 
 <!-- CONTENT -->
 <div class="content">
@@ -359,14 +348,53 @@ table.data-table tr:nth-child(even) {
 
 </div>
 
-<!-- FOOTER -->
-<div class="footer">
-    skillar.ai — Confidential Strategic Advisory | ${currentDate}
-</div>
+
 
 </body>
 </html>
 `
+}
+
+function buildHeader(name: string) {
+  return `
+  <div style="
+    width:100%;
+    font-size:10px;
+    padding:0 40px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  ">
+      <img src="${SKILLAR_LOGO_DATA_URI}" style="height:28px" />
+
+      <div style="text-align:right;">
+          <div>Prepared for</div>
+          <div style="font-weight:600">${escapeHtml(name)}</div>
+      </div>
+  </div>
+  `
+}
+
+function buildFooter() {
+  const currentDate = new Date().toLocaleDateString('en-US', {
+    month: 'long',
+    year: 'numeric',
+  })
+
+  return `
+  <div style="
+      width:100%;
+      font-size:9px;
+      color:#7f8c8d;
+      padding:0 40px;
+      text-align:center;
+  ">
+      skillar.ai — Confidential Strategic Advisory | ${currentDate}
+      <span style="float:right">
+        Page <span class="pageNumber"></span> / <span class="totalPages"></span>
+      </span>
+  </div>
+  `
 }
 
 /* =====================================================
