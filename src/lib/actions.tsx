@@ -41,7 +41,7 @@ export async function generatePuppeteerPdf(input?: {
 
   let browser
 
-  if (process.env.NODE_ENV && process.env.NODE_ENV?.toLowerCase() === 'production') {
+  if (process.env.VERCEL === '1') {
     // ✅ Vercel (Serverless)
     const chromium = await import('@sparticuz/chromium')
     const puppeteer = await import('puppeteer-core')
@@ -49,12 +49,13 @@ export async function generatePuppeteerPdf(input?: {
     browser = await puppeteer.default.launch({
       args: chromium.default.args,
       executablePath: await chromium.default.executablePath(),
-      headless: true,
+      headless:true,
     })
 
   } else {
     // ✅ Local Development
-    const puppeteer = await import('puppeteer')
+    const packageName = 'puppeteer';
+    const puppeteer = await import(packageName);
 
     browser = await puppeteer.default.launch({
       headless: true,
