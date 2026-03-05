@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { generateSkillsGapReport, generatePuppeteerPdf, saveSkillsGapAssessment, sendSkillsGapReportEmail, updateAssessmentStatus } from "@/lib/actions";
+import { generateSkillsGapReport, saveSkillsGapAssessment, sendSkillsGapReportEmail, updateAssessmentStatus } from "@/lib/actions";
 import {
   getIndustries,
   getRolesByIndustry,
@@ -98,7 +98,6 @@ type FormState = {
    const [isSubmitting, setIsSubmitting] = useState(false);
   const [aiReport, setAiReport] = useState<string>("");
   const [aiReportError, setAiReportError] = useState<string>("");
-  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
   const [showEmailNotificationModal, setShowEmailNotificationModal] = useState(false);
   const [failureReason, setFailureReason] = useState<string>("");
 
@@ -338,7 +337,7 @@ type FormState = {
           } else {
             console.error('❌ Email send failed:', emailResult.error);
             // Show notification modal when email fails
-            setFailureReason(`Email Delivery Issue: ${emailResult.error || 'Failed to send your report'}`);
+            // setFailureReason(`Email Delivery Issue: ${emailResult.error || 'Failed to send your report'}`);
             setShowEmailNotificationModal(true);
           }
         }).catch((err) => {
@@ -358,9 +357,9 @@ type FormState = {
             emailFailureReason: errorMsg
           });
         }
-        setFailureReason(errorMsg);
+        // setFailureReason(errorMsg);
         setShowEmailNotificationModal(true);
-        setAiReportError(reportResult.error || "Failed to generate report.");
+        // setAiReportError(reportResult.error || "Failed to generate report.");
       }
 
       setPhase("results");
@@ -377,9 +376,9 @@ type FormState = {
         });
       }
       
-      setFailureReason(`System Error: ${errorMsg}`);
+      // setFailureReason(`System Error: ${errorMsg}`);
       setShowEmailNotificationModal(true);
-      setAiReportError(errorMsg);
+      // setAiReportError(errorMsg);
       setPhase("results");
     } finally {
       setIsSubmitting(false);
@@ -462,69 +461,7 @@ type FormState = {
                     hasCriticalVulnerability={hasCriticalVulnerability}
                   />
 
-                  <div className="flex justify-end">
-                    <Button
-                      type="button"
-                      size="sm"
-                      disabled={isDownloadingPdf}
-                      onClick={async () => {
-                        try {
-                          if (!lowestScoringSkill) return;
-                      
-                          setIsDownloadingPdf(true);
-                      
-                          const base64 = await generatePuppeteerPdf({
-                            name: form.name || "Skills Gap Diagnostic Participant",
-                            userGoal: form.primaryBusinessGoal,
-                            userIndustry: form.industry,
-                            userRole: form.role,
-                            lowestScoringSkill: lowestScoringSkill.skill,
-                            skillScore: lowestScoringSkill.score,
-                            timeToBuild: form.timeToBuild,
-                            businessImpact: form.businessImpact,
-                            companySize: form.companySize,
-                            aiReport: aiReport,
-                          });
-                      
-                          if (!base64) throw new Error("Empty PDF response");
-                      
-                          // ✅ Better base64 → Blob conversion (safer for larger PDFs)
-                          const byteCharacters = window.atob(base64);
-                          const byteArrays: BlobPart[] = [];
-                      
-                          for (let offset = 0; offset < byteCharacters.length; offset += 1024) {
-                            const slice = byteCharacters.slice(offset, offset + 1024);
-                            const byteNumbers = new Array(slice.length);
-                      
-                            for (let i = 0; i < slice.length; i++) {
-                              byteNumbers[i] = slice.charCodeAt(i);
-                            }
-                      
-                            byteArrays.push(new Uint8Array(byteNumbers));
-                          }
-                      
-                          const blob = new Blob(byteArrays, { type: "application/pdf" });
-                      
-                          const url = URL.createObjectURL(blob);
-                      
-                          const link = document.createElement("a");
-                          link.href = url;
-                          link.download = "skills-gap-report.pdf";
-                          document.body.appendChild(link);
-                          link.click(); 
-                      
-                          document.body.removeChild(link);
-                          URL.revokeObjectURL(url);
-                        } catch (err) {
-                          console.error("PDF download failed:", err);
-                        } finally {
-                          setIsDownloadingPdf(false);
-                        }
-                      }}
-                    >
-                      {isDownloadingPdf ? "Preparing PDF..." : "Download PDF report"}
-                    </Button>
-                  </div>
+
                 </div>
               )}
             </div>
@@ -568,11 +505,7 @@ type FormState = {
                       Your personalized <strong className="text-text-primary">Strategic L&D Alignment Audit</strong> will be sent to{" "}
                       <span className="text-primary font-medium">{form.workEmail}</span> within the next few minutes.
                     </p>
-                    <div className="bg-background-primary/50 border border-border/50 rounded-lg p-4 mt-4">
-                      <p className="text-sm text-text-secondary">
-                        💡 <span className="font-medium text-text-primary">Pro tip:</span> While you wait, you can download the PDF report directly from this page if your results are ready.
-                      </p>
-                    </div>
+
                   </>
                 ) : (
                   <>
