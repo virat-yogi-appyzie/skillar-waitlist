@@ -49,7 +49,7 @@ export async function generatePuppeteerPdf(input?: {
     browser = await puppeteer.default.launch({
       args: chromium.default.args,
       executablePath: await chromium.default.executablePath(),
-      headless: true,
+      headless:true,
     })
 
   } else {
