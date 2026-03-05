@@ -197,12 +197,13 @@ body {
 /* ================= HEADER ================= */
 
 .header {
-    height: 70px;
+    height: 55px;
     display: flex;
     justify-content: space-between;
     align-items: center;
 
    border-bottom: 2px solid #000;
+   padding-bottom-6px
     background: white;
     z-index: 1000;
 }
@@ -231,26 +232,26 @@ body {
   display: flex;
   flex-direction: column;
   flex:  1;
-  margin-top: 30px;
+  margin-top: 15px;
   margin-bottom: 10px;
 }
 
 
 .report-title {
-    margin-top: 10px;      /* 🔥 add this */
+    margin-top: 5px;     
 }
 
 .report-title h1 {
     font-size: 28px;
     font-weight: 700;
     color: #2c3e50;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 }
 
 /* Section Headers */
 
 .section-header:first-of-type {
-    margin-top: 45px;   
+    margin-top: 18px;   
 }
 
 .section-header {
@@ -297,6 +298,13 @@ table.data-table {
     font-size: 10px;
     border: 1px solid #ddd;
 }
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0 14px 0;
+    font-size: 10px;
+    border: 1px solid #ddd;
+}
 
 table.data-table th {
     background: #444;
@@ -305,12 +313,26 @@ table.data-table th {
     text-align: left;
 }
 
+table th {
+    background: #444;
+    color: white;
+    padding: 8px;
+    text-align: left;
+}
 table.data-table td {
+    padding: 8px;
+    border-bottom: 1px solid #e8e8e8;
+}
+table  td {
     padding: 8px;
     border-bottom: 1px solid #e8e8e8;
 }
 
 table.data-table tr:nth-child(even) {
+    background: #fafafa;
+}
+
+table tr:nth-child(even) {
     background: #fafafa;
 }
 
@@ -361,16 +383,24 @@ function buildHeader(name: string) {
     width:100%;
     font-size:10px;
     padding:0 40px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
   ">
-      <img src="${SKILLAR_LOGO_DATA_URI}" style="height:28px" />
+      <div style="
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        padding-bottom:8px;
+      ">
+          <img src="${SKILLAR_LOGO_DATA_URI}" style="height:28px" />
 
-      <div style="text-align:right;">
-          <div>Prepared for</div>
-          <div style="font-weight:600">${escapeHtml(name)}</div>
+          <div style="text-align:right;">
+              <div>Prepared for</div>
+              <div style="font-weight:600">${escapeHtml(name)}</div>
+          </div>
       </div>
+      <div style="
+        border-bottom:1px solid #2c3e50;
+        margin:0;
+      "></div>
   </div>
   `
 }
@@ -426,11 +456,30 @@ function markdownToHtml(markdown: string): string {
     .replace(/>/g, '&gt;')
   
   // Convert tables (must be done before other conversions)
-  html = html.replace(/\|(.+)\|\n\|[-|\s]+\|\n((?:\|.+\|\n?)+)/g, (match, headerRow, bodyRows) => {
-    const headers = headerRow.split('|').map((h: string) => h.trim()).filter((h: string) => h)
-    const rows = bodyRows.trim().split('\n').map((row: string) => 
-      row.split('|').map((cell: string) => cell.trim()).filter((cell: string) => cell)
-    )
+  // More flexible regex to match markdown tables
+  html = html.replace(/(\|[^\n]+\|)\n(\|[\s:|-]+\|)\n((?:\|[^\n]+\|\n?)+)/g, (match, headerRow, separatorRow, bodyRows) => {
+    // Parse header cells
+    const headers = headerRow
+      .split('|')
+      .map((h: string) => h.trim())
+      .filter((h: string) => h.length > 0)
+    
+    // Parse body rows
+    const rows = bodyRows
+      .trim()
+      .split('\n')
+      .filter((row: string) => row.trim().length > 0)
+      .map((row: string) => 
+        row
+          .split('|')
+          .map((cell: string) => cell.trim())
+          .filter((cell: string, idx: number, arr: string[]) => {
+            // Filter out empty first/last cells from | delimiters
+            if (idx === 0 && cell === '') return false
+            if (idx === arr.length - 1 && cell === '') return false
+            return true
+          })
+      )
     
     let table = '<table class="data-table"><thead><tr>'
     headers.forEach((h: string) => {
@@ -439,7 +488,7 @@ function markdownToHtml(markdown: string): string {
     table += '</tr></thead><tbody>'
     rows.forEach((row: string[]) => {
       table += '<tr>'
-      row.forEach((cell: string, index: number) => {
+      row.forEach((cell: string) => {
         // Apply risk level styling
         let cellClass = ''
         if (cell === 'CRITICAL') cellClass = ' class="risk-critical"'
