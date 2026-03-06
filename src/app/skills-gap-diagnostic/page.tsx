@@ -100,6 +100,118 @@ type FormState = {
   const [aiReportError, setAiReportError] = useState<string>("");
   const [showEmailNotificationModal, setShowEmailNotificationModal] = useState(false);
   const [failureReason, setFailureReason] = useState<string>("");
+  const [emailError, setEmailError] = useState<string>("");
+
+  const disposableDomains = useMemo(
+    () =>
+      new Set([
+        "mailinator.com",
+  "yopmail.com",
+  "10minutemail.com",
+  "guerrillamail.com",
+  "trashmail.com",
+  "maildrop.cc",
+  "temp-mail.org",
+  "getnada.com",
+  "tempmailo.com",
+  "fakemailgenerator.com",
+  "mailnesia.com",
+  "temp-mail.io",
+  "mailinator.net",
+  "dispostable.com",
+  "throwawaymail.com",
+  "mailcatch.com",
+  "inboxkitten.com",
+  "moakt.com",
+  "spamgourmet.com",
+  "spambox.us",
+  "mintemail.com",
+  "mail-temporaire.com",
+  "yopmail.fr",
+  "instant-mail.de",
+  "fakeinbox.com",
+  "trashmail.net",
+  "10minutemail.net",
+  "my temp.email",
+  "guerrillamailblock.com",
+  "anonymbox.com",
+  "getairmail.com",
+  "tempinbox.com",
+  "tempemail.co",
+  "temp-mail.com",
+  "dropmail.me",
+  "sharklasers.com",
+  "mailcatch.com",
+  "mail-temporaire.fr",
+  "mailexpire.com",
+  "emailondeck.com",
+  "mailnesia.org",
+  "wegwerfemail.de",
+  "0-mail.com",
+  "mailinator.org",
+  "0clickemail.com",
+  "10minutemail.co.uk",
+  "spambox.xyz",
+  "emailtemporanea.com",
+  "mailpoof.com",
+  "getnada.xyz",
+  "throwaway.email",
+  "fake-mail.net",
+  "yopmail.net",
+  "maildrop.cf",
+  "tempmailaddress.com",
+  "temp-mail.cf",
+  "tempinbox.xyz",
+  "mailcatch.co",
+  "mailforspam.com",
+  "mailtothis.com",
+  "trashmail.me",
+  "jetable.org",
+  "trashmail.org",
+  "spam4.me",
+  "spambog.com",
+  "guerrillamailblock.com",
+  "disposablemail.com",
+  "mailsubs.com",
+  "binkmail.com",
+  "owlpic.com",
+  "meltmail.com",
+  "mailnesia.com",
+  "spamdecoy.net",
+  "mailnull.com",
+  "pokemail.net",
+  "wegwerfemail.de",
+  "temp-mail.org.ru",
+  "10minutemail.be",
+  "mailin8r.com",
+  "yopmail.org",
+  "neomailbox.com",
+  "spamfree24.org",
+  "temp-mail.es",
+  "safetymail.info",
+  "getairmail.xyz",
+  "nowmymail.com",
+  "mail-temp.com",
+  "mvrht.com",
+  "trbvm.com",
+  "maildrop.top",
+  "0wnd.net",
+  "cool.fr.nf",
+  "jetable.com",
+      ]),
+    []
+  );
+
+  function validateEmail(email: string): string | null {
+    const trimmed = email?.trim().toLowerCase() || "";
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!trimmed) return "Email is required";
+    if (!emailRegex.test(trimmed)) return "Enter a valid email address";
+    const domain = trimmed.split("@")[1]?.split(":")[0];
+    if (!domain) return "Enter a valid email address";
+    if (disposableDomains.has(domain)) return "Disposable email addresses are not allowed";
+    return null;
+  }
 
   // Database-driven dropdown state
   const [industries, setIndustries] = useState<IndustryOption[]>([]);
@@ -108,6 +220,7 @@ type FormState = {
   const [isLoadingIndustries, setIsLoadingIndustries] = useState(true);
   const [isLoadingRoles, setIsLoadingRoles] = useState(false);
   const [isLoadingSkills, setIsLoadingSkills] = useState(false);
+
 
   // Fetch industries on mount
   useEffect(() => {
@@ -244,16 +357,30 @@ type FormState = {
        },
      }));
    };
-
+   
   const handleLeadCaptureSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.workEmail || !form.name || !form.companyName || !form.industryId || !form.roleId) {
       return;
+    } 
+    if (form.industryId === 11 && !form.customIndustry.trim()) {
+    return;
+  }
+    // Validate email format and disposable domains
+    const emailValidationErr = validateEmail(form.workEmail);
+    if (emailValidationErr) {
+      setEmailError(emailValidationErr);
+      return;
     }
 
+    setEmailError("");
     setIsSubmitting(true);
     setAiReport("");
     setAiReportError("");
+    // Normalize company size to avoid duplicate "employees" in templates
+    const normalizedCompanySize = form.companySize
+      ? form.companySize.replace(/\s*employees?$/i, '').trim()
+      : form.companySize;
     let assessmentId: number | undefined;
 
     try {
@@ -274,7 +401,7 @@ type FormState = {
         })),
         timeToBuildLabel: form.timeToBuild,
         businessImpact: form.businessImpact,
-        companySize: form.companySize,
+        companySize: normalizedCompanySize,
         criticalFlag: hasCriticalVulnerability,
       });
 
@@ -293,17 +420,20 @@ type FormState = {
 
       const lowestSkillName = lowestScoringSkill?.skill || form.selectedSkills[0]?.name || "Unknown skill";
       const lowestSkillScore = lowestScoringSkill?.score ?? (form.proficiencyBySkill[lowestSkillName] ?? 3);
-
+      
+      const effectiveIndustryForAi=form.industryId===11 && form.customIndustry.trim()?form.customIndustry.trim():form.industry;
       // Step 2: Generate AI report
+      // console.log("effectiveIndustryForAi:", effectiveIndustryForAi);
+      // console.log("userRole:", form.role);
       const reportResult = await generateSkillsGapReport({
         userGoal: form.primaryBusinessGoal,
-        userIndustry: form.industry,
+        userIndustry: effectiveIndustryForAi,
         userRole: form.role,
         lowestScoringSkill: lowestSkillName,
         skillScore: lowestSkillScore,
         timeToBuild: form.timeToBuild,
         businessImpact: form.businessImpact,
-        companySize: form.companySize,
+        companySize: normalizedCompanySize,
       });
 
       if (reportResult.success && reportResult.fullReport) {
@@ -322,13 +452,13 @@ type FormState = {
           name: form.name,
           email: form.workEmail,
           userGoal: form.primaryBusinessGoal,
-          userIndustry: form.industry,
+          userIndustry: effectiveIndustryForAi,
           userRole: form.role,
           lowestScoringSkill: lowestSkillName,
           skillScore: lowestSkillScore,
           timeToBuild: form.timeToBuild,
           businessImpact: form.businessImpact,
-          companySize: form.companySize,
+          companySize: normalizedCompanySize,
           aiReport: reportResult.fullReport,
           assessmentId: assessmentId,
         }).then((emailResult) => {
@@ -440,8 +570,11 @@ type FormState = {
                 <LeadCapture
                   form={form}
                   onUpdate={updateForm}
-                  onSubmit={handleLeadCaptureSubmit}
-                  isSubmitting={isSubmitting}
+                    onSubmit={handleLeadCaptureSubmit}
+                    isSubmitting={isSubmitting}
+                    emailError={emailError}
+                    setEmailError={setEmailError}
+                    validateEmail={validateEmail}
                 />
               )}
 
@@ -718,28 +851,54 @@ type FormState = {
              <div className="md:col-span-2">
                <Label htmlFor="industry">Primary industry</Label>
                <select
-                 id="industry"
-                 className="mt-2 h-9 w-full rounded-md border border-border bg-background-secondary px-3 text-sm outline-none ring-offset-background focus-visible:border-primary-300 focus-visible:ring-2 focus-visible:ring-primary-300/40"
-                 value={form.industryId ?? ""}
-                 onChange={(e) => {
-                   const selectedId = e.target.value ? Number(e.target.value) : null;
-                   const selectedIndustry = industries.find((i) => i.id === selectedId);
-                   onUpdate("industryId", selectedId);
-                   onUpdate("industry", selectedIndustry?.name ?? "");
-                   onUpdate("roleId", null);
-                   onUpdate("role", "");
-                   onUpdate("selectedSkills", []);
-                   onUpdate("proficiencyBySkill", {});
-                 }}
-                 disabled={isLoadingIndustries}
-               >
-                 <option value="">{isLoadingIndustries ? "Loading..." : "Select industry"}</option>
-                 {industries.map((industry) => (
-                   <option key={industry.id} value={industry.id}>
-                     {industry.name}
-                   </option>
-                 ))}
-               </select>
+  id="industry"
+  className="mt-2 h-9 w-full rounded-md border border-border bg-background-secondary px-3 text-sm outline-none ring-offset-background focus-visible:border-primary-300 focus-visible:ring-2 focus-visible:ring-primary-300/40"
+  value={form.industryId ?? ""}
+  onChange={(e) => {
+    const selectedId = e.target.value ? Number(e.target.value) : null;
+    const selectedIndustry = industries.find((i) => i.id === selectedId);
+
+    onUpdate("industryId", selectedId);
+    onUpdate("industry", selectedIndustry?.name ?? "");
+    onUpdate("customIndustry", "");
+
+    // reset dependent fields
+    onUpdate("roleId", null);
+    onUpdate("role", "");
+    onUpdate("selectedSkills", []);
+    onUpdate("proficiencyBySkill", {});
+  }}
+  disabled={isLoadingIndustries}
+>
+  <option value="">
+    {isLoadingIndustries ? "Loading..." : "Select industry"}
+  </option>
+
+  {industries.map((industry) => (
+    <option key={industry.id} value={industry.id}>
+      {industry.name}
+    </option>
+  ))}
+</select>
+{form.industryId === 11 && (
+  <div className="mt-4">
+    <Label htmlFor="customIndustry">
+      Specify your industry <span className="text-error">*</span>
+    </Label>
+
+    <Input
+      id="customIndustry"
+      value={form.customIndustry}
+      onChange={(e) => {
+        onUpdate("customIndustry", e.target.value);
+        onUpdate("industry", e.target.value);
+      }}
+      placeholder="e.g. Space Technology, Renewable Infrastructure"
+      className="mt-2"
+      required
+    />
+  </div>
+)}
                <p className="mt-2 text-xs text-text-secondary">
                  This helps us benchmark you against similar organizations.
                </p>
@@ -1120,7 +1279,10 @@ type FormState = {
  function canProceed(step: number, form: FormState): boolean {
    switch (step) {
      case 1:
-       return form.industryId !== null;
+       return (
+    form.industryId !== null &&
+    (form.industryId !== 11 || form.customIndustry.trim().length > 0)
+  );
      case 2:
        // Either a valid role selected OR "Other" with custom role filled in
        return form.roleId !== null && (form.roleId !== -1 || form.customRole.trim().length > 0);
@@ -1217,9 +1379,12 @@ type FormState = {
    onUpdate: <K extends keyof FormState>(key: K, value: FormState[K]) => void;
    onSubmit: (e: React.FormEvent) => void;
    isSubmitting: boolean;
+  emailError: string;
+  setEmailError: (s: string) => void;
+  validateEmail: (email: string) => string | null;
  };
 
- function LeadCapture({ form, onUpdate, onSubmit, isSubmitting }: LeadCaptureProps) {
+ function LeadCapture({ form, onUpdate, onSubmit, isSubmitting, emailError, setEmailError, validateEmail }: LeadCaptureProps) {
    return (
      <Card className="bg-background-secondary/80 border-border/70 shadow-lg shadow-black/40 backdrop-blur">
        <CardHeader>
@@ -1242,19 +1407,33 @@ type FormState = {
                  onChange={(e) => onUpdate("name", e.target.value)}
                  placeholder="Alex Rivera"
                  className="mt-2"
-                 required
+                required
+                disabled={isSubmitting}
                />
              </div>
              <div>
-               <Label htmlFor="workEmail">Work email</Label>
+               <Label htmlFor="workEmail">
+                 <span>Work email</span>
+                {emailError && (
+                  <span className="ml-1 text-xs text-error">({emailError})</span>
+                )}
+               </Label>
                <Input
                  id="workEmail"
                  type="email"
                  value={form.workEmail}
-                 onChange={(e) => onUpdate("workEmail", e.target.value)}
+                 onChange={(e) => {
+                   onUpdate("workEmail", e.target.value);
+                 }}
+                 onBlur={() => {
+                   const err = validateEmail(form.workEmail);
+                   setEmailError(err ?? "");
+                 }}
                  placeholder="you@company.com"
-                 className="mt-2"
+                 className={cn("mt-2", emailError ? "border-error ring-1 ring-error/60" : "")}
                  required
+                 aria-invalid={!!emailError}
+                 disabled={isSubmitting}
                />
              </div>
            </div>
@@ -1268,7 +1447,7 @@ type FormState = {
              By continuing, you agree to receive product updates from Skillar.ai. You
              can opt out anytime.
            </p>
-           <Button type="submit" size="sm" disabled={isSubmitting || !form.name || !form.workEmail}>
+           <Button type="submit" size="sm" disabled={isSubmitting || !form.name || !form.workEmail || !!emailError}>
              {isSubmitting ? "Preparing your results…" : "View my results"}
            </Button>
          </CardFooter>
