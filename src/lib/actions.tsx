@@ -510,7 +510,7 @@ function markdownToHtml(markdown: string): string {
   html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
   
   // Convert numbered lists
-  html = html.replace(/^(\d+)\.\s+(.+)$/gm, '<li class="numbered-item"><span class="list-number">$1.</span> $2</li>')
+  html = html.replace(/^(\d+).\s+(.+)$/gm,'<li class="numbered-item">$2</li>')
   html = html.replace(/(<li class="numbered-item">.*<\/li>\n?)+/g, '<ol class="numbered-list">$&</ol>')
   
   // Convert bullet lists (- item)

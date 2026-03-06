@@ -244,16 +244,23 @@ type FormState = {
        },
      }));
    };
-
+   
   const handleLeadCaptureSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.workEmail || !form.name || !form.companyName || !form.industryId || !form.roleId) {
       return;
-    }
+    } 
+    if (form.industryId === 13 && !form.customIndustry.trim()) {
+    return;
+  }
 
     setIsSubmitting(true);
     setAiReport("");
     setAiReportError("");
+    // Normalize company size to avoid duplicate "employees" in templates
+    const normalizedCompanySize = form.companySize
+      ? form.companySize.replace(/\s*employees?$/i, '').trim()
+      : form.companySize;
     let assessmentId: number | undefined;
 
     try {
@@ -274,7 +281,7 @@ type FormState = {
         })),
         timeToBuildLabel: form.timeToBuild,
         businessImpact: form.businessImpact,
-        companySize: form.companySize,
+        companySize: normalizedCompanySize,
         criticalFlag: hasCriticalVulnerability,
       });
 
@@ -293,17 +300,20 @@ type FormState = {
 
       const lowestSkillName = lowestScoringSkill?.skill || form.selectedSkills[0]?.name || "Unknown skill";
       const lowestSkillScore = lowestScoringSkill?.score ?? (form.proficiencyBySkill[lowestSkillName] ?? 3);
-
+      
+      const effectiveIndustryForAi=form.industryId===13 && form.customIndustry.trim()?form.customIndustry.trim():form.industry;
       // Step 2: Generate AI report
+      // console.log("effectiveIndustryForAi:", effectiveIndustryForAi);
+      // console.log("userRole:", form.role);
       const reportResult = await generateSkillsGapReport({
         userGoal: form.primaryBusinessGoal,
-        userIndustry: form.industry,
+        userIndustry: effectiveIndustryForAi,
         userRole: form.role,
         lowestScoringSkill: lowestSkillName,
         skillScore: lowestSkillScore,
         timeToBuild: form.timeToBuild,
         businessImpact: form.businessImpact,
-        companySize: form.companySize,
+        companySize: normalizedCompanySize,
       });
 
       if (reportResult.success && reportResult.fullReport) {
@@ -322,13 +332,13 @@ type FormState = {
           name: form.name,
           email: form.workEmail,
           userGoal: form.primaryBusinessGoal,
-          userIndustry: form.industry,
+          userIndustry: effectiveIndustryForAi,
           userRole: form.role,
           lowestScoringSkill: lowestSkillName,
           skillScore: lowestSkillScore,
           timeToBuild: form.timeToBuild,
           businessImpact: form.businessImpact,
-          companySize: form.companySize,
+          companySize: normalizedCompanySize,
           aiReport: reportResult.fullReport,
           assessmentId: assessmentId,
         }).then((emailResult) => {
@@ -718,28 +728,54 @@ type FormState = {
              <div className="md:col-span-2">
                <Label htmlFor="industry">Primary industry</Label>
                <select
-                 id="industry"
-                 className="mt-2 h-9 w-full rounded-md border border-border bg-background-secondary px-3 text-sm outline-none ring-offset-background focus-visible:border-primary-300 focus-visible:ring-2 focus-visible:ring-primary-300/40"
-                 value={form.industryId ?? ""}
-                 onChange={(e) => {
-                   const selectedId = e.target.value ? Number(e.target.value) : null;
-                   const selectedIndustry = industries.find((i) => i.id === selectedId);
-                   onUpdate("industryId", selectedId);
-                   onUpdate("industry", selectedIndustry?.name ?? "");
-                   onUpdate("roleId", null);
-                   onUpdate("role", "");
-                   onUpdate("selectedSkills", []);
-                   onUpdate("proficiencyBySkill", {});
-                 }}
-                 disabled={isLoadingIndustries}
-               >
-                 <option value="">{isLoadingIndustries ? "Loading..." : "Select industry"}</option>
-                 {industries.map((industry) => (
-                   <option key={industry.id} value={industry.id}>
-                     {industry.name}
-                   </option>
-                 ))}
-               </select>
+  id="industry"
+  className="mt-2 h-9 w-full rounded-md border border-border bg-background-secondary px-3 text-sm outline-none ring-offset-background focus-visible:border-primary-300 focus-visible:ring-2 focus-visible:ring-primary-300/40"
+  value={form.industryId ?? ""}
+  onChange={(e) => {
+    const selectedId = e.target.value ? Number(e.target.value) : null;
+    const selectedIndustry = industries.find((i) => i.id === selectedId);
+
+    onUpdate("industryId", selectedId);
+    onUpdate("industry", selectedIndustry?.name ?? "");
+    onUpdate("customIndustry", "");
+
+    // reset dependent fields
+    onUpdate("roleId", null);
+    onUpdate("role", "");
+    onUpdate("selectedSkills", []);
+    onUpdate("proficiencyBySkill", {});
+  }}
+  disabled={isLoadingIndustries}
+>
+  <option value="">
+    {isLoadingIndustries ? "Loading..." : "Select industry"}
+  </option>
+
+  {industries.map((industry) => (
+    <option key={industry.id} value={industry.id}>
+      {industry.name}
+    </option>
+  ))}
+</select>
+{form.industryId === 13 && (
+  <div className="mt-4">
+    <Label htmlFor="customIndustry">
+      Specify your industry <span className="text-error">*</span>
+    </Label>
+
+    <Input
+      id="customIndustry"
+      value={form.customIndustry}
+      onChange={(e) => {
+        onUpdate("customIndustry", e.target.value);
+        onUpdate("industry", e.target.value);
+      }}
+      placeholder="e.g. Space Technology, Renewable Infrastructure"
+      className="mt-2"
+      required
+    />
+  </div>
+)}
                <p className="mt-2 text-xs text-text-secondary">
                  This helps us benchmark you against similar organizations.
                </p>
@@ -1120,7 +1156,10 @@ type FormState = {
  function canProceed(step: number, form: FormState): boolean {
    switch (step) {
      case 1:
-       return form.industryId !== null;
+       return (
+    form.industryId !== null &&
+    (form.industryId !== 13 || form.customIndustry.trim().length > 0)
+  );
      case 2:
        // Either a valid role selected OR "Other" with custom role filled in
        return form.roleId !== null && (form.roleId !== -1 || form.customRole.trim().length > 0);
