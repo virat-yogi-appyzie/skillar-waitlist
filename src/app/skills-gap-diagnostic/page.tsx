@@ -100,6 +100,118 @@ type FormState = {
   const [aiReportError, setAiReportError] = useState<string>("");
   const [showEmailNotificationModal, setShowEmailNotificationModal] = useState(false);
   const [failureReason, setFailureReason] = useState<string>("");
+  const [emailError, setEmailError] = useState<string>("");
+
+  const disposableDomains = useMemo(
+    () =>
+      new Set([
+        "mailinator.com",
+  "yopmail.com",
+  "10minutemail.com",
+  "guerrillamail.com",
+  "trashmail.com",
+  "maildrop.cc",
+  "temp-mail.org",
+  "getnada.com",
+  "tempmailo.com",
+  "fakemailgenerator.com",
+  "mailnesia.com",
+  "temp-mail.io",
+  "mailinator.net",
+  "dispostable.com",
+  "throwawaymail.com",
+  "mailcatch.com",
+  "inboxkitten.com",
+  "moakt.com",
+  "spamgourmet.com",
+  "spambox.us",
+  "mintemail.com",
+  "mail-temporaire.com",
+  "yopmail.fr",
+  "instant-mail.de",
+  "fakeinbox.com",
+  "trashmail.net",
+  "10minutemail.net",
+  "my temp.email",
+  "guerrillamailblock.com",
+  "anonymbox.com",
+  "getairmail.com",
+  "tempinbox.com",
+  "tempemail.co",
+  "temp-mail.com",
+  "dropmail.me",
+  "sharklasers.com",
+  "mailcatch.com",
+  "mail-temporaire.fr",
+  "mailexpire.com",
+  "emailondeck.com",
+  "mailnesia.org",
+  "wegwerfemail.de",
+  "0-mail.com",
+  "mailinator.org",
+  "0clickemail.com",
+  "10minutemail.co.uk",
+  "spambox.xyz",
+  "emailtemporanea.com",
+  "mailpoof.com",
+  "getnada.xyz",
+  "throwaway.email",
+  "fake-mail.net",
+  "yopmail.net",
+  "maildrop.cf",
+  "tempmailaddress.com",
+  "temp-mail.cf",
+  "tempinbox.xyz",
+  "mailcatch.co",
+  "mailforspam.com",
+  "mailtothis.com",
+  "trashmail.me",
+  "jetable.org",
+  "trashmail.org",
+  "spam4.me",
+  "spambog.com",
+  "guerrillamailblock.com",
+  "disposablemail.com",
+  "mailsubs.com",
+  "binkmail.com",
+  "owlpic.com",
+  "meltmail.com",
+  "mailnesia.com",
+  "spamdecoy.net",
+  "mailnull.com",
+  "pokemail.net",
+  "wegwerfemail.de",
+  "temp-mail.org.ru",
+  "10minutemail.be",
+  "mailin8r.com",
+  "yopmail.org",
+  "neomailbox.com",
+  "spamfree24.org",
+  "temp-mail.es",
+  "safetymail.info",
+  "getairmail.xyz",
+  "nowmymail.com",
+  "mail-temp.com",
+  "mvrht.com",
+  "trbvm.com",
+  "maildrop.top",
+  "0wnd.net",
+  "cool.fr.nf",
+  "jetable.com",
+      ]),
+    []
+  );
+
+  function validateEmail(email: string): string | null {
+    const trimmed = email?.trim().toLowerCase() || "";
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!trimmed) return "Email is required";
+    if (!emailRegex.test(trimmed)) return "Enter a valid email address";
+    const domain = trimmed.split("@")[1]?.split(":")[0];
+    if (!domain) return "Enter a valid email address";
+    if (disposableDomains.has(domain)) return "Disposable email addresses are not allowed";
+    return null;
+  }
 
   // Database-driven dropdown state
   const [industries, setIndustries] = useState<IndustryOption[]>([]);
@@ -108,6 +220,7 @@ type FormState = {
   const [isLoadingIndustries, setIsLoadingIndustries] = useState(true);
   const [isLoadingRoles, setIsLoadingRoles] = useState(false);
   const [isLoadingSkills, setIsLoadingSkills] = useState(false);
+
 
   // Fetch industries on mount
   useEffect(() => {
@@ -253,7 +366,14 @@ type FormState = {
     if (form.industryId === 11 && !form.customIndustry.trim()) {
     return;
   }
+    // Validate email format and disposable domains
+    const emailValidationErr = validateEmail(form.workEmail);
+    if (emailValidationErr) {
+      setEmailError(emailValidationErr);
+      return;
+    }
 
+    setEmailError("");
     setIsSubmitting(true);
     setAiReport("");
     setAiReportError("");
@@ -450,8 +570,11 @@ type FormState = {
                 <LeadCapture
                   form={form}
                   onUpdate={updateForm}
-                  onSubmit={handleLeadCaptureSubmit}
-                  isSubmitting={isSubmitting}
+                    onSubmit={handleLeadCaptureSubmit}
+                    isSubmitting={isSubmitting}
+                    emailError={emailError}
+                    setEmailError={setEmailError}
+                    validateEmail={validateEmail}
                 />
               )}
 
@@ -1256,9 +1379,12 @@ type FormState = {
    onUpdate: <K extends keyof FormState>(key: K, value: FormState[K]) => void;
    onSubmit: (e: React.FormEvent) => void;
    isSubmitting: boolean;
+  emailError: string;
+  setEmailError: (s: string) => void;
+  validateEmail: (email: string) => string | null;
  };
 
- function LeadCapture({ form, onUpdate, onSubmit, isSubmitting }: LeadCaptureProps) {
+ function LeadCapture({ form, onUpdate, onSubmit, isSubmitting, emailError, setEmailError, validateEmail }: LeadCaptureProps) {
    return (
      <Card className="bg-background-secondary/80 border-border/70 shadow-lg shadow-black/40 backdrop-blur">
        <CardHeader>
@@ -1281,19 +1407,33 @@ type FormState = {
                  onChange={(e) => onUpdate("name", e.target.value)}
                  placeholder="Alex Rivera"
                  className="mt-2"
-                 required
+                required
+                disabled={isSubmitting}
                />
              </div>
              <div>
-               <Label htmlFor="workEmail">Work email</Label>
+               <Label htmlFor="workEmail">
+                 <span>Work email</span>
+                {emailError && (
+                  <span className="ml-1 text-xs text-error">({emailError})</span>
+                )}
+               </Label>
                <Input
                  id="workEmail"
                  type="email"
                  value={form.workEmail}
-                 onChange={(e) => onUpdate("workEmail", e.target.value)}
+                 onChange={(e) => {
+                   onUpdate("workEmail", e.target.value);
+                 }}
+                 onBlur={() => {
+                   const err = validateEmail(form.workEmail);
+                   setEmailError(err ?? "");
+                 }}
                  placeholder="you@company.com"
-                 className="mt-2"
+                 className={cn("mt-2", emailError ? "border-error ring-1 ring-error/60" : "")}
                  required
+                 aria-invalid={!!emailError}
+                 disabled={isSubmitting}
                />
              </div>
            </div>
@@ -1307,7 +1447,7 @@ type FormState = {
              By continuing, you agree to receive product updates from Skillar.ai. You
              can opt out anytime.
            </p>
-           <Button type="submit" size="sm" disabled={isSubmitting || !form.name || !form.workEmail}>
+           <Button type="submit" size="sm" disabled={isSubmitting || !form.name || !form.workEmail || !!emailError}>
              {isSubmitting ? "Preparing your results…" : "View my results"}
            </Button>
          </CardFooter>
