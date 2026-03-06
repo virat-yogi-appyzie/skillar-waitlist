@@ -250,7 +250,7 @@ type FormState = {
     if (!form.workEmail || !form.name || !form.companyName || !form.industryId || !form.roleId) {
       return;
     } 
-    if (form.industryId === 13 && !form.customIndustry.trim()) {
+    if (form.industryId === 11 && !form.customIndustry.trim()) {
     return;
   }
 
@@ -301,7 +301,7 @@ type FormState = {
       const lowestSkillName = lowestScoringSkill?.skill || form.selectedSkills[0]?.name || "Unknown skill";
       const lowestSkillScore = lowestScoringSkill?.score ?? (form.proficiencyBySkill[lowestSkillName] ?? 3);
       
-      const effectiveIndustryForAi=form.industryId===13 && form.customIndustry.trim()?form.customIndustry.trim():form.industry;
+      const effectiveIndustryForAi=form.industryId===11 && form.customIndustry.trim()?form.customIndustry.trim():form.industry;
       // Step 2: Generate AI report
       // console.log("effectiveIndustryForAi:", effectiveIndustryForAi);
       // console.log("userRole:", form.role);
@@ -757,7 +757,7 @@ type FormState = {
     </option>
   ))}
 </select>
-{form.industryId === 13 && (
+{form.industryId === 11 && (
   <div className="mt-4">
     <Label htmlFor="customIndustry">
       Specify your industry <span className="text-error">*</span>
@@ -1158,7 +1158,7 @@ type FormState = {
      case 1:
        return (
     form.industryId !== null &&
-    (form.industryId !== 13 || form.customIndustry.trim().length > 0)
+    (form.industryId !== 11 || form.customIndustry.trim().length > 0)
   );
      case 2:
        // Either a valid role selected OR "Other" with custom role filled in
