@@ -214,8 +214,10 @@ export default function SkillsGapDiagnosticPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [aiReport, setAiReport] = useState<string>("");
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [aiReportError, setAiReportError] = useState<string>("");
 
   const [showEmailNotificationModal, setShowEmailNotificationModal] = useState(false);
@@ -854,8 +856,9 @@ export default function SkillsGapDiagnosticPage() {
         customRolesMapping[r.id] = r.name;
       }
     });
+    // const selectedSkillsByRole: Record<string, any[]> | undefined = useMultiRole ? {} : undefined;
 
-    const selectedSkillsByRole: Record<string, any[]> | undefined = useMultiRole ? {} : undefined;
+    const selectedSkillsByRole: Record<string, { id: number; name: string; proficiency: number }[]> | undefined = useMultiRole ? {} : undefined;
     const customSkillsByRoleMapped: Record<string, string> | undefined = useMultiRole ? {} : undefined;
 
     if (useMultiRole) {
@@ -893,6 +896,7 @@ export default function SkillsGapDiagnosticPage() {
     if (useMultiRole) {
       for (const role of effectiveRolesList) {
         const isCustomRole = role.id < 0;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const submitKey = String(role.id);
         const originalKey = role.id < 0 ? `custom-${role.name.toLowerCase()}` : String(role.id);
         
@@ -1578,6 +1582,7 @@ export default function SkillsGapDiagnosticPage() {
 
 
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function StepIndicator({
 
   step,
@@ -1876,6 +1881,7 @@ function QuestionnaireStep({
 
   roles,
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   skills,
 
   skillsByRole,

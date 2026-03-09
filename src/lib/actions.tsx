@@ -185,6 +185,7 @@ function parseGeminiSections(aiReport: string): {
 }
 
 function buildHtmlTemplate({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   name,
   aiReport,
   userGoal,
@@ -211,7 +212,7 @@ function buildHtmlTemplate({
 }) {
   // Parse the Gemini response into three sections
   const sections = parseGeminiSections(aiReport)
-  const currentDate = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+  // const currentDate = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
 
 
   return `<!DOCTYPE html>
@@ -1124,9 +1125,10 @@ function parseTimeToBuildMonths(timeToBuildLabel: string): number {
 /**
  * Helper to check if a string is a numeric ID
  */
-function isNumeric(val: any): boolean {
-  return /^\d+$/.test(String(val))
-}
+// function isNumeric(val: any): boolean {
+//   return /^\d+$/.test(String(val))
+// }
+
 
 export async function saveSkillsGapAssessment(input: {
   name: string
@@ -1247,9 +1249,9 @@ export async function saveSkillsGapAssessment(input: {
     const timeToBuildMonths = parseTimeToBuildMonths(input.timeToBuildLabel)
 
     // 3. Prepare custom data for JSON (combine fresh custom entries and pre-filled ones)
-    let finalCustomRoles = [...new Set([...customRolesData, ...(input.customAddedRoles || [])])].filter(Boolean)
-    let finalCustomIndustry = [...new Set([...customIndustryData, ...(input.customAddedIndustry || [])])].filter(Boolean)
-    let finalCustomSkills = input.customAddedSkills || []
+    const finalCustomRoles = [...new Set([...customRolesData, ...(input.customAddedRoles || [])])].filter(Boolean)
+    const finalCustomIndustry = [...new Set([...customIndustryData, ...(input.customAddedIndustry || [])])].filter(Boolean)
+    const finalCustomSkills = input.customAddedSkills || []
 
     // Create assessment (no roleId on UserAssessment; roles go in UserAssessmentRole)
     const assessment = await prisma.userAssessment.create({
@@ -1282,8 +1284,10 @@ export async function saveSkillsGapAssessment(input: {
     })
 
     // 4. Resolve Skills (JSON-only for custom)
-    for (const [roleKey, skillsList] of Object.entries(skillsByRole)) {
-      const roleRelationId = resolvedIdByKey[roleKey] ?? Number(roleKey)
+      //   for (const [roleKey, skillsList] of Object.entries(skillsByRole)) {
+      // const roleRelationId = resolvedIdByKey[roleKey] ?? Number(roleKey)
+
+    for (const skillsList of Object.values(skillsByRole)) {
       
       for (const skillInput of skillsList) {
         if (skillInput.id < 0) {
@@ -1433,8 +1437,10 @@ export async function submitToWaitlist(
       }
     }
 
-    // Import prisma and WaitlistService
-    const { prisma } = await import('@/lib/db')
+        // Import prisma and WaitlistService
+    // const { prisma } = await import('@/lib/db')
+
+    // Import WaitlistService
     const { WaitlistService } = await import('@/lib/waitlist-service')
 
     // Use WaitlistService to handle submission

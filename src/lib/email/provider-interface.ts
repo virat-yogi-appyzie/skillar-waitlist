@@ -34,6 +34,7 @@ export abstract class EmailProvider {
   /**
    * Check if an error indicates a hard bounce (invalid recipient)
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected isHardBounce(_error: unknown): boolean {
     return false; // Override in specific providers
   }

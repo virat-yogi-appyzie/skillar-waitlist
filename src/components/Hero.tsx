@@ -1,8 +1,10 @@
  "use client";
 
- import { useState, useEffect } from "react";
- import { Button } from "@/components/ui/button";
- import { useWaitlist } from "@/lib/waitlist-context";
+//   import { useState, useEffect } from "react";
+//  import { Button } from "@/components/ui/button";
+//  import { useWaitlist } from "@/lib/waitlist-context";
+
+
 
  export default function Hero() {
   // const { waitlistCount } = useWaitlist();

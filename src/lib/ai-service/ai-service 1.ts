@@ -4,7 +4,7 @@
  */
 
 import { loadBalancedGeminiClient } from "./gemini-client";
-import { jsonrepair } from "jsonrepair";
+// import { jsonrepair } from "jsonrepair";
 
 export interface ContentGenerationParams {
   userGoal: string;
@@ -156,8 +156,8 @@ class AIService {
     const skillRiskLevel = input.skillScore <= 2 ? 'CRITICAL' : 'HIGH'
     const trainingRiskLevel = input.timeToBuild.includes('6') || input.timeToBuild.includes('12') ? 'CRITICAL' : 'HIGH'
     const proficiencyLabel = input.skillScore === 1 ? 'Critical' : input.skillScore === 2 ? 'Major Gap' : 'Moderate Gap'
-    const timeSavings = input.timeToBuild.includes('6') || input.timeToBuild.includes('12') ? '5-6 months' : '3-4 months'
-    const impactSavings = input.timeToBuild.includes('6') || input.timeToBuild.includes('12') ? '8-11 months' : '5-8 months'
+    // const timeSavings = input.timeToBuild.includes('6') || input.timeToBuild.includes('12') ? '5-6 months' : '3-4 months'
+    // const impactSavings = input.timeToBuild.includes('6') || input.timeToBuild.includes('12') ? '8-11 months' : '5-8 months'
     const speedImprovement = input.timeToBuild.includes('6') || input.timeToBuild.includes('12') ? '95%+ faster' : '90%+ faster'
     const deploySpeed = input.timeToBuild.includes('6') || input.timeToBuild.includes('12') ? '12x faster' : '8x faster'
     
