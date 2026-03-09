@@ -50,6 +50,9 @@ type SelectedSkill = {
   name: string;
 };
 
+// One selected role (id can be -1 for "Other")
+type SelectedRole = { id: number; name: string };
+
 type QuestionnairePhase = "questionnaire" | "processing" | "leadCapture" | "results";
 
 type FormState = {
@@ -70,6 +73,10 @@ type FormState = {
    customIndustry: string;
    customRole: string;
    customSkills: string;
+   // Multi-role: selected roles and per-role skills
+   selectedRoles: SelectedRole[];
+   selectedSkillsByRole: Record<string, SelectedSkill[]>; // key = String(roleId)
+   customSkillsByRole: Record<string, string>;
  };
 
  const INITIAL_FORM_STATE: FormState = {
@@ -89,6 +96,9 @@ type FormState = {
    customIndustry: "",
    customRole: "",
    customSkills: "",
+   selectedRoles: [],
+   selectedSkillsByRole: {},
+   customSkillsByRole: {},
  };
 
  export default function SkillsGapDiagnosticPage() {
@@ -100,127 +110,15 @@ type FormState = {
   const [aiReportError, setAiReportError] = useState<string>("");
   const [showEmailNotificationModal, setShowEmailNotificationModal] = useState(false);
   const [failureReason, setFailureReason] = useState<string>("");
-  const [emailError, setEmailError] = useState<string>("");
-
-  const disposableDomains = useMemo(
-    () =>
-      new Set([
-        "mailinator.com",
-  "yopmail.com",
-  "10minutemail.com",
-  "guerrillamail.com",
-  "trashmail.com",
-  "maildrop.cc",
-  "temp-mail.org",
-  "getnada.com",
-  "tempmailo.com",
-  "fakemailgenerator.com",
-  "mailnesia.com",
-  "temp-mail.io",
-  "mailinator.net",
-  "dispostable.com",
-  "throwawaymail.com",
-  "mailcatch.com",
-  "inboxkitten.com",
-  "moakt.com",
-  "spamgourmet.com",
-  "spambox.us",
-  "mintemail.com",
-  "mail-temporaire.com",
-  "yopmail.fr",
-  "instant-mail.de",
-  "fakeinbox.com",
-  "trashmail.net",
-  "10minutemail.net",
-  "my temp.email",
-  "guerrillamailblock.com",
-  "anonymbox.com",
-  "getairmail.com",
-  "tempinbox.com",
-  "tempemail.co",
-  "temp-mail.com",
-  "dropmail.me",
-  "sharklasers.com",
-  "mailcatch.com",
-  "mail-temporaire.fr",
-  "mailexpire.com",
-  "emailondeck.com",
-  "mailnesia.org",
-  "wegwerfemail.de",
-  "0-mail.com",
-  "mailinator.org",
-  "0clickemail.com",
-  "10minutemail.co.uk",
-  "spambox.xyz",
-  "emailtemporanea.com",
-  "mailpoof.com",
-  "getnada.xyz",
-  "throwaway.email",
-  "fake-mail.net",
-  "yopmail.net",
-  "maildrop.cf",
-  "tempmailaddress.com",
-  "temp-mail.cf",
-  "tempinbox.xyz",
-  "mailcatch.co",
-  "mailforspam.com",
-  "mailtothis.com",
-  "trashmail.me",
-  "jetable.org",
-  "trashmail.org",
-  "spam4.me",
-  "spambog.com",
-  "guerrillamailblock.com",
-  "disposablemail.com",
-  "mailsubs.com",
-  "binkmail.com",
-  "owlpic.com",
-  "meltmail.com",
-  "mailnesia.com",
-  "spamdecoy.net",
-  "mailnull.com",
-  "pokemail.net",
-  "wegwerfemail.de",
-  "temp-mail.org.ru",
-  "10minutemail.be",
-  "mailin8r.com",
-  "yopmail.org",
-  "neomailbox.com",
-  "spamfree24.org",
-  "temp-mail.es",
-  "safetymail.info",
-  "getairmail.xyz",
-  "nowmymail.com",
-  "mail-temp.com",
-  "mvrht.com",
-  "trbvm.com",
-  "maildrop.top",
-  "0wnd.net",
-  "cool.fr.nf",
-  "jetable.com",
-      ]),
-    []
-  );
-
-  function validateEmail(email: string): string | null {
-    const trimmed = email?.trim().toLowerCase() || "";
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!trimmed) return "Email is required";
-    if (!emailRegex.test(trimmed)) return "Enter a valid email address";
-    const domain = trimmed.split("@")[1]?.split(":")[0];
-    if (!domain) return "Enter a valid email address";
-    if (disposableDomains.has(domain)) return "Disposable email addresses are not allowed";
-    return null;
-  }
 
   // Database-driven dropdown state
   const [industries, setIndustries] = useState<IndustryOption[]>([]);
   const [roles, setRoles] = useState<RoleOption[]>([]);
   const [skills, setSkills] = useState<SkillOption[]>([]);
+  const [skillsByRole, setSkillsByRole] = useState<Record<string, SkillOption[]>>({});
   const [isLoadingIndustries, setIsLoadingIndustries] = useState(true);
   const [isLoadingRoles, setIsLoadingRoles] = useState(false);
   const [isLoadingSkills, setIsLoadingSkills] = useState(false);
-
 
   // Fetch industries on mount
   useEffect(() => {
@@ -258,16 +156,17 @@ type FormState = {
     fetchRoles();
   }, [form.industryId]);
 
-  // Fetch skills when industry and role change
+  // Fetch skills for single-role mode (when no multi-role selection yet)
   useEffect(() => {
+    if (form.selectedRoles.length > 0) return; // multi-role uses skillsByRole
+    if (!form.industryId || !form.roleId) {
+      setSkills([]);
+      return;
+    }
     async function fetchSkills() {
-      if (!form.industryId || !form.roleId) {
-        setSkills([]);
-        return;
-      }
       try {
         setIsLoadingSkills(true);
-        const data = await getSkillsByIndustryAndRole(form.industryId, form.roleId);
+        const data = await getSkillsByIndustryAndRole(form.industryId!, form.roleId!);
         setSkills(data);
       } catch (error) {
         console.error("Failed to fetch skills:", error);
@@ -276,7 +175,49 @@ type FormState = {
       }
     }
     fetchSkills();
-  }, [form.industryId, form.roleId]);
+  }, [form.industryId, form.roleId, form.selectedRoles.length]);
+
+  // Fetch skills per role when multiple roles selected
+  useEffect(() => {
+    if (form.selectedRoles.length === 0) {
+      setSkillsByRole({});
+      return;
+    }
+    const roleIds = form.selectedRoles.filter((r) => r.id !== -1).map((r) => r.id);
+    if (roleIds.length === 0) {
+      setSkillsByRole({});
+      return;
+    }
+    let cancelled = false;
+    setIsLoadingSkills(true);
+    Promise.all(
+      roleIds.map((roleId) =>
+        getSkillsByIndustryAndRole(form.industryId!, roleId).then((data) => ({ roleId, data }))
+      )
+    ).then((results) => {
+      if (cancelled) return;
+      const next: Record<string, SkillOption[]> = {};
+      results.forEach(({ roleId, data }) => {
+        next[String(roleId)] = data;
+      });
+      setSkillsByRole(next);
+      setIsLoadingSkills(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [form.industryId, form.selectedRoles]);
+
+  // Sync roleId and role from selectedRoles (selectedSkills is set by handlers)
+  useEffect(() => {
+    if (form.selectedRoles.length === 0) return;
+    const roleId = form.selectedRoles[0]?.id ?? null;
+    const role = form.selectedRoles
+      .map((r) => (r.id === -1 ? form.customRole || "Other" : r.name))
+      .filter(Boolean)
+      .join(", ");
+    setForm((prev) => ({ ...prev, roleId, role }));
+  }, [form.selectedRoles, form.customRole]);
 
    const lowestScoringSkill = useMemo(() => {
      if (!form.selectedSkills.length) return null;
@@ -327,12 +268,116 @@ type FormState = {
      }));
    };
 
-   const toggleSkill = (skillOption: SkillOption) => {
+  const updateCustomSkills = (value: string, roleKey?: string) => {
+    const key = roleKey ?? String(form.roleId);
+    setForm((prev) => {
+      const skillNames = value
+        .split(",")
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
+
+      const baseSelectedSkills = (prev.selectedSkillsByRole[key] ?? []).filter((s) => s.id > 0);
+      const customSelectedSkills: SelectedSkill[] = [];
+      skillNames.forEach((name, index) => {
+        const existsInBase = baseSelectedSkills.some(
+          (s) => s.name.toLowerCase() === name.toLowerCase()
+        );
+        if (!existsInBase) {
+          customSelectedSkills.push({ id: -(index + 1), name });
+        }
+      });
+      const roleSkills = [...baseSelectedSkills, ...customSelectedSkills];
+      const nextByRole = { ...prev.selectedSkillsByRole, [key]: roleSkills };
+      const nextCustom = { ...prev.customSkillsByRole, [key]: value };
+      const flat = Object.values(nextByRole).flat();
+
+      const proficiencyBySkill = { ...prev.proficiencyBySkill };
+      const validSkillNames = new Set(flat.map((s) => s.name));
+      Object.keys(proficiencyBySkill).forEach((k) => {
+        if (!validSkillNames.has(k)) delete proficiencyBySkill[k];
+      });
+      flat.forEach((skill) => {
+        if (proficiencyBySkill[skill.name] == null) proficiencyBySkill[skill.name] = 3;
+      });
+
+      return {
+        ...prev,
+        customSkillsByRole: nextCustom,
+        customSkills: key === String(prev.roleId) ? value : prev.customSkills,
+        selectedSkillsByRole: nextByRole,
+        selectedSkills: flat,
+        proficiencyBySkill,
+      };
+    });
+  };
+
+   const toggleRole = (roleOption: RoleOption | "other") => {
      setForm((prev) => {
-       const isSelected = prev.selectedSkills.some((s) => s.id === skillOption.id);
-       const selectedSkills = isSelected
-         ? prev.selectedSkills.filter((s) => s.id !== skillOption.id)
-         : [...prev.selectedSkills, { id: skillOption.id, name: skillOption.name }];
+       if (roleOption === "other") {
+         const hasOther = prev.selectedRoles.some((r) => r.id === -1);
+         if (hasOther) {
+           const nextRoles = prev.selectedRoles.filter((r) => r.id !== -1);
+           const nextByRole = { ...prev.selectedSkillsByRole };
+           delete nextByRole["-1"];
+           const nextCustom = { ...prev.customSkillsByRole };
+           delete nextCustom["-1"];
+           const flat = Object.values(nextByRole).flat();
+           return {
+             ...prev,
+             selectedRoles: nextRoles,
+             selectedSkillsByRole: nextByRole,
+             customSkillsByRole: nextCustom,
+             selectedSkills: flat,
+             roleId: nextRoles[0]?.id ?? null,
+             role: nextRoles.map((r) => r.name).join(", "),
+             customRole: prev.customRole,
+           };
+         }
+         const nextRoles = [...prev.selectedRoles, { id: -1, name: prev.customRole || "Other" }];
+         return { ...prev, selectedRoles: nextRoles };
+       }
+       const id = (roleOption as RoleOption).id;
+       const name = (roleOption as RoleOption).name;
+       const exists = prev.selectedRoles.some((r) => r.id === id);
+       if (exists) {
+         const nextRoles = prev.selectedRoles.filter((r) => r.id !== id);
+         const nextByRole = { ...prev.selectedSkillsByRole };
+         delete nextByRole[String(id)];
+         const nextCustom = { ...prev.customSkillsByRole };
+         delete nextCustom[String(id)];
+         const flat = Object.values(nextByRole).flat();
+         return {
+           ...prev,
+           selectedRoles: nextRoles,
+           selectedSkillsByRole: nextByRole,
+           customSkillsByRole: nextCustom,
+           selectedSkills: flat,
+           roleId: nextRoles[0]?.id ?? null,
+           role: nextRoles.map((r) => (r.id === -1 ? prev.customRole : r.name)).join(", "),
+         };
+       }
+       const nextRoles = [...prev.selectedRoles, { id, name }];
+       return {
+         ...prev,
+         selectedRoles: nextRoles,
+         roleId: nextRoles[0]?.id ?? null,
+         role: nextRoles.map((r) => (r.id === -1 ? prev.customRole : r.name)).join(", "),
+       };
+     });
+   };
+
+   const toggleSkill = (skillOption: SkillOption, roleKey?: string) => {
+     const key = roleKey ?? String(form.roleId);
+     setForm((prev) => {
+       const byRole = prev.selectedSkillsByRole[key] ?? [];
+       const isSelected = byRole.some((s) => s.id === skillOption.id);
+       const nextByRole = {
+         ...prev.selectedSkillsByRole,
+         [key]: isSelected
+           ? byRole.filter((s) => s.id !== skillOption.id)
+           : [...byRole, { id: skillOption.id, name: skillOption.name }],
+       };
+       const flat = Object.values(nextByRole).flat();
        const proficiencyBySkill = { ...prev.proficiencyBySkill };
        if (!isSelected && proficiencyBySkill[skillOption.name] == null) {
          proficiencyBySkill[skillOption.name] = 3;
@@ -342,7 +387,8 @@ type FormState = {
        }
        return {
          ...prev,
-         selectedSkills,
+         selectedSkillsByRole: nextByRole,
+         selectedSkills: flat,
          proficiencyBySkill,
        };
      });
@@ -357,52 +403,75 @@ type FormState = {
        },
      }));
    };
-   
+
   const handleLeadCaptureSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.workEmail || !form.name || !form.companyName || !form.industryId || !form.roleId) {
-      return;
-    } 
-    if (form.industryId === 11 && !form.customIndustry.trim()) {
-    return;
-  }
-    // Validate email format and disposable domains
-    const emailValidationErr = validateEmail(form.workEmail);
-    if (emailValidationErr) {
-      setEmailError(emailValidationErr);
+    const hasRoles = form.selectedRoles.length > 0 || form.roleId != null;
+    if (!form.workEmail || !form.name || !form.companyName || !form.industryId || !hasRoles) {
       return;
     }
 
-    setEmailError("");
     setIsSubmitting(true);
     setAiReport("");
     setAiReportError("");
-    // Normalize company size to avoid duplicate "employees" in templates
-    const normalizedCompanySize = form.companySize
-      ? form.companySize.replace(/\s*employees?$/i, '').trim()
-      : form.companySize;
     let assessmentId: number | undefined;
 
+    const useMultiRole = form.selectedRoles.length > 0;
+    const roleIds = useMultiRole ? form.selectedRoles.map((r) => r.id) : undefined;
+    const selectedSkillsByRole = useMultiRole
+      ? Object.fromEntries(
+          Object.entries(form.selectedSkillsByRole).map(([key, skills]) => [
+            key,
+            skills.map((s) => ({
+              id: s.id,
+              name: s.name,
+              proficiency: form.proficiencyBySkill[s.name] ?? 3,
+            })),
+          ])
+        )
+      : undefined;
+
+    // Prepare custom roles and skills data for JSON columns
+    const customRolesData: string[] = []
+    const customSkillsData: string[] = []
+
+    // Collect custom roles (when user selects "Other" option)
+    if (form.selectedRoles.some(role => role.id === -1) && form.customRole.trim()) {
+      customRolesData.push(form.customRole.trim())
+    }
+
+    // Collect custom skills from all roles
+    for (const [roleKey, customSkillsText] of Object.entries(form.customSkillsByRole)) {
+      if (customSkillsText && customSkillsText.trim() !== '') {
+        const skills = customSkillsText.split(',').map(skill => skill.trim()).filter(skill => skill !== '')
+        customSkillsData.push(...skills)
+      }
+    }
+
     try {
-      // Step 1: Save assessment to database
       const saveResult = await saveSkillsGapAssessment({
         name: form.name,
         email: form.workEmail,
         companyName: form.companyName,
-        industryId: form.industryId,
-        roleId: form.roleId,
-        customIndustry: form.customIndustry,
-        customRole: form.customRole,
+        industryId: form.industryId!,
+        ...(useMultiRole
+          ? { roleIds, selectedSkillsByRole, customRole: form.customRole, customSkillsByRole: form.customSkillsByRole }
+          : {
+              roleId: form.roleId!,
+              customRole: form.customRole,
+              selectedSkills: form.selectedSkills.map((skill) => ({
+                id: skill.id,
+                name: skill.name,
+                proficiency: form.proficiencyBySkill[skill.name] ?? 3,
+              })),
+            }),
         userGoal: form.primaryBusinessGoal,
-        selectedSkills: form.selectedSkills.map((skill) => ({
-          id: skill.id,
-          name: skill.name,
-          proficiency: form.proficiencyBySkill[skill.name] ?? 3,
-        })),
         timeToBuildLabel: form.timeToBuild,
         businessImpact: form.businessImpact,
-        companySize: normalizedCompanySize,
+        companySize: form.companySize,
         criticalFlag: hasCriticalVulnerability,
+        customAddedRoles: customRolesData.length > 0 ? customRolesData : undefined,
+        customAddedSkills: customSkillsData.length > 0 ? customSkillsData : undefined,
       });
 
       if (!saveResult.success) {
@@ -420,20 +489,56 @@ type FormState = {
 
       const lowestSkillName = lowestScoringSkill?.skill || form.selectedSkills[0]?.name || "Unknown skill";
       const lowestSkillScore = lowestScoringSkill?.score ?? (form.proficiencyBySkill[lowestSkillName] ?? 3);
-      
-      const effectiveIndustryForAi=form.industryId===11 && form.customIndustry.trim()?form.customIndustry.trim():form.industry;
+
+      // Build an overview string for ALL selected skills and their ratings
+      const skillsOverview =
+        form.selectedSkills.length > 0
+          ? form.selectedSkills
+              .map((skill) => {
+                const score = form.proficiencyBySkill[skill.name] ?? 3;
+                return `${skill.name} (${score}/5)`;
+              })
+              .join("; ")
+          : "None selected";
+
+      // Build an overview string for ALL roles and their skills
+      const rolesOverview =
+        form.selectedRoles.length > 0
+          ? form.selectedRoles
+              .map((role) => {
+                const roleKey = String(role.id);
+                const roleName = role.id === -1 ? (form.customRole || "Other") : role.name;
+                const skillsForRole = form.selectedSkillsByRole[roleKey] ?? [];
+                if (!skillsForRole.length) {
+                  return roleName;
+                }
+                const skillsText = skillsForRole
+                  .map((s) => {
+                    const score = form.proficiencyBySkill[s.name] ?? 3;
+                    return `${s.name} (${score}/5)`;
+                  })
+                  .join(", ");
+                return `${roleName}: ${skillsText}`;
+              })
+              .join(" | ")
+          : form.role
+          ? `${form.role}: ${skillsOverview}`
+          : "Not specified";
+
       // Step 2: Generate AI report
-      // console.log("effectiveIndustryForAi:", effectiveIndustryForAi);
-      // console.log("userRole:", form.role);
+      
+     
       const reportResult = await generateSkillsGapReport({
         userGoal: form.primaryBusinessGoal,
-        userIndustry: effectiveIndustryForAi,
+        userIndustry: form.industry,
         userRole: form.role,
         lowestScoringSkill: lowestSkillName,
         skillScore: lowestSkillScore,
         timeToBuild: form.timeToBuild,
         businessImpact: form.businessImpact,
-        companySize: normalizedCompanySize,
+        companySize: form.companySize,
+        skillsOverview,
+        rolesOverview,
       });
 
       if (reportResult.success && reportResult.fullReport) {
@@ -452,14 +557,16 @@ type FormState = {
           name: form.name,
           email: form.workEmail,
           userGoal: form.primaryBusinessGoal,
-          userIndustry: effectiveIndustryForAi,
+          userIndustry: form.industry,
           userRole: form.role,
           lowestScoringSkill: lowestSkillName,
           skillScore: lowestSkillScore,
           timeToBuild: form.timeToBuild,
           businessImpact: form.businessImpact,
-          companySize: normalizedCompanySize,
+          companySize: form.companySize,
           aiReport: reportResult.fullReport,
+          skillsOverview,
+          rolesOverview,
           assessmentId: assessmentId,
         }).then((emailResult) => {
           if (emailResult.success) {
@@ -547,10 +654,13 @@ type FormState = {
                   industries={industries}
                   roles={roles}
                   skills={skills}
+                  skillsByRole={skillsByRole}
                   isLoadingIndustries={isLoadingIndustries}
                   isLoadingRoles={isLoadingRoles}
                   isLoadingSkills={isLoadingSkills}
                   onUpdate={updateForm}
+                  onCustomSkillsChange={updateCustomSkills}
+                  onToggleRole={toggleRole}
                   onToggleSkill={toggleSkill}
                   onUpdateProficiency={updateProficiency}
                   onNext={handleNext}
@@ -570,11 +680,8 @@ type FormState = {
                 <LeadCapture
                   form={form}
                   onUpdate={updateForm}
-                    onSubmit={handleLeadCaptureSubmit}
-                    isSubmitting={isSubmitting}
-                    emailError={emailError}
-                    setEmailError={setEmailError}
-                    validateEmail={validateEmail}
+                  onSubmit={handleLeadCaptureSubmit}
+                  isSubmitting={isSubmitting}
                 />
               )}
 
@@ -720,11 +827,14 @@ type FormState = {
    industries: IndustryOption[];
    roles: RoleOption[];
    skills: SkillOption[];
+   skillsByRole: Record<string, SkillOption[]>;
    isLoadingIndustries: boolean;
    isLoadingRoles: boolean;
    isLoadingSkills: boolean;
    onUpdate: <K extends keyof FormState>(key: K, value: FormState[K]) => void;
-   onToggleSkill: (skill: SkillOption) => void;
+   onCustomSkillsChange: (value: string, roleKey?: string) => void;
+   onToggleRole: (role: RoleOption | "other") => void;
+   onToggleSkill: (skill: SkillOption, roleKey?: string) => void;
    onUpdateProficiency: (skill: string, value: number) => void;
    onNext: () => void;
    onBack: () => void;
@@ -819,16 +929,20 @@ type FormState = {
    industries,
    roles,
    skills,
+   skillsByRole,
    isLoadingIndustries,
    isLoadingRoles,
    isLoadingSkills,
    onUpdate,
+   onCustomSkillsChange,
+   onToggleRole,
    onToggleSkill,
    onUpdateProficiency,
    onNext,
    onBack,
  }: QuestionnaireStepProps) {
-   const canGoBack = step > 1;
+  const canGoBack = step > 1;
+  const [showCustomSkillsByRole, setShowCustomSkillsByRole] = useState<Record<string, boolean>>({});
 
    return (
      <Card className="bg-background-secondary/80 border-border/70 shadow-lg shadow-black/40 backdrop-blur">
@@ -851,54 +965,31 @@ type FormState = {
              <div className="md:col-span-2">
                <Label htmlFor="industry">Primary industry</Label>
                <select
-  id="industry"
-  className="mt-2 h-9 w-full rounded-md border border-border bg-background-secondary px-3 text-sm outline-none ring-offset-background focus-visible:border-primary-300 focus-visible:ring-2 focus-visible:ring-primary-300/40"
-  value={form.industryId ?? ""}
-  onChange={(e) => {
-    const selectedId = e.target.value ? Number(e.target.value) : null;
-    const selectedIndustry = industries.find((i) => i.id === selectedId);
-
-    onUpdate("industryId", selectedId);
-    onUpdate("industry", selectedIndustry?.name ?? "");
-    onUpdate("customIndustry", "");
-
-    // reset dependent fields
-    onUpdate("roleId", null);
-    onUpdate("role", "");
-    onUpdate("selectedSkills", []);
-    onUpdate("proficiencyBySkill", {});
-  }}
-  disabled={isLoadingIndustries}
->
-  <option value="">
-    {isLoadingIndustries ? "Loading..." : "Select industry"}
-  </option>
-
-  {industries.map((industry) => (
-    <option key={industry.id} value={industry.id}>
-      {industry.name}
-    </option>
-  ))}
-</select>
-{form.industryId === 11 && (
-  <div className="mt-4">
-    <Label htmlFor="customIndustry">
-      Specify your industry <span className="text-error">*</span>
-    </Label>
-
-    <Input
-      id="customIndustry"
-      value={form.customIndustry}
-      onChange={(e) => {
-        onUpdate("customIndustry", e.target.value);
-        onUpdate("industry", e.target.value);
-      }}
-      placeholder="e.g. Space Technology, Renewable Infrastructure"
-      className="mt-2"
-      required
-    />
-  </div>
-)}
+                 id="industry"
+                 className="mt-2 h-9 w-full rounded-md border border-border bg-background-secondary px-3 text-sm outline-none ring-offset-background focus-visible:border-primary-300 focus-visible:ring-2 focus-visible:ring-primary-300/40"
+                 value={form.industryId ?? ""}
+                 onChange={(e) => {
+                   const selectedId = e.target.value ? Number(e.target.value) : null;
+                   const selectedIndustry = industries.find((i) => i.id === selectedId);
+                   onUpdate("industryId", selectedId);
+                   onUpdate("industry", selectedIndustry?.name ?? "");
+                   onUpdate("roleId", null);
+                   onUpdate("role", "");
+                   onUpdate("selectedSkills", []);
+                   onUpdate("proficiencyBySkill", {});
+                   onUpdate("selectedRoles", []);
+                   onUpdate("selectedSkillsByRole", {});
+                   onUpdate("customSkillsByRole", {});
+                 }}
+                 disabled={isLoadingIndustries}
+               >
+                 <option value="">{isLoadingIndustries ? "Loading..." : "Select industry"}</option>
+                 {industries.map((industry) => (
+                   <option key={industry.id} value={industry.id}>
+                     {industry.name}
+                   </option>
+                 ))}
+               </select>
                <p className="mt-2 text-xs text-text-secondary">
                  This helps us benchmark you against similar organizations.
                </p>
@@ -906,148 +997,176 @@ type FormState = {
            </div>
          )}
 
-         {step === 2 && (
-           <div className="space-y-4">
-             <div>
-               <Label htmlFor="role">Your role</Label>
-               <select
-                 id="role"
-                 className="mt-2 h-9 w-full rounded-md border border-border bg-background-secondary px-3 text-sm outline-none focus-visible:border-primary-300 focus-visible:ring-2 focus-visible:ring-primary-300/40"
-                 value={form.roleId === -1 ? "other" : (form.roleId ?? "")}
-                 onChange={(e) => {
-                   if (e.target.value === "other") {
-                     onUpdate("roleId", -1);
-                     onUpdate("role", "");
-                     onUpdate("customRole", "");
-                   } else {
-                     const selectedId = e.target.value ? Number(e.target.value) : null;
-                     const selectedRole = roles.find((r) => r.id === selectedId);
-                     onUpdate("roleId", selectedId);
-                     onUpdate("role", selectedRole?.name ?? "");
-                     onUpdate("customRole", "");
-                   }
-                   onUpdate("selectedSkills", []);
-                   onUpdate("proficiencyBySkill", {});
-                   onUpdate("customSkills", "");
-                 }}
-                 disabled={!form.industryId || isLoadingRoles}
-               >
-                 <option value="">
-                   {isLoadingRoles ? "Loading..." : (form.industryId ? "Select role" : "Select an industry first")}
-                 </option>
-                 {roles.map((role) => (
-                   <option key={role.id} value={role.id}>
-                     {role.name}
-                   </option>
-                 ))}
-                 <option value="other">Other (specify)</option>
-               </select>
-             </div>
-             
-             {form.roleId === -1 && (
-               <div>
-                 <Label htmlFor="customRole">Specify your role <span className="text-error">*</span></Label>
-                 <Input
-                   id="customRole"
-                   value={form.customRole}
-                   onChange={(e) => {
-                     onUpdate("customRole", e.target.value);
-                     onUpdate("role", e.target.value);
-                   }}
-                   placeholder="e.g. Training Coordinator, Skills Development Manager"
-                   className="mt-2"
-                   required
-                 />
-               </div>
-             )}
-           </div>
-         )}
+        {step === 2 && (
+          <div className="space-y-4">
+            <p className="text-sm text-text-secondary">
+              Select one or more roles that apply. You’ll choose skills for each role on the next step.
+            </p>
+            {!form.industryId || isLoadingRoles ? (
+              <p className="rounded-md border border-dashed border-border px-3 py-2 text-xs text-text-secondary">
+                {isLoadingRoles ? "Loading roles..." : "Select an industry first."}
+              </p>
+            ) : (
+              <>
+                <div className="grid gap-2 md:grid-cols-2">
+                  {roles.map((role) => {
+                    const checked = form.selectedRoles.some((r) => r.id === role.id);
+                    return (
+                      <button
+                        key={role.id}
+                        type="button"
+                        onClick={() => onToggleRole(role)}
+                        className={cn(
+                          "flex items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm transition-all",
+                          checked
+                            ? "border-primary-300 bg-primary-300/10 text-primary-50"
+                            : "border-border/70 bg-background-secondary hover:border-primary-300/60"
+                        )}
+                      >
+                        <span className="inline-flex size-4 shrink-0 rounded border border-border">
+                          {checked && <span className="block size-full rounded bg-primary-300" />}
+                        </span>
+                        {role.name}
+                      </button>
+                    );
+                  })}
+                  <button
+                    type="button"
+                    onClick={() => onToggleRole("other")}
+                    className={cn(
+                      "flex items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm transition-all",
+                      form.selectedRoles.some((r) => r.id === -1)
+                        ? "border-primary-300 bg-primary-300/10 text-primary-50"
+                        : "border-border/70 bg-background-secondary hover:border-primary-300/60"
+                    )}
+                  >
+                    <span className="inline-flex size-4 shrink-0 rounded border border-border">
+                      {form.selectedRoles.some((r) => r.id === -1) && (
+                        <span className="block size-full rounded bg-primary-300" />
+                      )}
+                    </span>
+                    Other (specify)
+                  </button>
+                </div>
+                {form.selectedRoles.some((r) => r.id === -1) && (
+                  <div className="pt-2">
+                    <Label htmlFor="customRole">Specify your role <span className="text-error">*</span></Label>
+                    <Input
+                      id="customRole"
+                      value={form.customRole}
+                      onChange={(e) => onUpdate("customRole", e.target.value)}
+                      placeholder="e.g. Training Coordinator, Skills Development Manager"
+                      className="mt-2"
+                    />
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
 
-         {step === 3 && (
-           <div className="space-y-4">
-             <p className="text-sm text-text-secondary">
-               Based on your industry and role, which strategic skill areas are you
-               most concerned about in the next 6–12 months?
-             </p>
+        {step === 3 && (
+          <div className="space-y-6">
+            <p className="text-sm text-text-secondary">
+              For each role, choose the strategic skill areas you want to assess. You can add custom skills per role.
+            </p>
 
-             {form.roleId === -1 ? (
-               /* Custom role - show text input for skills */
-               <div className="space-y-4">
-                 <div>
-                   <Label htmlFor="customSkills">Enter your priority skills <span className="text-error">*</span></Label>
-                   <textarea
-                     id="customSkills"
-                     value={form.customSkills}
-                     onChange={(e) => {
-                       onUpdate("customSkills", e.target.value);
-                       // Parse comma-separated skills into selectedSkills array for proficiency rating
-                       const skillNames = e.target.value.split(",").map(s => s.trim()).filter(s => s.length > 0);
-                       const customSelectedSkills = skillNames.map((name, index) => ({
-                         id: -(index + 1), // Negative IDs for custom skills
-                         name
-                       }));
-                       onUpdate("selectedSkills", customSelectedSkills);
-                       // Initialize proficiency for new skills
-                       const proficiency: Record<string, number> = {};
-                       skillNames.forEach((name) => {
-                         proficiency[name] = form.proficiencyBySkill[name] ?? 3;
-                       });
-                       onUpdate("proficiencyBySkill", proficiency);
-                     }}
-                     placeholder="e.g. Leadership Development, Digital Transformation, Change Management (separate with commas)"
-                     className="mt-2 w-full min-h-[100px] rounded-md border border-border bg-background-secondary px-3 py-2 text-sm outline-none focus-visible:border-primary-300 focus-visible:ring-2 focus-visible:ring-primary-300/40"
-                     required
-                   />
-                   <p className="mt-2 text-xs text-text-secondary">
-                     Enter the skills you want to assess, separated by commas.
-                   </p>
-                 </div>
-               </div>
-             ) : !form.industryId || !form.roleId ? (
-               <p className="rounded-md border border-dashed border-border px-3 py-2 text-xs text-text-secondary">
-                 Select an industry and role first to see tailored skill suggestions.
-               </p>
-             ) : isLoadingSkills ? (
-               <p className="rounded-md border border-dashed border-border px-3 py-2 text-xs text-text-secondary">
-                 Loading skills...
-               </p>
-             ) : skills.length === 0 ? (
-               <p className="rounded-md border border-dashed border-border px-3 py-2 text-xs text-text-secondary">
-                 No skills found for this combination. You can add custom skills below.
-               </p>
-             ) : (
-               <div className="grid gap-3 md:grid-cols-2">
-                 {skills.map((skill) => {
-                   const checked = form.selectedSkills.some((s) => s.id === skill.id);
-                   return (
-                     <button
-                       key={skill.id}
-                       type="button"
-                       onClick={() => onToggleSkill(skill)}
-                       className={cn(
-                         "flex items-start gap-2 rounded-lg border px-3 py-2 text-left text-xs transition-all md:text-sm",
-                         checked
-                           ? "border-primary-300 bg-primary-300/10 text-primary-50 shadow-[0_0_0_1px_rgba(50,184,198,0.5)]"
-                           : "border-border/70 bg-background-secondary hover:border-primary-300/60 hover:bg-primary-300/5"
-                       )}
-                     >
-                       <span className="mt-[2px] inline-flex size-3 shrink-0 rounded-sm border border-border bg-background-secondary">
-                         {checked && (
-                           <span className="block size-full rounded-[3px] bg-primary-300" />
-                         )}
-                       </span>
-                       <span>{skill.name}</span>
-                     </button>
-                   );
-                 })}
-               </div>
-             )}
+            {form.selectedRoles.length === 0 ? (
+              <p className="rounded-md border border-dashed border-border px-3 py-2 text-xs text-text-secondary">
+                Select at least one role on the previous step.
+              </p>
+            ) : isLoadingSkills && form.selectedRoles.some((r) => r.id !== -1) ? (
+              <p className="rounded-md border border-dashed border-border px-3 py-2 text-xs text-text-secondary">
+                Loading skills...
+              </p>
+            ) : (
+              form.selectedRoles.map((role) => {
+                const roleKey = String(role.id);
+                const roleName = role.id === -1 ? (form.customRole || "Other") : role.name;
+                const roleSkills = role.id === -1 ? [] : (skillsByRole[roleKey] ?? []);
+                const selectedForRole = form.selectedSkillsByRole[roleKey] ?? [];
+                const customForRole = form.customSkillsByRole[roleKey] ?? "";
+                const showOther = role.id === -1 ? true : (showCustomSkillsByRole[roleKey] ?? false);
 
-             <p className="text-xs text-text-secondary">
-               {form.roleId === -1 ? "Enter at least one skill to continue." : "You can pick multiple skills. We'll focus on the most exposed ones."}
-             </p>
-           </div>
-         )}
+                return (
+                  <div key={roleKey} className="rounded-lg border border-border/70 bg-background-primary/30 p-4 space-y-3">
+                    <h4 className="text-sm font-semibold text-text-primary">
+                      Skills for {roleName}
+                    </h4>
+                    {role.id === -1 ? (
+                      <div>
+                        <Label htmlFor={`customSkills-${roleKey}`}>Enter your priority skills <span className="text-error">*</span></Label>
+                        <textarea
+                          id={`customSkills-${roleKey}`}
+                          value={customForRole}
+                          onChange={(e) => onCustomSkillsChange(e.target.value, roleKey)}
+                          placeholder="e.g. Leadership Development, Change Management (separate with commas)"
+                          className="mt-2 w-full min-h-[80px] rounded-md border border-border bg-background-secondary px-3 py-2 text-sm outline-none focus-visible:border-primary-300 focus-visible:ring-2 focus-visible:ring-primary-300/40"
+                        />
+                        <p className="mt-1 text-xs text-text-secondary">Enter skills separated by commas.</p>
+                      </div>
+                    ) : (
+                      <>
+                        {roleSkills.length === 0 ? (
+                          <p className="text-xs text-text-secondary">No predefined skills for this role. Add your own below.</p>
+                        ) : (
+                          <div className="grid gap-2 md:grid-cols-2">
+                            {roleSkills.map((skill) => {
+                              const checked = selectedForRole.some((s) => s.id === skill.id);
+                              return (
+                                <button
+                                  key={skill.id}
+                                  type="button"
+                                  onClick={() => onToggleSkill(skill, roleKey)}
+                                  className={cn(
+                                    "flex items-center gap-2 rounded-lg border px-3 py-2 text-left text-xs md:text-sm transition-all",
+                                    checked
+                                      ? "border-primary-300 bg-primary-300/10 text-primary-50"
+                                      : "border-border/70 bg-background-secondary hover:border-primary-300/60"
+                                  )}
+                                >
+                                  <span className="inline-flex size-3 shrink-0 rounded border border-border">
+                                    {checked && <span className="block size-full rounded bg-primary-300" />}
+                                  </span>
+                                  {skill.name}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                        <div className="pt-2">
+                          <button
+                            type="button"
+                            onClick={() => setShowCustomSkillsByRole((prev) => ({ ...prev, [roleKey]: !prev[roleKey] }))}
+                            className="text-xs font-medium text-primary-100 hover:underline"
+                          >
+                            {showOther ? "Hide other skills" : "Add other skills (specify)"}
+                          </button>
+                          {showOther && (
+                            <div className="mt-2">
+                              <Label htmlFor={`customSkills-${roleKey}`}>Additional skills for {roleName}</Label>
+                              <textarea
+                                id={`customSkills-${roleKey}`}
+                                value={customForRole}
+                                onChange={(e) => onCustomSkillsChange(e.target.value, roleKey)}
+                                placeholder="e.g. Digital Transformation (separate with commas)"
+                                className="mt-1 w-full min-h-[60px] rounded-md border border-border bg-background-secondary px-3 py-2 text-sm outline-none focus-visible:border-primary-300 focus-visible:ring-2 focus-visible:ring-primary-300/40"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                );
+              })
+            )}
+
+            <p className="text-xs text-text-secondary">
+              Select or enter at least one skill per role. You’ll rate all skills together on the next step.
+            </p>
+          </div>
+        )}
 
          {step === 4 && (
            <div className="space-y-5">
@@ -1063,11 +1182,11 @@ type FormState = {
                    proficiency today?
                  </p>
                  <div className="space-y-4">
-                   {form.selectedSkills.map((skillObj) => {
+                  {form.selectedSkills.map((skillObj, index) => {
                      const value = form.proficiencyBySkill[skillObj.name] ?? 3;
                      return (
                        <div
-                         key={skillObj.id}
+                        key={`${skillObj.id}-${skillObj.name}-${index}`}
                          className="rounded-lg border border-border/70 bg-background-secondary px-3 py-3"
                        >
                          <div className="flex items-center justify-between gap-3">
@@ -1279,18 +1398,22 @@ type FormState = {
  function canProceed(step: number, form: FormState): boolean {
    switch (step) {
      case 1:
-       return (
-    form.industryId !== null &&
-    (form.industryId !== 11 || form.customIndustry.trim().length > 0)
-  );
+       return form.industryId !== null;
      case 2:
-       // Either a valid role selected OR "Other" with custom role filled in
+       // Multi-role: at least one role; if "Other" is selected, customRole must be filled
+       if (form.selectedRoles.length > 0) {
+         const hasOther = form.selectedRoles.some((r) => r.id === -1);
+         return !hasOther || form.customRole.trim().length > 0;
+       }
        return form.roleId !== null && (form.roleId !== -1 || form.customRole.trim().length > 0);
      case 3:
-       // For custom role, check customSkills; otherwise check selectedSkills
-       if (form.roleId === -1) {
-         return form.customSkills.trim().length > 0;
+       // Multi-role: every selected role must have at least one skill
+       if (form.selectedRoles.length > 0) {
+         return form.selectedRoles.every(
+           (r) => (form.selectedSkillsByRole[String(r.id)]?.length ?? 0) > 0
+         );
        }
+       if (form.roleId === -1) return form.customSkills.trim().length > 0;
        return form.selectedSkills.length > 0;
      case 4:
        return form.selectedSkills.length > 0;
@@ -1379,12 +1502,9 @@ type FormState = {
    onUpdate: <K extends keyof FormState>(key: K, value: FormState[K]) => void;
    onSubmit: (e: React.FormEvent) => void;
    isSubmitting: boolean;
-  emailError: string;
-  setEmailError: (s: string) => void;
-  validateEmail: (email: string) => string | null;
  };
 
- function LeadCapture({ form, onUpdate, onSubmit, isSubmitting, emailError, setEmailError, validateEmail }: LeadCaptureProps) {
+ function LeadCapture({ form, onUpdate, onSubmit, isSubmitting }: LeadCaptureProps) {
    return (
      <Card className="bg-background-secondary/80 border-border/70 shadow-lg shadow-black/40 backdrop-blur">
        <CardHeader>
@@ -1407,33 +1527,19 @@ type FormState = {
                  onChange={(e) => onUpdate("name", e.target.value)}
                  placeholder="Alex Rivera"
                  className="mt-2"
-                required
-                disabled={isSubmitting}
+                 required
                />
              </div>
              <div>
-               <Label htmlFor="workEmail">
-                 <span>Work email</span>
-                {emailError && (
-                  <span className="ml-1 text-xs text-error">({emailError})</span>
-                )}
-               </Label>
+               <Label htmlFor="workEmail">Work email</Label>
                <Input
                  id="workEmail"
                  type="email"
                  value={form.workEmail}
-                 onChange={(e) => {
-                   onUpdate("workEmail", e.target.value);
-                 }}
-                 onBlur={() => {
-                   const err = validateEmail(form.workEmail);
-                   setEmailError(err ?? "");
-                 }}
+                 onChange={(e) => onUpdate("workEmail", e.target.value)}
                  placeholder="you@company.com"
-                 className={cn("mt-2", emailError ? "border-error ring-1 ring-error/60" : "")}
+                 className="mt-2"
                  required
-                 aria-invalid={!!emailError}
-                 disabled={isSubmitting}
                />
              </div>
            </div>
@@ -1447,7 +1553,7 @@ type FormState = {
              By continuing, you agree to receive product updates from Skillar.ai. You
              can opt out anytime.
            </p>
-           <Button type="submit" size="sm" disabled={isSubmitting || !form.name || !form.workEmail || !!emailError}>
+           <Button type="submit" size="sm" disabled={isSubmitting || !form.name || !form.workEmail}>
              {isSubmitting ? "Preparing your results…" : "View my results"}
            </Button>
          </CardFooter>
@@ -1517,6 +1623,22 @@ type FormState = {
                </p>
              </div>
            )}
+
+          {form.selectedSkills.length > 0 && (
+            <div className="mt-3 rounded-lg border border-border/70 bg-background-primary/40 px-3 py-3 text-xs md:text-sm">
+              <p className="font-medium text-text-primary">
+                All skills you assessed
+              </p>
+              <p className="mt-1 text-text-secondary">
+                {form.selectedSkills
+                  .map((skill) => {
+                    const score = form.proficiencyBySkill[skill.name] ?? 3;
+                    return `${skill.name} (${score}/5)`;
+                  })
+                  .join(" · ")}
+              </p>
+            </div>
+          )}
 
            {hasCriticalVulnerability ? (
              <div className="mt-3 rounded-lg border border-error/60 bg-error/10 px-3 py-3 text-xs md:text-sm">

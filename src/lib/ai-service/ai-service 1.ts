@@ -10,11 +10,16 @@ export interface ContentGenerationParams {
   userGoal: string;
   userIndustry: string;
   userRole: string;
+  // Most critical individual skill (for sharp focus)
   lowestScoringSkill: string;
   skillScore: number;
   timeToBuild: string;
   businessImpact: string;
   companySize: string;
+  // Overview of ALL priority skills and their ratings
+  skillsOverview: string;
+  // Overview of ALL roles and their skills/ratings
+  rolesOverview: string;
 }
 
 /**
@@ -33,6 +38,8 @@ class AIService {
       timeToBuild: params.timeToBuild,
       businessImpact: params.businessImpact,
       companySize: params.companySize,
+      skillsOverview: params.skillsOverview,
+      rolesOverview: params.rolesOverview,
     });
 
     try {
@@ -143,6 +150,8 @@ class AIService {
     timeToBuild: string;
     businessImpact: string;
     companySize: string;
+    skillsOverview: string;
+    rolesOverview: string;
   }): string {
     const skillRiskLevel = input.skillScore <= 2 ? 'CRITICAL' : 'HIGH'
     const trainingRiskLevel = input.timeToBuild.includes('6') || input.timeToBuild.includes('12') ? 'CRITICAL' : 'HIGH'
@@ -159,8 +168,10 @@ Your tone must be authoritative, diagnostic, and urgent. Do not use corporate fl
 Here is the user's diagnostic data:
 - Primary Goal: ${input.userGoal}
 - Industry: ${input.userIndustry}
-- Target Role: ${input.userRole}
+- Target Role(s): ${input.userRole}
 - Most Critical Skill Gap Identified: ${input.lowestScoringSkill} (Score: ${input.skillScore}/5)
+- All Priority Skills & Ratings: ${input.skillsOverview || "Not specified"}
+- Roles and Skill Breakdown: ${input.rolesOverview || "Not specified"}
 - Time it currently takes them to build a course: ${input.timeToBuild}
 - Primary Business Impact of this gap: ${input.businessImpact}
 - Company Size: ${input.companySize} employees

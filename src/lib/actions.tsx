@@ -20,6 +20,10 @@ export async function generatePuppeteerPdf(input?: {
   businessImpact: string
   companySize: string
   aiReport?: string
+  // Comma-separated list of all assessed skills with ratings
+  skillsOverview?: string
+  // Text summary of all roles and their skills
+  rolesOverview?: string
 }): Promise<string> {
   const effective = input ?? {
     name: 'Ritesh Upadhyay',
@@ -32,11 +36,22 @@ export async function generatePuppeteerPdf(input?: {
     businessImpact: 'Regulatory & safety exposure',
     companySize: '5,000-19,999',
     aiReport: '',
+    skillsOverview: 'Frontline safety & compliance (2/5); Leadership coaching (3/5)',
+    rolesOverview: 'Chief Learning Officer: Frontline safety & compliance (2/5), Leadership coaching (3/5)',
   }
 
   const html = buildHtmlTemplate({
     name: effective.name,
     aiReport: effective.aiReport || '',
+    userGoal: effective.userGoal,
+    userIndustry: effective.userIndustry,
+    userRole: effective.userRole,
+    companySize: effective.companySize,
+    lowestScoringSkill: effective.lowestScoringSkill,
+    timeToBuild: effective.timeToBuild,
+    businessImpact: effective.businessImpact,
+    skillsOverview: effective.skillsOverview || '',
+    rolesOverview: effective.rolesOverview || '',
   })
 
   let browser
@@ -159,9 +174,27 @@ function parseGeminiSections(aiReport: string): {
 function buildHtmlTemplate({
   name,
   aiReport,
+  userGoal,
+  userIndustry,
+  userRole,
+  companySize,
+  lowestScoringSkill,
+  timeToBuild,
+  businessImpact,
+  skillsOverview,
+  rolesOverview,
 }: {
   name: string
   aiReport: string
+  userGoal: string
+  userIndustry: string
+  userRole: string
+  companySize: string
+  lowestScoringSkill: string
+  timeToBuild: string
+  businessImpact: string
+  skillsOverview: string
+  rolesOverview: string
 }) {
   // Parse the Gemini response into three sections
   const sections = parseGeminiSections(aiReport)
@@ -204,7 +237,7 @@ body {
     align-items: center;
 
    border-bottom: 2px solid #000;
-   padding-bottom-6px
+   padding-bottom: 6px;
     background: white;
     z-index: 1000;
 }
@@ -353,6 +386,39 @@ table tr:nth-child(even) {
     <div class="report-title">
         <h1>Strategic L&D Alignment Audit</h1>
     </div>
+
+    <table class="data-table" style="margin-top: 6px; font-size: 10px;">
+      <tbody>
+        <tr>
+          <th style="width: 32%;">Industry</th>
+          <td>${escapeHtml(userIndustry || 'Not specified')}</td>
+        </tr>
+        <tr>
+          <th>Role(s)</th>
+          <td>${escapeHtml(userRole || 'Not specified')}</td>
+        </tr>
+        <tr>
+          <th>Company Size</th>
+          <td>${escapeHtml(companySize || 'Not specified')}</td>
+        </tr>
+        <tr>
+          <th>Primary Goal</th>
+          <td>${escapeHtml(userGoal || 'Not specified')}</td>
+        </tr>
+        <tr>
+          <th>Critical Skill Highlight</th>
+          <td>${escapeHtml(lowestScoringSkill || 'Not specified')} — ${escapeHtml(timeToBuild || '')} · ${escapeHtml(businessImpact || '')}</td>
+        </tr>
+        <tr>
+          <th>All Assessed Skill Areas</th>
+          <td>${escapeHtml(skillsOverview || 'Not specified')}</td>
+        </tr>
+        <tr>
+          <th>Roles & Skill Breakdown</th>
+          <td>${escapeHtml(rolesOverview || 'Not specified')}</td>
+        </tr>
+      </tbody>
+    </table>
 
     <h2 class="section-header">1. The Strategic Diagnosis</h2>
     <div class="section-content">
@@ -552,6 +618,10 @@ export async function generateSkillsGapReport(input: {
   timeToBuild: string
   businessImpact: string
   companySize: string
+  // Text summary of ALL selected skills and their ratings
+  skillsOverview: string
+  // Text summary of ALL roles and their skills
+  rolesOverview: string
 }): Promise<{ success: boolean; fullReport?: string; error?: string }> {
   try {
 
@@ -736,6 +806,8 @@ function getPlaceholderReport(input: {
   timeToBuild: string
   businessImpact: string
   companySize: string
+  skillsOverview: string
+  rolesOverview: string
 }): { success: boolean; fullReport?: string; error?: string } {
   const fullReport = `
 SKILLS GAP ANALYSIS REPORT
@@ -746,6 +818,8 @@ ORGANIZATION PROFILE
 - Role: ${input.userRole}  
 - Company Size: ${input.companySize}
 - Business Goal: ${input.userGoal}
+- All Assessed Skills: ${input.skillsOverview || "Not specified"}
+- Roles & Skills: ${input.rolesOverview || "Not specified"}
 
 CRITICAL SKILL GAP
 Skill: ${input.lowestScoringSkill}
@@ -787,6 +861,8 @@ export async function sendSkillsGapReportEmail(input: {
   businessImpact: string
   companySize: string
   aiReport: string
+  skillsOverview: string
+  rolesOverview: string
   assessmentId?: number // Optional assessment ID for tracking
 }): Promise<{ success: boolean; error?: string }> {
   try {
@@ -805,6 +881,8 @@ export async function sendSkillsGapReportEmail(input: {
       businessImpact: input.businessImpact,
       companySize: input.companySize,
       aiReport: input.aiReport,
+    skillsOverview: input.skillsOverview,
+    rolesOverview: input.rolesOverview,
     })
 
     if (!base64Pdf) {
@@ -1044,20 +1122,38 @@ export async function saveSkillsGapAssessment(input: {
   email: string
   companyName?: string
   industryId: number
-  roleId: number
+  roleId?: number
   customIndustry?: string
   customRole?: string
   userGoal: string
-  selectedSkills: Array<{ id: number; name: string; proficiency: number }>
+  selectedSkills?: Array<{ id: number; name: string; proficiency: number }>
   timeToBuildLabel: string
   businessImpact: string
   companySize: string
   criticalFlag: boolean
+  /** Multiple roles: when provided, assessment is linked to these roles via UserAssessmentRole */
+  roleIds?: number[]
+  /** Skills per role (key = String(roleId)); used when roleIds is provided */
+  selectedSkillsByRole?: Record<string, Array<{ id: number; name: string; proficiency: number }>>
+  /** Custom skills entered by user for each role (key = String(roleId)) */
+  customSkillsByRole?: Record<string, string>
+  /** Custom roles data for saving to JSON column */
+  customAddedRoles?: string[]
+  /** Custom skills data for saving to JSON column */
+  customAddedSkills?: string[]
 }): Promise<{ success: boolean; assessmentId?: number; error?: string }> {
   try {
     const { prisma } = await import('@/lib/db')
 
-    // console.log('💾 Saving skills gap assessment to database...')
+    const useMultiRole = Array.isArray(input.roleIds) && input.roleIds.length > 0
+    const roleIdsToSave: number[] = useMultiRole
+      ? input.roleIds!
+      : [input.roleId!]
+    const skillsByRole = useMultiRole && input.selectedSkillsByRole
+      ? input.selectedSkillsByRole
+      : input.selectedSkills?.length
+        ? { [String(input.roleId)]: input.selectedSkills }
+        : {}
 
     // Find or create user
     let user = await prisma.user.findFirst({
@@ -1072,108 +1168,145 @@ export async function saveSkillsGapAssessment(input: {
           companyName: input.companyName
         }
       })
-      // console.log('👤 Created new user:', user.id)
     } else if (input.companyName && !user.companyName) {
-      // Update user's company name if not already set
       user = await prisma.user.update({
         where: { id: user.id },
         data: { companyName: input.companyName }
       })
     }
 
-    // Handle industry (create custom if needed)
     let industryId = input.industryId
     if (input.industryId === -1) {
       if (!input.customIndustry || input.customIndustry.trim() === '') {
         throw new Error('Custom industry name is required')
       }
       const customIndustry = await prisma.industry.create({
-        data: {
-          name: input.customIndustry.trim(),
-          isCustom: true
-        }
+        data: { name: input.customIndustry.trim(), isCustom: true }
       })
       industryId = customIndustry.id
-      // console.log('✅ Created custom industry:', customIndustry.id, customIndustry.name)
     }
 
-    // Validate industry exists (if not custom)
     const industry = await prisma.industry.findUnique({
       where: { id: industryId }
     })
-
     if (!industry) {
       throw new Error(`Industry not found: ${industryId}`)
     }
 
-    // Handle role (create custom if needed)
-    let roleId = input.roleId
-    if (input.roleId === -1) {
-      if (!input.customRole || input.customRole.trim() === '') {
-        throw new Error('Custom role name is required')
-      }
-      const customRole = await prisma.role.create({
-        data: {
-          name: input.customRole.trim(),
-          industryId: industryId,
-          isCustom: true
+    // Resolve role IDs: create custom role for each -1
+    const resolvedRoleIds: number[] = []
+    for (const rid of roleIdsToSave) {
+      if (rid === -1) {
+        if (!input.customRole?.trim()) {
+          throw new Error('Custom role name is required')
         }
-      })
-      roleId = customRole.id
-      // console.log('✅ Created custom role:', customRole.id, customRole.name)
+        const customRole = await prisma.role.create({
+          data: {
+            name: input.customRole.trim(),
+            industryId,
+            isCustom: true
+          }
+        })
+        resolvedRoleIds.push(customRole.id)
+      } else {
+        const role = await prisma.role.findUnique({ where: { id: rid } })
+        if (!role) throw new Error(`Role not found: ${rid}`)
+        resolvedRoleIds.push(rid)
+      }
     }
 
-    // Validate role exists (if not custom)
-    const role = await prisma.role.findUnique({
-      where: { id: roleId }
-    })
-
-    if (!role) {
-      throw new Error(`Role not found: ${roleId}`)
-    }
-
-    // Parse time to build to months
     const timeToBuildMonths = parseTimeToBuildMonths(input.timeToBuildLabel)
 
-    // Create the assessment with PENDING status
+    // Prepare custom data for JSON columns
+    const customRolesData: string[] = []
+    const customSkillsData: string[] = []
+
+    // Collect custom roles
+    if (input.customAddedRoles && input.customAddedRoles.length > 0) {
+      customRolesData.push(...input.customAddedRoles.filter(role => role.trim() !== ''))
+    }
+
+    // Collect custom skills from all roles
+    if (input.customSkillsByRole) {
+      for (const [roleKey, customSkillsText] of Object.entries(input.customSkillsByRole)) {
+        if (customSkillsText && customSkillsText.trim() !== '') {
+          const skills = customSkillsText.split(',').map(skill => skill.trim()).filter(skill => skill !== '')
+          customSkillsData.push(...skills)
+        }
+      }
+    }
+
+    // Also collect from customAddedSkills if provided
+    if (input.customAddedSkills && input.customAddedSkills.length > 0) {
+      customSkillsData.push(...input.customAddedSkills.filter(skill => skill.trim() !== ''))
+    }
+
+    // Remove duplicates
+    const uniqueCustomRoles = [...new Set(customRolesData)]
+    const uniqueCustomSkills = [...new Set(customSkillsData)]
+
+    // Create assessment (no roleId on UserAssessment; roles go in UserAssessmentRole)
     const assessment = await prisma.userAssessment.create({
       data: {
         userId: user.id,
-        industryId: industryId,
-        roleId: roleId,
+        industryId,
         timeToBuildMonths,
         businessImpact: input.businessImpact,
         companySize: input.companySize,
         criticalFlag: input.criticalFlag,
         reportStatus: 'PENDING',
-        emailSent: false
+        emailSent: false,
+        ...(uniqueCustomRoles.length > 0 && { customAddedRoles: uniqueCustomRoles }),
+        ...(uniqueCustomSkills.length > 0 && { customAddedSkills: uniqueCustomSkills })
       }
     })
 
-    // console.log('✅ Assessment created:', assessment.id)
-
-    // Create skill assessments
-    for (const skillInput of input.selectedSkills) {
-      // Validate skill exists
-      const skill = await prisma.skill.findUnique({
-        where: { id: skillInput.id }
-      })
-
-      if (!skill) {
-        console.warn(`⚠️ Skill not found, skipping: ${skillInput.id}`)
-        continue
-      }
-
-      await prisma.skillAssessment.create({
-        data: {
-          assessmentId: assessment.id,
-          skillId: skill.id,
-          proficiency: skillInput.proficiency
-        }
+    // Link assessment to each role
+    for (const roleId of resolvedRoleIds) {
+      await prisma.userAssessmentRole.create({
+        data: { assessmentId: assessment.id, roleId }
       })
     }
 
-    // console.log('✅ Skills saved for assessment')
+    // Map each roleKey (string) to resolved roleId (resolvedRoleIds is in same order as roleIdsToSave)
+    const resolvedIdByKey: Record<string, number> = {}
+    roleIdsToSave.forEach((rid, i) => {
+      resolvedIdByKey[String(rid)] = resolvedRoleIds[i]
+    })
+
+    for (const [roleKey, skillsList] of Object.entries(skillsByRole)) {
+      const roleId = resolvedIdByKey[roleKey] ?? Number(roleKey)
+      for (const skillInput of skillsList) {
+        let skillId: number
+        if (skillInput.id < 0) {
+          const created = await prisma.skill.create({
+            data: {
+              name: skillInput.name.trim(),
+              industryId,
+              roleId,
+              isCustom: true
+            }
+          })
+          skillId = created.id
+        } else {
+          const skill = await prisma.skill.findUnique({
+            where: { id: skillInput.id }
+          })
+          if (!skill) {
+            console.warn(`Skill not found, skipping: ${skillInput.id}`)
+            continue
+          }
+          skillId = skill.id
+        }
+        await prisma.skillAssessment.create({
+          data: {
+            assessmentId: assessment.id,
+            skillId,
+            proficiency: Math.min(5, Math.max(1, skillInput.proficiency))
+          }
+        })
+      }
+    }
 
     return { success: true, assessmentId: assessment.id }
   } catch (error) {
