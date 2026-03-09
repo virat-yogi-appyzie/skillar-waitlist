@@ -1141,6 +1141,8 @@ export async function saveSkillsGapAssessment(input: {
   customAddedRoles?: string[]
   /** Custom skills data for saving to JSON column */
   customAddedSkills?: string[]
+  /** Custom industry data for saving to JSON column */
+  customAddedIndustry?: string[]
 }): Promise<{ success: boolean; assessmentId?: number; error?: string }> {
   try {
     const { prisma } = await import('@/lib/db')
@@ -1220,6 +1222,12 @@ export async function saveSkillsGapAssessment(input: {
     // Prepare custom data for JSON columns
     const customRolesData: string[] = []
     const customSkillsData: string[] = []
+    const customIndustryData: string[] = []
+
+    // Collect custom industry (when user selects ID 13)
+    if (input.industryId === 13 && input.customIndustry?.trim()) {
+      customIndustryData.push(input.customIndustry.trim())
+    }
 
     // Collect custom roles
     if (input.customAddedRoles && input.customAddedRoles.length > 0) {
@@ -1244,6 +1252,7 @@ export async function saveSkillsGapAssessment(input: {
     // Remove duplicates
     const uniqueCustomRoles = [...new Set(customRolesData)]
     const uniqueCustomSkills = [...new Set(customSkillsData)]
+    const uniqueCustomIndustry = [...new Set(customIndustryData)]
 
     // Create assessment (no roleId on UserAssessment; roles go in UserAssessmentRole)
     const assessment = await prisma.userAssessment.create({
@@ -1257,7 +1266,8 @@ export async function saveSkillsGapAssessment(input: {
         reportStatus: 'PENDING',
         emailSent: false,
         ...(uniqueCustomRoles.length > 0 && { customAddedRoles: uniqueCustomRoles }),
-        ...(uniqueCustomSkills.length > 0 && { customAddedSkills: uniqueCustomSkills })
+        ...(uniqueCustomSkills.length > 0 && { customAddedSkills: uniqueCustomSkills }),
+        ...(uniqueCustomIndustry.length > 0 && { customAddedIndustry: uniqueCustomIndustry })
       }
     })
 

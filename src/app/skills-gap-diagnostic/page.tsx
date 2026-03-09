@@ -434,6 +434,12 @@ type FormState = {
     // Prepare custom roles and skills data for JSON columns
     const customRolesData: string[] = []
     const customSkillsData: string[] = []
+    const customIndustryData: string[] = []
+
+    // Collect custom industry (when user selects ID 11)
+    if (form.industryId === 13 && form.customIndustry.trim()) {
+      customIndustryData.push(form.customIndustry.trim())
+    }
 
     // Collect custom roles (when user selects "Other" option)
     if (form.selectedRoles.some(role => role.id === -1) && form.customRole.trim()) {
@@ -454,6 +460,7 @@ type FormState = {
         email: form.workEmail,
         companyName: form.companyName,
         industryId: form.industryId!,
+        customIndustry: form.industryId === 13 ? form.customIndustry : undefined,
         ...(useMultiRole
           ? { roleIds, selectedSkillsByRole, customRole: form.customRole, customSkillsByRole: form.customSkillsByRole }
           : {
@@ -472,6 +479,7 @@ type FormState = {
         criticalFlag: hasCriticalVulnerability,
         customAddedRoles: customRolesData.length > 0 ? customRolesData : undefined,
         customAddedSkills: customSkillsData.length > 0 ? customSkillsData : undefined,
+        customAddedIndustry: customIndustryData.length > 0 ? customIndustryData : undefined,
       });
 
       if (!saveResult.success) {
@@ -990,6 +998,26 @@ type FormState = {
                    </option>
                  ))}
                </select>
+               {form.industryId === 13 && (
+                 <div className="mt-4">
+                   <Label htmlFor="customIndustry">Specify your industry <span className="text-error">*</span></Label>
+                   <Input 
+                     id="customIndustry" 
+                     value={form.customIndustry} 
+                     onChange={(e) => {
+                       const value = e.target.value;
+                       // Validation: Allow only letters, spaces, and basic punctuation (no commas or separators)
+                       const sanitizedValue = value.replace(/[^a-zA-Z\s&-]/g, '');
+                       onUpdate("customIndustry", sanitizedValue);
+                       onUpdate("industry", sanitizedValue);
+                     }} 
+                     placeholder="e.g. Space Technology, Renewable Infrastructure" 
+                     className="mt-2" 
+                     required 
+                   />
+                   <p className="mt-1 text-xs text-text-secondary">Enter your industry name (no commas or separators).</p>
+                 </div>
+               )}
                <p className="mt-2 text-xs text-text-secondary">
                  This helps us benchmark you against similar organizations.
                </p>

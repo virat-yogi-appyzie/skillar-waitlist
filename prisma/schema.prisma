@@ -212,6 +212,8 @@ model UserAssessment {
   criticalFlag      Boolean  @default(false)
   customAddedRoles  Json?    
   customAddedSkills Json?
+  customAddedIndustry Json?
+ 
   reportStatus      ReportStatus @default(PENDING)
   emailSent         Boolean  @default(false)
   emailFailureReason String?  @db.Text 
