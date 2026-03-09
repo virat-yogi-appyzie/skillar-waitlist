@@ -1,7 +1,20 @@
 'use server'
 
-import { aiService } from './ai-service/ai-service 1'
+import { aiService } from "./ai-service/ai-service";
 import { SKILLAR_LOGO_DATA_URI } from './logo'
+
+/**
+ * Escape HTML special characters for email templates
+ */
+function escapeHtml(text: string): string {
+  if (!text) return ''
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+}
 
 /* =====================================================
    PDF GENERATION (WORKS LOCALLY & ON VERCEL)
@@ -64,7 +77,7 @@ export async function generatePuppeteerPdf(input?: {
     browser = await puppeteer.default.launch({
       args: chromium.default.args,
       executablePath: await chromium.default.executablePath(),
-      headless:true,
+      headless: true,
     })
 
   } else {
@@ -82,7 +95,7 @@ export async function generatePuppeteerPdf(input?: {
 
     // Use 'domcontentloaded' instead of 'networkidle0' to avoid waiting for external resources
     // This prevents timeouts from slow or unreachable external images/assets
-    await page.setContent(html, { 
+    await page.setContent(html, {
       waitUntil: 'domcontentloaded',
       timeout: 60000 // 60 second timeout as fallback
     })
@@ -94,12 +107,12 @@ export async function generatePuppeteerPdf(input?: {
 
       headerTemplate: buildHeader(effective.name),
       footerTemplate: buildFooter(),
-          margin: {
-            top: '110px',
-            bottom: '70px',
-            left: '40px',
-            right: '40px',
-          },
+      margin: {
+        top: '110px',
+        bottom: '70px',
+        left: '40px',
+        right: '40px',
+      },
 
     })
 
@@ -200,9 +213,8 @@ function buildHtmlTemplate({
   const sections = parseGeminiSections(aiReport)
   const currentDate = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
 
-  
-return `
-<!DOCTYPE html>
+
+  return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -218,7 +230,13 @@ return `
 
 @page {
     size: A4;
-    margin: 20mm 10mm 10mm 10mm;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    background: white;
 }
 
 body {
@@ -226,6 +244,7 @@ body {
     line-height: 1.6;
     color: #2c3e50;
     background: white;
+    overflow: visible;
 }
 
 /* ================= HEADER ================= */
@@ -263,11 +282,8 @@ body {
 /* ================= CONTENT ================= */
 
 .content {
-  display: flex;
-  flex-direction: column;
-  flex:  1;
   margin-top: 15px;
-  margin-bottom: 10px;
+  margin-bottom: 20px;
 }
 
 
@@ -494,18 +510,6 @@ function buildFooter() {
   `
 }
 
-/* =====================================================
-   SECURITY SAFE ESCAPE
-===================================================== */
-
-function escapeHtml(input: string): string {
-  return input
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;')
-}
 
 /* =====================================================
    MARKDOWN TO HTML CONVERTER
@@ -513,15 +517,15 @@ function escapeHtml(input: string): string {
 
 function markdownToHtml(markdown: string): string {
   if (!markdown) return ''
-  
+
   let html = markdown
-  
+
   // Escape basic HTML first (but preserve our formatting)
   html = html
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-  
+
   // Convert tables (must be done before other conversions)
   // More flexible regex to match markdown tables
   html = html.replace(/(\|[^\n]+\|)\n(\|[\s:|-]+\|)\n((?:\|[^\n]+\|\n?)+)/g, (match, headerRow, separatorRow, bodyRows) => {
@@ -530,13 +534,13 @@ function markdownToHtml(markdown: string): string {
       .split('|')
       .map((h: string) => h.trim())
       .filter((h: string) => h.length > 0)
-    
+
     // Parse body rows
     const rows = bodyRows
       .trim()
       .split('\n')
       .filter((row: string) => row.trim().length > 0)
-      .map((row: string) => 
+      .map((row: string) =>
         row
           .split('|')
           .map((cell: string) => cell.trim())
@@ -547,7 +551,7 @@ function markdownToHtml(markdown: string): string {
             return true
           })
       )
-    
+
     let table = '<table class="data-table"><thead><tr>'
     headers.forEach((h: string) => {
       table += `<th>${h}</th>`
@@ -568,17 +572,17 @@ function markdownToHtml(markdown: string): string {
     table += '</tbody></table>'
     return table
   })
-  
+
   // Convert bold headers like **Key Risk Indicators:**
   html = html.replace(/\*\*([^*]+):\*\*/g, '<h4 class="subsection-header">$1</h4>')
-  
+
   // Convert remaining bold text
   html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-  
+
   // Convert numbered lists
-  html = html.replace(/^(\d+).\s+(.+)$/gm,'<li class="numbered-item">$2</li>')
+  html = html.replace(/^(\d+).\s+(.+)$/gm, '<li class="numbered-item">$2</li>')
   html = html.replace(/(<li class="numbered-item">.*<\/li>\n?)+/g, '<ol class="numbered-list">$&</ol>')
-  
+
   // Convert bullet lists (- item)
   html = html.replace(/^-\s+(.+)$/gm, '<li>$1</li>')
   html = html.replace(/(<li>(?!<span class="list-number").*<\/li>\n?)+/g, (match) => {
@@ -587,21 +591,21 @@ function markdownToHtml(markdown: string): string {
     }
     return match
   })
-  
+
   // Convert paragraphs (double newlines)
   html = html.replace(/\n\n+/g, '</p><p>')
   html = '<p>' + html + '</p>'
-  
+
   // Clean up empty paragraphs and fix structure
   html = html.replace(/<p>\s*<\/p>/g, '')
   html = html.replace(/<p>\s*(<h4|<table|<ul|<ol)/g, '$1')
   html = html.replace(/(<\/h4>|<\/table>|<\/ul>|<\/ol>)\s*<\/p>/g, '$1')
   html = html.replace(/<p>\s*<h4/g, '<h4')
   html = html.replace(/<\/h4>\s*<\/p>/g, '</h4>')
-  
+
   // Fix any remaining single newlines to line breaks within paragraphs
   html = html.replace(/([^>])\n([^<])/g, '$1<br/>$2')
-  
+
   return html
 }
 
@@ -633,7 +637,7 @@ export async function generateSkillsGapReport(input: {
     // Get API key and model from environment
     // const apiKey = process.env.GEMINI_API_KEY
     // const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash'
-    
+
     // if (!apiKey) {
     //   console.warn('⚠️ GEMINI_API_KEY not set - returning placeholder')
     //   return getPlaceholderReport(input)
@@ -642,122 +646,122 @@ export async function generateSkillsGapReport(input: {
     // // Import Gemini SDK
     // const { GoogleGenerativeAI } = await import('@google/generative-ai')
     // const client = new GoogleGenerativeAI(apiKey)
-    
+
     // Use configured model
     // const model = client.getGenerativeModel({ model: modelName })
 
     // Create the prompt with tables and lists
-//     const skillRiskLevel = input.skillScore <= 2 ? 'CRITICAL' : 'HIGH'
-//     const trainingRiskLevel = input.timeToBuild.includes('6') || input.timeToBuild.includes('12') ? 'CRITICAL' : 'HIGH'
-//     const proficiencyLabel = input.skillScore === 1 ? 'Critical' : input.skillScore === 2 ? 'Major Gap' : 'Moderate Gap'
-//     const timeSavings = input.timeToBuild.includes('6') || input.timeToBuild.includes('12') ? '5-6 months' : '3-4 months'
-//     const impactSavings = input.timeToBuild.includes('6') || input.timeToBuild.includes('12') ? '8-11 months' : '5-8 months'
-//     const speedImprovement = input.timeToBuild.includes('6') || input.timeToBuild.includes('12') ? '95%+ faster' : '90%+ faster'
-//     const deploySpeed = input.timeToBuild.includes('6') || input.timeToBuild.includes('12') ? '12x faster' : '8x faster'
-    
-//     const prompt = `You are an elite Chief Learning Officer (CLO) and an expert in corporate instructional design. Your job is to analyze data from a "Strategic L&D Alignment Audit" and generate a hard-hitting, highly personalized, 3-section diagnostic report for a corporate L&D leader. 
+    //     const skillRiskLevel = input.skillScore <= 2 ? 'CRITICAL' : 'HIGH'
+    //     const trainingRiskLevel = input.timeToBuild.includes('6') || input.timeToBuild.includes('12') ? 'CRITICAL' : 'HIGH'
+    //     const proficiencyLabel = input.skillScore === 1 ? 'Critical' : input.skillScore === 2 ? 'Major Gap' : 'Moderate Gap'
+    //     const timeSavings = input.timeToBuild.includes('6') || input.timeToBuild.includes('12') ? '5-6 months' : '3-4 months'
+    //     const impactSavings = input.timeToBuild.includes('6') || input.timeToBuild.includes('12') ? '8-11 months' : '5-8 months'
+    //     const speedImprovement = input.timeToBuild.includes('6') || input.timeToBuild.includes('12') ? '95%+ faster' : '90%+ faster'
+    //     const deploySpeed = input.timeToBuild.includes('6') || input.timeToBuild.includes('12') ? '12x faster' : '8x faster'
 
-// Your tone must be authoritative, diagnostic, and urgent. Do not use corporate fluff. Speak directly to the business cost of delayed training.
+    //     const prompt = `You are an elite Chief Learning Officer (CLO) and an expert in corporate instructional design. Your job is to analyze data from a "Strategic L&D Alignment Audit" and generate a hard-hitting, highly personalized, 3-section diagnostic report for a corporate L&D leader. 
 
-// Here is the user's diagnostic data:
-// - Primary Goal: ${input.userGoal}
-// - Industry: ${input.userIndustry}
-// - Target Role: ${input.userRole}
-// - Most Critical Skill Gap Identified: ${input.lowestScoringSkill} (Score: ${input.skillScore}/5)
-// - Time it currently takes them to build a course: ${input.timeToBuild}
-// - Primary Business Impact of this gap: ${input.businessImpact}
-// - Company Size: ${input.companySize} employees
+    // Your tone must be authoritative, diagnostic, and urgent. Do not use corporate fluff. Speak directly to the business cost of delayed training.
 
-// Structure the report using the following three sections EXACTLY. Use numbered points, bullet lists, and tables. DO NOT write long paragraphs. Break everything into scannable numbered points with proper subheadings.
+    // Here is the user's diagnostic data:
+    // - Primary Goal: ${input.userGoal}
+    // - Industry: ${input.userIndustry}
+    // - Target Role: ${input.userRole}
+    // - Most Critical Skill Gap Identified: ${input.lowestScoringSkill} (Score: ${input.skillScore}/5)
+    // - Time it currently takes them to build a course: ${input.timeToBuild}
+    // - Primary Business Impact of this gap: ${input.businessImpact}
+    // - Company Size: ${input.companySize} employees
 
-// ### Section 1: The Strategic Diagnosis
+    // Structure the report using the following three sections EXACTLY. Use numbered points, bullet lists, and tables. DO NOT write long paragraphs. Break everything into scannable numbered points with proper subheadings.
 
-// **1.1 Executive Summary**
-// Write 3-4 numbered points analyzing the disconnect between their goal and skill gap:
-// 1. [First key insight about the gap between ${input.userGoal} and ${input.lowestScoringSkill}]
-// 2. [Second point about why ${input.userRole} needs this skill]
-// 3. [Third point about business risk in ${input.userIndustry}]
-// 4. [Fourth point about ${input.businessImpact} consequences]
+    // ### Section 1: The Strategic Diagnosis
 
-// **1.2 Risk Assessment**
-// | Metric | Current State | Risk Level |
-// |--------|---------------|------------|
-// | Skill Proficiency | ${input.skillScore}/5 | ${skillRiskLevel} |
-// | Training Timeline | ${input.timeToBuild} | ${trainingRiskLevel} |
-// | Business Exposure | ${input.businessImpact} | HIGH |
-// | Workforce Impact | ${input.companySize} employees | ${skillRiskLevel} |
+    // **1.1 Executive Summary**
+    // Write 3-4 numbered points analyzing the disconnect between their goal and skill gap:
+    // 1. [First key insight about the gap between ${input.userGoal} and ${input.lowestScoringSkill}]
+    // 2. [Second point about why ${input.userRole} needs this skill]
+    // 3. [Third point about business risk in ${input.userIndustry}]
+    // 4. [Fourth point about ${input.businessImpact} consequences]
 
-// **1.3 Key Risk Indicators**
-// - Critical Skill Gap: ${input.lowestScoringSkill}
-// - Current Proficiency: ${input.skillScore}/5 (${proficiencyLabel})
-// - Business Impact Zone: ${input.businessImpact}
-// - Target Role: ${input.userRole}
-// - Industry: ${input.userIndustry}
+    // **1.2 Risk Assessment**
+    // | Metric | Current State | Risk Level |
+    // |--------|---------------|------------|
+    // | Skill Proficiency | ${input.skillScore}/5 | ${skillRiskLevel} |
+    // | Training Timeline | ${input.timeToBuild} | ${trainingRiskLevel} |
+    // | Business Exposure | ${input.businessImpact} | HIGH |
+    // | Workforce Impact | ${input.companySize} employees | ${skillRiskLevel} |
 
-// ### Section 2: The Bottleneck
+    // **1.3 Key Risk Indicators**
+    // - Critical Skill Gap: ${input.lowestScoringSkill}
+    // - Current Proficiency: ${input.skillScore}/5 (${proficiencyLabel})
+    // - Business Impact Zone: ${input.businessImpact}
+    // - Target Role: ${input.userRole}
+    // - Industry: ${input.userIndustry}
 
-// **2.1 Time Analysis**
-// Write 3-4 numbered points challenging their timeline:
-// 1. [First point about why ${input.timeToBuild} is too slow for ${input.companySize} employees]
-// 2. [Second point about opportunity cost during development]
-// 3. [Third point about ${input.businessImpact} compounding daily]
-// 4. [Fourth point about competitive disadvantage]
+    // ### Section 2: The Bottleneck
 
-// **2.2 Cost of Delay**
-// | Factor | Your Current State | Business Impact |
-// |--------|-------------------|----------------|
-// | Development Time | ${input.timeToBuild} | Extended exposure |
-// | Workforce Gap | ${input.companySize} employees | Productivity loss |
-// | Skill Deficit | ${input.lowestScoringSkill} at ${input.skillScore}/5 | Performance drag |
-// | Business Risk | ${input.businessImpact} | Revenue/safety impact |
+    // **2.1 Time Analysis**
+    // Write 3-4 numbered points challenging their timeline:
+    // 1. [First point about why ${input.timeToBuild} is too slow for ${input.companySize} employees]
+    // 2. [Second point about opportunity cost during development]
+    // 3. [Third point about ${input.businessImpact} compounding daily]
+    // 4. [Fourth point about competitive disadvantage]
 
-// **2.3 The Real Cost**
-// - Training Development Time: ${input.timeToBuild}
-// - Affected Workforce: ${input.companySize} employees
-// - Critical Skill Gap: ${input.lowestScoringSkill} (${input.skillScore}/5)
-// - Ongoing Business Impact: ${input.businessImpact}
+    // **2.2 Cost of Delay**
+    // | Factor | Your Current State | Business Impact |
+    // |--------|-------------------|----------------|
+    // | Development Time | ${input.timeToBuild} | Extended exposure |
+    // | Workforce Gap | ${input.companySize} employees | Productivity loss |
+    // | Skill Deficit | ${input.lowestScoringSkill} at ${input.skillScore}/5 | Performance drag |
+    // | Business Risk | ${input.businessImpact} | Revenue/safety impact |
 
-// ### Section 3: The Skillar Bridge
+    // **2.3 The Real Cost**
+    // - Training Development Time: ${input.timeToBuild}
+    // - Affected Workforce: ${input.companySize} employees
+    // - Critical Skill Gap: ${input.lowestScoringSkill} (${input.skillScore}/5)
+    // - Ongoing Business Impact: ${input.businessImpact}
 
-// **3.1 The Solution**
-// Write 3-4 numbered points about the AI-powered approach:
-// 1. [First point about AI curriculum generation in days vs months]
-// 2. [Second point about industry-specific customization for ${input.userIndustry}]
-// 3. [Third point about immediate deployment to ${input.companySize} employees]
-// 4. [Fourth point about measurable impact on ${input.lowestScoringSkill}]
+    // ### Section 3: The Skillar Bridge
 
-// **3.2 Implementation Framework**
-// 1. **Rapid Generation** — AI creates ${input.lowestScoringSkill} curriculum for ${input.userRole} (3-5 days)
-// 2. **Industry Customization** — Content tailored for ${input.userIndustry} compliance and best practices
-// 3. **Instant Editing** — Your instructional designers refine and brand immediately
-// 4. **Fast Deployment** — Launch to ${input.companySize} employees within 2-3 weeks
-// 5. **Measurable Results** — Track closure of ${input.lowestScoringSkill} gap in real-time
+    // **3.1 The Solution**
+    // Write 3-4 numbered points about the AI-powered approach:
+    // 1. [First point about AI curriculum generation in days vs months]
+    // 2. [Second point about industry-specific customization for ${input.userIndustry}]
+    // 3. [Third point about immediate deployment to ${input.companySize} employees]
+    // 4. [Fourth point about measurable impact on ${input.lowestScoringSkill}]
 
-// **3.3 ROI Comparison**
-// | Metric | Traditional Approach | With Skillar | Improvement |
-// |--------|---------------------|--------------|-------------|
-// | Development | ${input.timeToBuild} | 3-5 days | ${speedImprovement} |
-// | Deployment | 6-12 months | 2-3 weeks | ${deploySpeed} |
-// | Relevance | Generic content | ${input.userIndustry}-specific | 100% targeted |
-// | Impact | Delayed mitigation | Immediate action | Same week |
+    // **3.2 Implementation Framework**
+    // 1. **Rapid Generation** — AI creates ${input.lowestScoringSkill} curriculum for ${input.userRole} (3-5 days)
+    // 2. **Industry Customization** — Content tailored for ${input.userIndustry} compliance and best practices
+    // 3. **Instant Editing** — Your instructional designers refine and brand immediately
+    // 4. **Fast Deployment** — Launch to ${input.companySize} employees within 2-3 weeks
+    // 5. **Measurable Results** — Track closure of ${input.lowestScoringSkill} gap in real-time
 
-// **3.4 Next Step**
-// Stop letting manual curriculum design bottleneck your growth. Book a live demo to see how we can generate your custom ${input.lowestScoringSkill} module for ${input.userRole} in ${input.userIndustry} today.
+    // **3.3 ROI Comparison**
+    // | Metric | Traditional Approach | With Skillar | Improvement |
+    // |--------|---------------------|--------------|-------------|
+    // | Development | ${input.timeToBuild} | 3-5 days | ${speedImprovement} |
+    // | Deployment | 6-12 months | 2-3 weeks | ${deploySpeed} |
+    // | Relevance | Generic content | ${input.userIndustry}-specific | 100% targeted |
+    // | Impact | Delayed mitigation | Immediate action | Same week |
 
-// IMPORTANT FORMATTING RULES:
-// - Use **bold** for all subheadings (e.g., **1.1 Executive Summary**)
-// - Use numbered points (1. 2. 3. 4.) for all analysis - NO long paragraphs
-// - Use bullet points (-) for simple lists
-// - Use tables (|) for comparative data
-// - Keep each point to 1-2 sentences maximum
-// - Every section must have numbered subheadings (1.1, 1.2, 2.1, 2.2, etc.)
-// - Be direct and punchy - no filler words`
+    // **3.4 Next Step**
+    // Stop letting manual curriculum design bottleneck your growth. Book a live demo to see how we can generate your custom ${input.lowestScoringSkill} module for ${input.userRole} in ${input.userIndustry} today.
 
-//     // console.log('📤 Calling Gemini API...')
-    
-//     // Call Gemini and get response
-//     const response = await model.generateContent(prompt)
-//     const fullReport = response.response.text()
+    // IMPORTANT FORMATTING RULES:
+    // - Use **bold** for all subheadings (e.g., **1.1 Executive Summary**)
+    // - Use numbered points (1. 2. 3. 4.) for all analysis - NO long paragraphs
+    // - Use bullet points (-) for simple lists
+    // - Use tables (|) for comparative data
+    // - Keep each point to 1-2 sentences maximum
+    // - Every section must have numbered subheadings (1.1, 1.2, 2.1, 2.2, etc.)
+    // - Be direct and punchy - no filler words`
+
+    //     // console.log('📤 Calling Gemini API...')
+
+    //     // Call Gemini and get response
+    //     const response = await model.generateContent(prompt)
+    //     const fullReport = response.response.text()
 
     // console.log('✅ Gemini response received')
     // // console.log('📊 Response length:', fullReport.length, 'characters')
@@ -776,7 +780,7 @@ export async function generateSkillsGapReport(input: {
 
   } catch (error) {
     console.error('❌ Gemini API call failed:', error)
-    
+
     // Check if it's an API key issue
     if (error instanceof Error && error.message.includes('API key')) {
       return {
@@ -881,8 +885,8 @@ export async function sendSkillsGapReportEmail(input: {
       businessImpact: input.businessImpact,
       companySize: input.companySize,
       aiReport: input.aiReport,
-    skillsOverview: input.skillsOverview,
-    rolesOverview: input.rolesOverview,
+      skillsOverview: input.skillsOverview,
+      rolesOverview: input.rolesOverview,
     })
 
     if (!base64Pdf) {
@@ -1070,7 +1074,7 @@ Contact: hello@skillar.ai | +91 9256219292
     })
 
     // console.log('✅ Email sent successfully to:', input.email)
-    
+
     // Mark email as sent in database
     if (input.assessmentId) {
       await updateAssessmentStatus({
@@ -1079,12 +1083,12 @@ Contact: hello@skillar.ai | +91 9256219292
         emailFailureReason: undefined // Clear any previous error
       })
     }
-    
+
     return { success: true }
 
   } catch (error) {
     console.error('❌ Failed to send skills gap report email:', error)
-    
+
     // Store email failure reason in database
     if (input.assessmentId) {
       await updateAssessmentStatus({
@@ -1093,7 +1097,7 @@ Contact: hello@skillar.ai | +91 9256219292
         emailFailureReason: error instanceof Error ? error.message : 'Failed to send email'
       })
     }
-    
+
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to send email',
@@ -1117,6 +1121,13 @@ function parseTimeToBuildMonths(timeToBuildLabel: string): number {
   return 3 // default
 }
 
+/**
+ * Helper to check if a string is a numeric ID
+ */
+function isNumeric(val: any): boolean {
+  return /^\d+$/.test(String(val))
+}
+
 export async function saveSkillsGapAssessment(input: {
   name: string
   email: string
@@ -1133,6 +1144,8 @@ export async function saveSkillsGapAssessment(input: {
   criticalFlag: boolean
   /** Multiple roles: when provided, assessment is linked to these roles via UserAssessmentRole */
   roleIds?: number[]
+  /** Custom roles mapping for negative roleIds */
+  customRolesMapping?: Record<number, string>
   /** Skills per role (key = String(roleId)); used when roleIds is provided */
   selectedSkillsByRole?: Record<string, Array<{ id: number; name: string; proficiency: number }>>
   /** Custom skills entered by user for each role (key = String(roleId)) */
@@ -1140,7 +1153,7 @@ export async function saveSkillsGapAssessment(input: {
   /** Custom roles data for saving to JSON column */
   customAddedRoles?: string[]
   /** Custom skills data for saving to JSON column */
-  customAddedSkills?: string[]
+  customAddedSkills?: string[][] | string[]
   /** Custom industry data for saving to JSON column */
   customAddedIndustry?: string[]
 }): Promise<{ success: boolean; assessmentId?: number; error?: string }> {
@@ -1178,14 +1191,20 @@ export async function saveSkillsGapAssessment(input: {
     }
 
     let industryId = input.industryId
-    if (input.industryId === -1) {
-      if (!input.customIndustry || input.customIndustry.trim() === '') {
-        throw new Error('Custom industry name is required')
+    const customIndustryData: string[] = []
+
+    // 1. Handle Industry (Custom vs DB)
+    // If industryId is -1 or 11 (Other), treat as custom and use a generic fallback ID
+    if (input.industryId === -1 || input.industryId === 11) {
+      if (input.customIndustry?.trim()) {
+        customIndustryData.push(input.customIndustry.trim())
       }
-      const customIndustry = await prisma.industry.create({
-        data: { name: input.customIndustry.trim(), isCustom: true }
+      
+      // Look for "Generic" or "Other" as a fallback ID in the DB
+      const fallbackIndustry = await prisma.industry.findFirst({
+        where: { name: { in: ['Generic', 'Other'] } }
       })
-      industryId = customIndustry.id
+      industryId = fallbackIndustry?.id ?? 11 // Fallback to 11 if not found
     }
 
     const industry = await prisma.industry.findUnique({
@@ -1195,22 +1214,30 @@ export async function saveSkillsGapAssessment(input: {
       throw new Error(`Industry not found: ${industryId}`)
     }
 
-    // Resolve role IDs: create custom role for each -1
+    // 2. Resolve role IDs (JSON-only for custom)
     const resolvedRoleIds: number[] = []
+    const customRolesData: string[] = []
+
     for (const rid of roleIdsToSave) {
-      if (rid === -1) {
-        if (!input.customRole?.trim()) {
-          throw new Error('Custom role name is required')
+      if (rid < 0) {
+        // Custom role - get name and log to JSON, resolve to a generic fallback ID
+        let roleName = input.customRole?.trim();
+        if (input.customRolesMapping && input.customRolesMapping[rid]) {
+          roleName = input.customRolesMapping[rid].trim();
         }
-        const customRole = await prisma.role.create({
-          data: {
-            name: input.customRole.trim(),
-            industryId,
-            isCustom: true
-          }
+        if (roleName) {
+          customRolesData.push(roleName)
+        }
+        
+        // Find a generic role ID to link in the relation table (prevent DB pollution)
+        const genericRole = await prisma.role.findFirst({
+          where: { isGeneric: true, industryId: industryId }
         })
-        resolvedRoleIds.push(customRole.id)
+        if (genericRole) {
+          resolvedRoleIds.push(genericRole.id)
+        }
       } else {
+        // Standard DB role
         const role = await prisma.role.findUnique({ where: { id: rid } })
         if (!role) throw new Error(`Role not found: ${rid}`)
         resolvedRoleIds.push(rid)
@@ -1219,40 +1246,10 @@ export async function saveSkillsGapAssessment(input: {
 
     const timeToBuildMonths = parseTimeToBuildMonths(input.timeToBuildLabel)
 
-    // Prepare custom data for JSON columns
-    const customRolesData: string[] = []
-    const customSkillsData: string[] = []
-    const customIndustryData: string[] = []
-
-    // Collect custom industry (when user selects ID 11)
-    if (input.industryId === 11 && input.customIndustry?.trim()) {
-      customIndustryData.push(input.customIndustry.trim())
-    }
-
-    // Collect custom roles
-    if (input.customAddedRoles && input.customAddedRoles.length > 0) {
-      customRolesData.push(...input.customAddedRoles.filter(role => role.trim() !== ''))
-    }
-
-    // Collect custom skills from all roles
-    if (input.customSkillsByRole) {
-      for (const [roleKey, customSkillsText] of Object.entries(input.customSkillsByRole)) {
-        if (customSkillsText && customSkillsText.trim() !== '') {
-          const skills = customSkillsText.split(',').map(skill => skill.trim()).filter(skill => skill !== '')
-          customSkillsData.push(...skills)
-        }
-      }
-    }
-
-    // Also collect from customAddedSkills if provided
-    if (input.customAddedSkills && input.customAddedSkills.length > 0) {
-      customSkillsData.push(...input.customAddedSkills.filter(skill => skill.trim() !== ''))
-    }
-
-    // Remove duplicates
-    const uniqueCustomRoles = [...new Set(customRolesData)]
-    const uniqueCustomSkills = [...new Set(customSkillsData)]
-    const uniqueCustomIndustry = [...new Set(customIndustryData)]
+    // 3. Prepare custom data for JSON (combine fresh custom entries and pre-filled ones)
+    let finalCustomRoles = [...new Set([...customRolesData, ...(input.customAddedRoles || [])])].filter(Boolean)
+    let finalCustomIndustry = [...new Set([...customIndustryData, ...(input.customAddedIndustry || [])])].filter(Boolean)
+    let finalCustomSkills = input.customAddedSkills || []
 
     // Create assessment (no roleId on UserAssessment; roles go in UserAssessmentRole)
     const assessment = await prisma.userAssessment.create({
@@ -1265,9 +1262,9 @@ export async function saveSkillsGapAssessment(input: {
         criticalFlag: input.criticalFlag,
         reportStatus: 'PENDING',
         emailSent: false,
-        ...(uniqueCustomRoles.length > 0 && { customAddedRoles: uniqueCustomRoles }),
-        ...(uniqueCustomSkills.length > 0 && { customAddedSkills: uniqueCustomSkills }),
-        ...(uniqueCustomIndustry.length > 0 && { customAddedIndustry: uniqueCustomIndustry })
+        ...(finalCustomRoles.length > 0 && { customAddedRoles: finalCustomRoles }),
+        ...(finalCustomSkills.length > 0 && { customAddedSkills: finalCustomSkills }),
+        ...(finalCustomIndustry.length > 0 && { customAddedIndustry: finalCustomIndustry })
       }
     })
 
@@ -1284,34 +1281,26 @@ export async function saveSkillsGapAssessment(input: {
       resolvedIdByKey[String(rid)] = resolvedRoleIds[i]
     })
 
+    // 4. Resolve Skills (JSON-only for custom)
     for (const [roleKey, skillsList] of Object.entries(skillsByRole)) {
-      const roleId = resolvedIdByKey[roleKey] ?? Number(roleKey)
+      const roleRelationId = resolvedIdByKey[roleKey] ?? Number(roleKey)
+      
       for (const skillInput of skillsList) {
-        let skillId: number
         if (skillInput.id < 0) {
-          const created = await prisma.skill.create({
-            data: {
-              name: skillInput.name.trim(),
-              industryId,
-              roleId,
-              isCustom: true
-            }
-          })
-          skillId = created.id
-        } else {
-          const skill = await prisma.skill.findUnique({
-            where: { id: skillInput.id }
-          })
-          if (!skill) {
-            console.warn(`Skill not found, skipping: ${skillInput.id}`)
-            continue
-          }
-          skillId = skill.id
+          // Custom skill - skipped from Skill table, already logged via customAddedSkills JSON
+          continue
         }
+
+        const skill = await prisma.skill.findUnique({
+          where: { id: skillInput.id }
+        })
+        
+        if (!skill) continue
+
         await prisma.skillAssessment.create({
           data: {
             assessmentId: assessment.id,
-            skillId,
+            skillId: skill.id,
             proficiency: Math.min(5, Math.max(1, skillInput.proficiency))
           }
         })
@@ -1339,13 +1328,13 @@ export async function updateAssessmentStatus(input: {
 }): Promise<{ success: boolean; error?: string }> {
   try {
     const { prisma } = await import('@/lib/db')
-    
+
     const updateData: {
       reportStatus?: 'PENDING' | 'COMPLETED' | 'FAILED'
       emailSent?: boolean
       emailFailureReason?: string | null
     } = {}
-    
+
     if (input.reportStatus !== undefined) {
       updateData.reportStatus = input.reportStatus
     }
@@ -1355,12 +1344,12 @@ export async function updateAssessmentStatus(input: {
     if (input.emailFailureReason !== undefined) {
       updateData.emailFailureReason = input.emailFailureReason
     }
-    
+
     await prisma.userAssessment.update({
       where: { id: input.assessmentId },
       data: updateData
     })
-    
+
     // console.log('✅ Assessment status updated:', input.assessmentId)
     return { success: true }
   } catch (error) {
@@ -1395,14 +1384,14 @@ export async function getWaitlistCount(): Promise<number> {
   try {
     // Import prisma only when needed (avoids import at module level)
     const { prisma } = await import('@/lib/db')
-    
+
     const count = await prisma.emailSubmission.count({
       where: {
         status: 'ACTIVE',
         confirmedAt: { not: null },
       },
     })
-    
+
     return count
   } catch (error) {
     console.error('Error fetching waitlist count:', error)
@@ -1461,8 +1450,8 @@ export async function submitToWaitlist(
       return {
         success: true,
         userPosition: result.userPosition,
-        message: result.result === 'exists' 
-          ? 'You are already on our waitlist!' 
+        message: result.result === 'exists'
+          ? 'You are already on our waitlist!'
           : 'Successfully added to waitlist!',
       }
     } else if (result.result === 'invalid') {
