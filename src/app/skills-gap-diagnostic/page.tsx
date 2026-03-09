@@ -437,7 +437,7 @@ type FormState = {
     const customIndustryData: string[] = []
 
     // Collect custom industry (when user selects ID 11)
-    if (form.industryId === 13 && form.customIndustry.trim()) {
+    if (form.industryId === 11 && form.customIndustry.trim()) {
       customIndustryData.push(form.customIndustry.trim())
     }
 
@@ -460,7 +460,7 @@ type FormState = {
         email: form.workEmail,
         companyName: form.companyName,
         industryId: form.industryId!,
-        customIndustry: form.industryId === 13 ? form.customIndustry : undefined,
+        customIndustry: form.industryId === 11 ? form.customIndustry : undefined,
         ...(useMultiRole
           ? { roleIds, selectedSkillsByRole, customRole: form.customRole, customSkillsByRole: form.customSkillsByRole }
           : {
@@ -998,7 +998,7 @@ type FormState = {
                    </option>
                  ))}
                </select>
-               {form.industryId === 13 && (
+               {form.industryId === 11 && (
                  <div className="mt-4">
                    <Label htmlFor="customIndustry">Specify your industry <span className="text-error">*</span></Label>
                    <Input 

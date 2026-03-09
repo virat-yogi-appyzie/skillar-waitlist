@@ -1224,8 +1224,8 @@ export async function saveSkillsGapAssessment(input: {
     const customSkillsData: string[] = []
     const customIndustryData: string[] = []
 
-    // Collect custom industry (when user selects ID 13)
-    if (input.industryId === 13 && input.customIndustry?.trim()) {
+    // Collect custom industry (when user selects ID 11)
+    if (input.industryId === 11 && input.customIndustry?.trim()) {
       customIndustryData.push(input.customIndustry.trim())
     }
 
