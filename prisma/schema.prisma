@@ -162,14 +162,15 @@ model Role {
   id          Int      @id @default(autoincrement())
   name        String
   industryId  Int
-  isCustom    Boolean  @default(false)  // For "Other" option - user-entered custom role
-  isGeneric   Boolean  @default(false)  // Generic roles available for custom industries
+  isCustom    Boolean  @default(false)
+  isGeneric   Boolean  @default(false)
   createdAt   DateTime @default(now())
 
   industry    Industry @relation(fields: [industryId], references: [id], onDelete: Cascade)
   roleSkills  RoleSkill[]
-  skills      Skill[]  // Direct relation for cascading dropdowns
-  assessments UserAssessment[]
+  skills      Skill[]
+
+  assessments UserAssessmentRole[]   
 
   @@unique([name, industryId])
 }
@@ -203,24 +204,36 @@ model UserAssessment {
   id                Int      @id @default(autoincrement())
   userId            Int
   industryId        Int
-  roleId            Int
 
   timeToBuildMonths Int
   businessImpact    String
   companySize       String
 
   criticalFlag      Boolean  @default(false)
-
+  customAddedRoles  Json?    
+  customAddedSkills Json?
+  customAddedIndustry Json?
+ 
   reportStatus      ReportStatus @default(PENDING)
   emailSent         Boolean  @default(false)
   emailFailureReason String?  @db.Text 
   createdAt         DateTime @default(now())
 
-  user       User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  industry    Industry       @relation(fields: [industryId], references: [id])
-  role        Role           @relation(fields: [roleId], references: [id])
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  industry    Industry @relation(fields: [industryId], references: [id])
+
+  roles       UserAssessmentRole[]   
 
   skillAssessments  SkillAssessment[]
+}
+model UserAssessmentRole {
+  assessmentId Int
+  roleId       Int
+
+  assessment   UserAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  role         Role           @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([assessmentId, roleId])
 }
 enum ReportStatus {
   PENDING

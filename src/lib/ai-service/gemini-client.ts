@@ -46,7 +46,7 @@ class LoadBalancedGeminiClient {
     try {
       const { GoogleGenerativeAI } = await import("@google/generative-ai");
       return GoogleGenerativeAI;
-    } catch (error) {
+    } catch {
       throw new Error("Google Generative AI SDK not available");
     }
   }
@@ -210,7 +210,7 @@ class LoadBalancedGeminiClient {
     retryOptions: Partial<RetryOptions> = {},
   ): Promise<{ success: boolean; message: string | string }> {
     const options = { ...this.defaultRetryOptions, ...retryOptions };
-    let lastError: Error | null = null;
+      // let lastError: Error | null = null;
 
     for (let attempt = 0; attempt <= options.maxRetries; attempt++) {
       const apiKey = geminiKeyManager.getNextKey();
@@ -241,7 +241,8 @@ class LoadBalancedGeminiClient {
         };
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
-        lastError = error;
+                // lastError = error;
+
         const isRateLimit = this.isRateLimitError(error);
 
         // Mark error for this key
