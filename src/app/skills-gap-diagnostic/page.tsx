@@ -1705,168 +1705,276 @@ type QuestionnaireStepProps = {
 
 
 
+// function ProgressBar({ currentStep, totalSteps }: { currentStep: number; totalSteps: number }) {
+
+//   const progress = ((currentStep - 1) / (totalSteps - 1)) * 100;
+
+
+
+//   const steps = [
+
+//     { label: "Industry", icon: "🏢" },
+
+//     { label: "Role", icon: "👤" },
+
+//     { label: "Skills", icon: "🎯" },
+
+//     { label: "Proficiency", icon: "📊" },
+
+//     { label: "Timeline", icon: "⏱️" },
+
+//     { label: "Impact", icon: "💡" },
+
+//     { label: "Company", icon: "🏛️" }
+
+//   ];
+
+
+
+//   return (
+
+//     <div className="px-6 pt-5 pb-2">
+
+//       {/* Modern step progress */}
+
+//       <div className="relative">
+
+//         {/* Background track line */}
+
+//         <div className="absolute top-4 left-0 right-0 h-[2px] bg-border/40" />
+
+
+
+//         {/* Animated progress line */}
+
+//         <div
+
+//           className="absolute top-4 left-0 h-[2px] bg-gradient-to-r from-primary-300 via-primary-400 to-primary-300 transition-all duration-500 ease-out"
+
+//           style={{ width: `${progress}%` }}
+
+//         >
+
+//           <div className="absolute inset-0 bg-primary-300/50 blur-sm" />
+
+//         </div>
+
+
+
+//         {/* Step indicators */}
+
+//         <div className="relative flex justify-between">
+
+//           {steps.map((step, index) => {
+
+//             const stepNum = index + 1;
+
+//             const isCompleted = stepNum < currentStep;
+
+//             const isCurrent = stepNum === currentStep;
+
+//             const isFuture = stepNum > currentStep;
+
+
+
+//             return (
+
+//               <div
+
+//                 key={stepNum}
+
+//                 className="flex flex-col items-center"
+
+//                 style={{ flex: '1', maxWidth: index === 0 || index === steps.length - 1 ? 'auto' : undefined }}
+
+//               >
+
+//                 {/* Step circle */}
+
+//                 <div
+
+//                   className={cn(
+
+//                     "relative z-10 flex h-8 w-8 items-center justify-center rounded-full transition-all duration-300",
+
+//                     isCompleted && "bg-primary-300 shadow-lg shadow-primary-300/30",
+
+//                     isCurrent && "bg-background-secondary ring-2 ring-primary-300 ring-offset-2 ring-offset-background-secondary shadow-lg shadow-primary-300/20",
+
+//                     isFuture && "bg-background-secondary border border-border/60"
+
+//                   )}
+
+//                 >
+
+//                   {isCompleted ? (
+
+//                     <svg className="w-4 h-4 text-background-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+
+//                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+
+//                     </svg>
+
+//                   ) : (
+
+//                     <span className={cn(
+
+//                       "text-sm transition-all duration-300",
+
+//                       isCurrent ? "grayscale-0" : "grayscale opacity-50"
+
+//                     )}>
+
+//                       {step.icon}
+
+//                     </span>
+
+//                   )}
+
+//                 </div>
+
+
+
+//                 {/* Step label */}
+
+//                 <span className={cn(
+
+//                   "mt-2 text-[10px] font-medium transition-all duration-300 text-center whitespace-nowrap",
+
+//                   isCompleted && "text-primary-300",
+
+//                   isCurrent && "text-primary-300",
+
+//                   isFuture && "text-text-secondary/50"
+
+//                 )}>
+
+//                   {step.label}
+
+//                 </span>
+
+//               </div>
+
+//             );
+
+//           })}
+
+//         </div>
+
+//       </div>
+
+//     </div>
+
+//   );
+
+// }
+
 function ProgressBar({ currentStep, totalSteps }: { currentStep: number; totalSteps: number }) {
-
-  const progress = ((currentStep - 1) / (totalSteps - 1)) * 100;
-
-
-
   const steps = [
-
     { label: "Industry", icon: "🏢" },
-
     { label: "Role", icon: "👤" },
-
     { label: "Skills", icon: "🎯" },
-
     { label: "Proficiency", icon: "📊" },
-
     { label: "Timeline", icon: "⏱️" },
-
     { label: "Impact", icon: "💡" },
-
     { label: "Company", icon: "🏛️" }
-
   ];
 
-
+  const stepPercent = 100 / (totalSteps - 1);
+  const halfStep = stepPercent / 2;
 
   return (
-
     <div className="px-6 pt-5 pb-2">
-
-      {/* Modern step progress */}
-
       <div className="relative">
 
-        {/* Background track line */}
-
-        <div className="absolute top-4 left-0 right-0 h-[2px] bg-border/40" />
-
-
-
-        {/* Animated progress line */}
-
+        {/* 
+          CHANGE 1: left was `${halfStep}%`, now 0
+          WHY: Track must start from the left edge so it visually 
+          begins behind the first step circle, not at its center 
+        */}
         <div
+          className="absolute top-4 h-[2px] bg-border/40"
+          style={{
+            left: 0,
+            right: `${halfStep}%`,  // unchanged — still ends at last step's center
+          }}
+        />
 
-          className="absolute top-4 left-0 h-[2px] bg-gradient-to-r from-primary-300 via-primary-400 to-primary-300 transition-all duration-500 ease-out"
-
-          style={{ width: `${progress}%` }}
-
+        {/* 
+          CHANGE 2: left was `${halfStep}%`, now 0
+          CHANGE 3: width formula updated
+          
+          OLD width: calc((100% - ${halfStep * 2}%) * ${(currentStep - 1) / (totalSteps - 1)})
+          NEW width: calc(${halfStep}% + (100% - ${halfStep * 2}%) * ${(currentStep - 1) / (totalSteps - 1)})
+          
+          WHY: Since left is now 0, the fill needs to always cover 
+          at minimum halfStep% (left edge → first step center).
+          Then on top of that, it grows proportionally with progress.
+          
+          So on step 1: width = halfStep% + 0 = reaches first circle center ✓
+          On step 2: width = halfStep% + one step worth = reaches second circle center ✓
+          On step 7: width = halfStep% + full inner width = reaches last circle center ✓
+        */}
+        <div
+          className="absolute top-4 h-[2px] bg-gradient-to-r from-primary-300 via-primary-400 to-primary-300 transition-all duration-500 ease-out"
+          style={{
+            left: 0,
+            width: `calc(${halfStep}% + (100% - ${halfStep * 2}%) * ${(currentStep - 1) / (totalSteps - 1)})`,
+          }}
         >
-
           <div className="absolute inset-0 bg-primary-300/50 blur-sm" />
-
         </div>
 
-
-
-        {/* Step indicators */}
-
+        {/* Step indicators — unchanged */}
         <div className="relative flex justify-between">
-
           {steps.map((step, index) => {
-
             const stepNum = index + 1;
-
             const isCompleted = stepNum < currentStep;
-
             const isCurrent = stepNum === currentStep;
-
             const isFuture = stepNum > currentStep;
 
-
-
             return (
-
-              <div
-
-                key={stepNum}
-
-                className="flex flex-col items-center"
-
-                style={{ flex: '1', maxWidth: index === 0 || index === steps.length - 1 ? 'auto' : undefined }}
-
-              >
-
-                {/* Step circle */}
-
+              <div key={stepNum} className="flex flex-col items-center">
                 <div
-
                   className={cn(
-
                     "relative z-10 flex h-8 w-8 items-center justify-center rounded-full transition-all duration-300",
-
                     isCompleted && "bg-primary-300 shadow-lg shadow-primary-300/30",
-
-                    isCurrent && "bg-background-secondary ring-2 ring-primary-300 ring-offset-2 ring-offset-background-secondary shadow-lg shadow-primary-300/20",
-
+                    // CHANGE 4: ring-offset-background-secondary → ring-offset-background-primary
+                    // WHY: Matches the actual dark page background so the ring
+                    // gap doesn't show a mismatched color bleeding onto the emoji
+                    isCurrent && "bg-background-secondary ring-2 ring-primary-300 ring-offset-2 ring-offset-background-primary shadow-lg shadow-primary-300/20",
                     isFuture && "bg-background-secondary border border-border/60"
-
                   )}
-
                 >
-
                   {isCompleted ? (
-
                     <svg className="w-4 h-4 text-background-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-
                     </svg>
-
                   ) : (
-
                     <span className={cn(
-
                       "text-sm transition-all duration-300",
-
                       isCurrent ? "grayscale-0" : "grayscale opacity-50"
-
                     )}>
-
                       {step.icon}
-
                     </span>
-
                   )}
-
                 </div>
 
-
-
-                {/* Step label */}
-
                 <span className={cn(
-
                   "mt-2 text-[10px] font-medium transition-all duration-300 text-center whitespace-nowrap",
-
                   isCompleted && "text-primary-300",
-
                   isCurrent && "text-primary-300",
-
                   isFuture && "text-text-secondary/50"
-
                 )}>
-
                   {step.label}
-
                 </span>
-
               </div>
-
             );
-
           })}
-
         </div>
-
       </div>
-
     </div>
-
   );
-
 }
 
 

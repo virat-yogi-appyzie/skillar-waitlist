@@ -283,13 +283,13 @@ body {
 /* ================= CONTENT ================= */
 
 .content {
-  margin-top: 15px;
+  margin-top: 3px;
   margin-bottom: 20px;
 }
 
 
 .report-title {
-    margin-top: 5px;     
+    margin-top: 0;     
 }
 
 .report-title h1 {
@@ -520,6 +520,7 @@ function markdownToHtml(markdown: string): string {
   if (!markdown) return ''
 
   let html = markdown
+  html = html.replace(/^-{3,}$/gm, '')
 
   // Escape basic HTML first (but preserve our formatting)
   html = html
