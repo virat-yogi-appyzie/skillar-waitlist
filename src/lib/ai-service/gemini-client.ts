@@ -8,6 +8,7 @@
 // Use dynamic import for better module resolution
 import type { GoogleGenerativeAI } from "@google/generative-ai";
 import { geminiKeyManager } from "./ai-load-balancer";
+// Environment variables should be loaded in entrypoints, not in shared libraries.
 
 interface RetryOptions {
   maxRetries: number;
@@ -56,7 +57,7 @@ class LoadBalancedGeminiClient {
    */
   async countTokens(
     prompt: string,
-    modelName: string = "gemini-2.5-flash-lite-preview-09-2025",
+    modelName: string = process.env.NEXT_PUBLIC_GEMINI_COUNT_MODEL || "gemini-3.1-flash-lite-preview",
     retryOptions: Partial<RetryOptions> = {},
   ): Promise<TokenCountResult> {
     const options = { ...this.defaultRetryOptions, ...retryOptions };
@@ -122,7 +123,7 @@ class LoadBalancedGeminiClient {
    */
   async generateContentWithTokens(
     prompt: string,
-    modelName: string = "gemini-2.5-flash-lite-preview-09-2025",
+    modelName: string = process.env.NEXT_PUBLIC_GEMINI_DEFAULT_MODEL || "gemini-3.1-flash-lite-preview",
     retryOptions: Partial<RetryOptions> = {},
   ): Promise<GenerateContentWithTokensResult> {
     const options = { ...this.defaultRetryOptions, ...retryOptions };
@@ -206,7 +207,7 @@ class LoadBalancedGeminiClient {
    */
   async generateContent(
     prompt: string,
-    modelName: string = "gemini-2.5-flash",
+    modelName: string = process.env.NEXT_PUBLIC_GEMINI_DEFAULT_MODEL || "gemini-3.1-flash-lite-preview",
     retryOptions: Partial<RetryOptions> = {},
   ): Promise<{ success: boolean; message: string | string }> {
     const options = { ...this.defaultRetryOptions, ...retryOptions };
