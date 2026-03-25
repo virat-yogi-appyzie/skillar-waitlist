@@ -678,7 +678,7 @@ export const emailTemplates = {
                     >
                     <!-- DESKTOP ROW -->
                     <tr>
-                        <td align="center" style="padding:20px;">
+                        <td align="center">
 
                         <!-- INNER TABLE -->
                         <table cellpadding="0" cellspacing="0" align="center">
