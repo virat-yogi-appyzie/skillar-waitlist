@@ -82,8 +82,7 @@ export async function generatePuppeteerPdf(input?: {
 
   } else {
     // ✅ Local Development
-    const packageName = 'puppeteer';
-    const puppeteer = await import(packageName);
+    const puppeteer = await import('puppeteer');
 
     browser = await puppeteer.default.launch({
       headless: true,
