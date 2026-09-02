@@ -1,71 +1,131 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
+    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
+    container: {
+      center: true,
+      padding: {
+        DEFAULT: '1.5rem',
+        sm: '2rem',
+        lg: '3rem',
+        xl: '4rem',
+      },
+    },
     extend: {
       colors: {
-        // Exact colors from original Skillar.ai design
-        background: {
-          primary: '#0a0b14', // --bg-primary
-          secondary: '#1a1b26', // --bg-secondary  
-          card: '#16192e', // --bg-card
+        navy: {
+          DEFAULT: '#0F1729',
+          50: '#F0F1F4',
+          100: '#E2E4E9',
+          200: '#C5C9D2',
+          300: '#9BA1B0',
+          400: '#64748B',
+          500: '#475569',
+          600: '#334155',
+          700: '#1E293B',
+          800: '#0F1729',
+          900: '#020617',
+          950: '#01040D',
         },
-        text: {
-          primary: '#ffffff', // --text-primary
-          secondary: '#94a3b8', // --text-secondary
+        indigo: {
+          DEFAULT: '#4F46E5',
+          50: '#EEF2FF',
+          100: '#E0E7FF',
+          200: '#C7D2FE',
+          300: '#A5B4FC',
+          400: '#818CF8',
+          500: '#4F46E5',
+          600: '#4338CA',
+          700: '#3730A3',
+          800: '#312E81',
+          900: '#1E1B4B',
         },
-        border: '#334155', // --border-color
+        violet: {
+          DEFAULT: '#6366F1',
+          hover: '#6366F1',
+        },
+        surface: {
+          DEFAULT: '#F0F1F4',
+          elevated: '#FFFFFF',
+          warm: 'var(--color-surface-warm)',
+          subtle: 'var(--color-surface-subtle)',
+        },
+        bg: {
+          DEFAULT: 'var(--color-bg)',
+          warm: 'var(--color-bg-warm)',
+          stone: 'var(--color-bg-stone)',
+        },
+        border: {
+          DEFAULT: 'var(--color-border)',
+          subtle: 'var(--color-border-subtle)',
+          warm: 'var(--color-border-warm)',
+        },
         accent: {
-          blue: '#2563eb', // --accent-blue
-          purple: '#7c3aed', // --accent-purple
+          DEFAULT: 'var(--color-accent)',
+          hover: 'var(--color-accent-hover)',
+          soft: 'var(--color-accent-soft)',
+          light: '#818CF8',
         },
-        success: '#10b981', // --success-color
-        error: '#ef4444', // --error-color
-        warning: '#e68161',
-        // Primary teal colors from original
-        primary: {
-          DEFAULT: '#32b8c6', // color-teal-300
-          50: '#f0fdfa',
-          100: '#ccfbf1',
-          200: '#99f6e4',
-          300: '#32b8c6',
-          400: '#2da6b2',
-          500: '#21808d',
-          600: '#1d7480',
-          700: '#1a6873',
-          800: '#2996a1',
-          900: '#134353',
-        },
+        success: '#059669',
+        error: '#E11D48',
       },
       fontFamily: {
-        sans: ['FKGroteskNeue', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        serif: ['var(--font-newsreader)', 'Newsreader', 'Georgia', 'serif'],
+        sans: ['var(--font-public-sans)', 'Public Sans', 'system-ui', 'sans-serif'],
+        interface: ['var(--font-public-sans)', 'Public Sans', 'system-ui', 'sans-serif'],
+        mono: ['var(--font-plex-mono)', 'IBM Plex Mono', 'monospace'],
       },
       fontSize: {
-        xs: ['11px', { lineHeight: '1.2' }],
-        sm: ['12px', { lineHeight: '1.2' }],
-        base: ['14px', { lineHeight: '1.5' }],
-        lg: ['16px', { lineHeight: '1.5' }],
-        xl: ['18px', { lineHeight: '1.2' }],
-        '2xl': ['20px', { lineHeight: '1.2' }],
-        '3xl': ['24px', { lineHeight: '1.2' }],
-        '4xl': ['30px', { lineHeight: '1.2' }],
-        '5xl': ['56px', { lineHeight: '1.1' }],
+        'hero': ['clamp(2.5rem, 5.5vw, 4.75rem)', { lineHeight: '1.04', letterSpacing: '-0.038em' }],
+        'display': ['clamp(2rem, 4vw, 3.5rem)', { lineHeight: '1.08', letterSpacing: '-0.03em' }],
+        'section': ['clamp(1.5rem, 2.75vw, 2.25rem)', { lineHeight: '1.15', letterSpacing: '-0.025em' }],
+        'subsection': ['clamp(1.25rem, 2vw, 1.75rem)', { lineHeight: '1.25', letterSpacing: '-0.02em' }],
+        'label-mono': ['0.6875rem', { lineHeight: '1rem', letterSpacing: '0.1em' }],
+        'label-mono-sm': ['0.625rem', { lineHeight: '0.875rem', letterSpacing: '0.12em' }],
       },
       spacing: {
-        '18': '72px',
-        '20': '80px',
-        '24': '96px',
-        '32': '128px',
+        '4.5': '1.125rem',
+        '13': '3.25rem',
+        '15': '3.75rem',
+        '18': '4.5rem',
+        '88': '22rem',
+        '128': '32rem',
+        '144': '36rem',
       },
-      backgroundImage: {
-        'gradient-primary': 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
-        'gradient-radial': 'radial-gradient(ellipse at center, rgba(37, 99, 235, 0.1) 0%, transparent 70%)',
+      borderRadius: {
+        'card': '16px',
+        'card-inner': '12px',
+      },
+      maxWidth: {
+        'prose-narrow': '45ch',
+        'prose': '65ch',
+        'prose-wide': '75ch',
+        'headline': '24ch',
+        'content': '1280px',
+      },
+      transitionTimingFunction: {
+        'premium': 'cubic-bezier(0.32, 0.72, 0, 1)',
+        'spring': 'cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+      },
+      transitionDuration: {
+        '400': '400ms',
+        '600': '600ms',
+        '800': '800ms',
+      },
+      boxShadow: {
+        'card': '0 1px 3px rgba(15, 23, 41, 0.04), 0 1px 2px rgba(15, 23, 41, 0.02)',
+        'card-hover': '0 8px 24px rgba(15, 23, 41, 0.08), 0 4px 8px rgba(15, 23, 41, 0.04)',
+        'card-active': '0 1px 2px rgba(15, 23, 41, 0.04)',
+        'nav': '0 4px 30px rgba(15, 23, 41, 0.08)',
+        'btn': '0 2px 8px rgba(79, 70, 229, 0.3)',
+        'btn-hover': '0 4px 16px rgba(79, 70, 229, 0.4)',
+        'input-focus': '0 0 0 3px rgba(79, 70, 229, 0.12)',
       },
     },
   },
   plugins: [],
-}
+};

@@ -76,15 +76,6 @@ class AIService {
         : input.skillScore === 2
         ? "Major Gap"
         : "Moderate Gap";
-    const speedImprovement =
-      input.timeToBuild.includes("6") || input.timeToBuild.includes("12")
-        ? "95%+ faster"
-        : "90%+ faster";
-    const deploySpeed =
-      input.timeToBuild.includes("6") || input.timeToBuild.includes("12")
-        ? "12x faster"
-        : "8x faster";
-
     const prompt = `You are an elite Chief Learning Officer (CLO) and an expert in corporate instructional design. Your job is to analyze data from a "Strategic L&D Alignment Audit" and generate a hard-hitting, highly personalized, 3-section diagnostic report for a corporate L&D leader. 
 
     Your tone must be authoritative, diagnostic, and urgent. Do not use corporate fluff. Speak directly to the business cost of delayed training.
@@ -151,30 +142,35 @@ class AIService {
 
     ### Section 3: The Skillar Bridge
 
-    **3.1 The Solution**
-    Write 3-4 numbered points about the AI-powered approach:
-    1. [First point about AI curriculum generation in days vs months]
-    2. [Second point about industry-specific customization for ${input.userIndustry}]
-    3. [Third point about immediate deployment to ${input.companySize} employees]
-    4. [Fourth point about measurable impact on ${input.lowestScoringSkill}]
+    **3.1 What Skillar Does About It**
+    Write 3-4 numbered points drawn ONLY from these true capabilities:
+    1. [Learning roadmaps and assessment quizzes are AI-generated from a topic and level, grounded in the organisation's own uploaded documents rather than the open internet]
+    2. [Content is targeted to ${input.userIndustry} and to what ${input.userRole} is accountable for]
+    3. [Bayesian Knowledge Tracing reads each assessment result and flags the concepts still below mastery, person by person]
+    4. [A revision roadmap covering only those flagged concepts is generated, and a follow-up assessment confirms the gap on ${input.lowestScoringSkill} has closed]
 
-    **3.2 Implementation Framework**
-    1. **Rapid Generation** — AI creates ${input.lowestScoringSkill} curriculum for ${input.userRole} (3-5 days)
-    2. **Industry Customization** — Content tailored for ${input.userIndustry} compliance and best practices
-    3. **Instant Editing** — Your instructional designers refine and brand immediately
-    4. **Fast Deployment** — Launch to ${input.companySize} employees within 2-3 weeks
-    5. **Measurable Results** — Track closure of ${input.lowestScoringSkill} gap in real-time
+    **3.2 How A Rollout Runs**
+    1. **Define the role** — map ${input.lowestScoringSkill} alongside the other skills ${input.userRole} is accountable for
+    2. **Generate** — AI drafts roadmap milestones, steps, and assessment quizzes from your own source material
+    3. **Review** — your subject-matter experts edit and approve before anything is published
+    4. **Assign** — role and department rules auto-enroll the right people across ${input.companySize} employees
+    5. **Verify** — scheduled re-assessment confirms closure, and certificates are issued with expiry tracking and an audit-ready trail
 
-    **3.3 ROI Comparison**
-    | Metric | Traditional Approach | With Skillar | Improvement |
-    |--------|---------------------|--------------|-------------|
-    | Development | ${input.timeToBuild} | 3-5 days | ${speedImprovement} |
-    | Deployment | 6-12 months | 2-3 weeks | ${deploySpeed} |
-    | Relevance | Generic content | ${input.userIndustry}-specific | 100% targeted |
-    | Impact | Delayed mitigation | Immediate action | Same week |
+    **3.3 What Changes**
+    | Area | Today | With Skillar |
+    |------|-------|--------------|
+    | Course build | ${input.timeToBuild}, built by hand | AI-drafted from your own documents, then reviewed by your SMEs |
+    | Targeting | One generic course for everyone | A revision roadmap scoped to each person's below-mastery concepts |
+    | Evidence | Spreadsheets and completion checkboxes | An audit-ready trail of completions, acknowledgements, and certificate expiry |
+    | Renewal | Chased manually | Expiry alerts and automatic re-enrollment |
 
     **3.4 Next Step**
-    Stop letting manual curriculum design bottleneck your growth. Book a live demo to see how we can generate your custom ${input.lowestScoringSkill} module for ${input.userRole} in ${input.userIndustry} today.
+    Book a live walkthrough to see a ${input.lowestScoringSkill} roadmap and its assessment generated for ${input.userRole} in ${input.userIndustry}.
+
+    HONESTY RULES (these override tone):
+    - Never invent a percentage, a speed multiple, a delivery timeline, a customer count, or a certification. If a figure is not in the data above, describe the change qualitatively instead.
+    - Skillar is pre-launch: do not reference existing customers, case studies, or measured outcomes.
+    - Do not claim real-time adaptive difficulty, simulations, or ingestion of code or system telemetry. Personalization happens after an assessment, not during one.
 
     IMPORTANT FORMATTING RULES:
     - Use **bold** for all subheadings (e.g., **1.1 Executive Summary**)

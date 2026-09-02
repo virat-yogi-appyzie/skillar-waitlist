@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Image
 } from '@react-pdf/renderer'
+import { SITE_CONFIG } from '@/lib/site-config'
 
 const styles = StyleSheet.create({
   page: {
@@ -65,8 +66,10 @@ export const ReportTemplate = ({
       <View style={styles.headerContainer}>
         <View style={styles.logoContainer}>
           {/* eslint-disable-next-line jsx-a11y/alt-text */}
+          {/* Stable public asset; react-pdf's Image cannot render SVG, and the
+              previous hashed _next/static URL broke on every app redeploy. */}
           <Image
-            src={"https://app.skillar.ai/_next/static/media/full-skillar-logo.7cccab6b.svg"}
+            src={`${SITE_CONFIG.appUrl}/full-skillar-logo.png`}
             style={{ width: 140 }}
           />
         </View>
