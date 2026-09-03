@@ -1,0 +1,32 @@
+# Skillar.ai
+
+> Workforce compliance and skill intelligence platform. Skillar maps the
+> skills each role is accountable for, assesses them on a schedule, and
+> generates revision roadmaps for whatever the results flag. Built for
+> compliance-heavy industries: manufacturing, banking and financial
+> services, pharma and healthcare, logistics, IT, construction, hospitality.
+
+## How it works
+
+- Roles are mapped to the skills they are accountable for, with mastery thresholds.
+- Scheduled assessments score demonstrated ability, question by question.
+- Bayesian Knowledge Tracing flags the specific concepts below mastery per person.
+- A revision roadmap is generated covering only the flagged concepts, grounded in the customer's own documents (SOPs, policies, manuals) via retrieval-augmented generation.
+- A follow-up assessment verifies the gap closed; certifications are issued and tracked through expiry and renewal, with audit-ready reporting.
+
+## Pages
+
+- [Product overview](https://skillar.ai/product): the full loop, from inputs to certification.
+- [Skill Intelligence](https://skillar.ai/product/skill-intelligence): capability mapping from organisation to individual.
+- [Adaptive Learning](https://skillar.ai/product/adaptive-learning): post-assessment revision roadmaps.
+- [AI Authoring](https://skillar.ai/product/ai-authoring): roadmaps and quizzes drafted from uploaded documents, reviewed by a named person.
+- [Analytics](https://skillar.ai/product/analytics): heatmaps, certification status, compliance dashboards, audit-ready reports.
+- [Solutions](https://skillar.ai/solutions): views for L&D, HR, frontline managers, and enterprise.
+- [Free skills gap diagnostic](https://skillar.ai/skills-gap-diagnostic): a seven-question diagnostic that emails a gap report. No account required.
+- [Pricing](https://skillar.ai/pricing) · [Book a demo](https://skillar.ai/demo) · [Manifesto](https://skillar.ai/about)
+
+## Status
+
+Pre-launch, onboarding design partners. SOC 2 Type II and SSO are on the
+roadmap, not yet complete. Figures shown in product mockups are
+illustrative examples, not live customer data.

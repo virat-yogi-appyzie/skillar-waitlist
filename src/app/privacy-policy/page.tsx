@@ -1,115 +1,146 @@
-import Footer from "@/components/Footer";
 import Header from "@/components/Header";
-import Head from "next/head";
+import Footer from "@/components/Footer";
+
+export const metadata = {
+  title: "Privacy Policy | Skillar.ai",
+  description:
+    "Privacy Policy for Skillar.ai describing how we collect, use, and protect your information.",
+};
 
 export default function PrivacyPolicy() {
-    return (
-        <div className="min-h-screen bg-background-primary text-foreground">
-            <Header />
-            <Head>
-                <title>Privacy Policy - Skillar.ai</title>
-                <meta
-                    name="description"
-                    content="Privacy Policy for Skillar.ai describing how we collect, use, and protect your information."
-                />
-            </Head>
+  return (
+    <>
+      <Header />
+      <main id="main-content" className="bg-bg">
+        {/* Page header */}
+        <section className="pt-36 pb-10 sm:pt-44 sm:pb-14 border-b border-border/60 bg-surface/30">
+          <div className="w-full max-w-7xl xl:max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-12 xl:px-16">
+            <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-normal text-navy tracking-[-0.025em]">
+              Privacy policy
+            </h1>
+          </div>
+        </section>
 
-            <main className="container py-10 mt-20">
-                <h1 className="text-4xl font-bold mb-6 text-center">Privacy Policy</h1>
-                <p className="mb-4">Last Updated: 10/01/2025</p>
+        {/* The policy itself */}
+        <section className="py-14 sm:py-20">
+          <div className="w-full max-w-7xl xl:max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-12 xl:px-16">
+            <div className="max-w-3xl space-y-8 text-navy-500 text-[15px] sm:text-base leading-[1.8] font-normal [&_p]:max-w-none">
+              
+              {/* Introduction */}
+              <p>
+                Welcome to our website <strong className="text-navy font-medium">www.skillar.ai</strong> owned by <strong className="text-navy font-medium">Appyzie Technologies Private Limited</strong>, having its registered office at 4th Floor, Triveni Flyover, 1A, Gopalpura Bypass Rd, 10-B Scheme, Vishveshvariya Nagar, Gopal Pura Mode, Jaipur, Rajasthan 302018 (hereinafter referred to as &ldquo;Skillar.ai&rdquo;, &ldquo;We&rdquo;, &ldquo;Us&rdquo; or &ldquo;Our&rdquo;). This Privacy Policy (&ldquo;Policy&rdquo;) provides You (&ldquo;User&rdquo; or &ldquo;Your&rdquo;) essential information on how we handle Your data and privacy.
+              </p>
 
-                <p className="mb-4">
-                    This Privacy Policy describes how Skillar.ai (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;), a part of Appyzie, collects, uses, discloses, and protects your information when you use our services.
-                </p>
+              {/* 1. Consent, Collection and Use of Information */}
+              <div className="space-y-4 pt-2">
+                <h2 className="font-serif text-xl sm:text-2xl font-normal text-navy tracking-[-0.02em]">
+                  1. Consent, Collection and Use of Information
+                </h2>
 
-                <p className="mb-4">
-                    By accessing the Skillar.ai website, product, or services (collectively, the &quot;Service&quot;), and/or by providing your information to us, you consent to the practices described in this policy.
-                </p>
+                <div className="space-y-2">
+                  <h3 className="text-base sm:text-lg font-semibold text-navy">
+                    a. Consent
+                  </h3>
+                  <p>
+                    By using the Website and/or providing Your information to Us, You consent to the terms of this Policy. This Policy is effective upon Your first access to the Website or when You submit information to Us via any medium. You may request modification or deletion of your data by contacting our team via email.
+                  </p>
+                  <p>
+                    This Policy does not cover third-party sites linked from our Website. Please read their privacy policies before submitting data to them.
+                  </p>
+                </div>
 
-                <h2 className="text-2xl font-semibold mt-8 mb-4">1. Consent, Collection, and Use of Information</h2>
+                <div className="space-y-2 pt-3">
+                  <h3 className="text-base sm:text-lg font-semibold text-navy">
+                    b. Collection and Use of Information
+                  </h3>
+                  <p>
+                    We may collect information You voluntarily submit (like name, email, role, organizational details), as well as data automatically tracked through cookies, IP addresses, browser details, and page visits. This data helps us improve user experience and provide relevant services.
+                  </p>
+                  <p>We may use this data to:</p>
+                  <ul className="list-disc ml-6 space-y-1.5 text-navy-500">
+                    <li>Respond to queries and offer support</li>
+                    <li>Personalize learning pathways and workforce capability diagnosis</li>
+                    <li>Conduct internal research and product analytics</li>
+                    <li>Improve site design and service offerings</li>
+                    <li>Ensure security and prevent fraud</li>
+                  </ul>
+                </div>
 
-                <h3 className="text-xl font-semibold mt-4 mb-2">a. Your Consent</h3>
-                <p className="mb-4">
-                    By using the Service and providing your information, you expressly consent to the collection, storage, processing, and transfer of your information as described in this Privacy Policy. This policy is effective upon your first access to the Service or when you submit your information to us.
-                </p>
-                <p className="mb-4">
-                    You have the right to access, modify, correct, or delete your personal data at any time by contacting us at <a href="mailto:hello@skillar.ai" className="text-blue-600">hello@skillar.ai</a> or by using the in-app settings where available.
-                </p>
-                <p className="mb-4">
-                    Please note that this policy does not apply to any third-party websites or services that may be linked from our Service. We encourage you to review the privacy policies of those third parties before providing any information to them.
-                </p>
+                <div className="space-y-2 pt-3">
+                  <h3 className="text-base sm:text-lg font-semibold text-navy">
+                    c. Use by Third Parties and Links
+                  </h3>
+                  <p>
+                    We may share information with our service providers or partners solely for the purpose of fulfilling our services. We do not sell Your personal data. However, in case of a business transfer or legal obligation, Your data may be disclosed with appropriate safeguards.
+                  </p>
+                </div>
+              </div>
 
-                <h3 className="text-xl font-semibold mt-4 mb-2">b. Information We Collect</h3>
-                <p className="mb-2">We collect information in the following ways:</p>
-                <ul className="list-disc ml-6 mb-4 ">
-                    <li>
-                        <strong>Information You Voluntarily Provide:</strong>
-                        <ul className="list-disc ml-6 mt-2 text-text-secondary">
-                            <li>At Sign-Up: full name, email, phone number, and date of birth.</li>
-                            <li>After Sign-Up: professional skills, career goals, learning preferences, and other profile details.</li>
-                        </ul>
-                    </li>
-                    <li className="mt-3">
-                        <strong>Information Automatically Collected:</strong>
-                        <ul className="list-disc ml-6 mt-2 text-text-secondary">
-                            <li>Log data, IP address, browser type, OS, visited pages, and cookies.</li>
-                        </ul>
-                    </li>
-                </ul>
+              {/* 2. Disclosure of Your Information */}
+              <div className="space-y-3 pt-2">
+                <h2 className="font-serif text-xl sm:text-2xl font-normal text-navy tracking-[-0.02em]">
+                  2. Disclosure of Your Information
+                </h2>
+                <p>
+                  Third-party vendors or agencies may access Your information strictly for operating the Website or performing services on Our behalf. Such disclosures are made with confidentiality obligations. We do not allow these entities to use Your information for marketing their products.
+                </p>
+              </div>
 
-                <h3 className="text-xl font-semibold mt-4 mb-2">c. How We Use Your Information</h3>
-                <ul className="list-disc ml-6 mb-4 text-text-secondary">
-                    <li>Manage and maintain your account.</li>
-                    <li>Personalize your experience with skills, content, and opportunities.</li>
-                    <li>Provide customer support and respond to inquiries.</li>
-                    <li>Send important administrative notices, updates, and alerts.</li>
-                    <li>Conduct research and analytics to improve our Service.</li>
-                    <li>Ensure security and prevent fraud.</li>
-                    <li>Develop new features, products, and services.</li>
-                </ul>
+              {/* 3. Cooperation with Law */}
+              <div className="space-y-3 pt-2">
+                <h2 className="font-serif text-xl sm:text-2xl font-normal text-navy tracking-[-0.02em]">
+                  3. Cooperation with Law
+                </h2>
+                <p>
+                  We cooperate with government, legal, and regulatory authorities. In case of criminal investigations, fraud, or IP infringements, We may disclose Your information without prior notice if required by law or to prevent harm or fraud.
+                </p>
+              </div>
 
-                <h3 className="text-xl font-semibold mt-4 mb-2">d. Use by Third Parties</h3>
-                <p className="mb-4">
-                    We may employ third-party vendors (cloud hosting, analytics, support) who have access to your information only to perform tasks on our behalf. We do not sell, trade, or rent your information. In case of merger or acquisition, your information may be transferred as a business asset, with notice provided to you.
+              {/* 4. Security */}
+              <div className="space-y-3 pt-2">
+                <h2 className="font-serif text-xl sm:text-2xl font-normal text-navy tracking-[-0.02em]">
+                  4. Security
+                </h2>
+                <p>
+                  We implement security practices in line with the Information Technology Act, 2000 and SPDI Rules, and are compliant with GDPR standards. Your information is accessed only by authorized personnel, on a need-to-know basis.
                 </p>
+              </div>
 
-                <h2 className="text-2xl font-semibold mt-8 mb-4">2. Disclosure of Your Information</h2>
-                <p className="mb-4">
-                    We may disclose information to trusted third-party vendors and service providers under strict confidentiality. They can access your information only to perform specific tasks for us.
+              {/* 5. Integrity and Retention of Data */}
+              <div className="space-y-3 pt-2">
+                <h2 className="font-serif text-xl sm:text-2xl font-normal text-navy tracking-[-0.02em]">
+                  5. Integrity and Retention of Data
+                </h2>
+                <p>
+                  You may review or update Your information by contacting Us. We retain Your data for as long as required to fulfill the purposes stated in this Policy, or as required by law.
                 </p>
+              </div>
 
-                <h2 className="text-2xl font-semibold mt-8 mb-4">3. Cooperation with Legal Authorities</h2>
-                <p className="mb-4">
-                    We may disclose information to law enforcement, government officials, or private parties when necessary to comply with legal obligations or protect rights and safety.
+              {/* 6. Governing Law */}
+              <div className="space-y-3 pt-2">
+                <h2 className="font-serif text-xl sm:text-2xl font-normal text-navy tracking-[-0.02em]">
+                  6. Governing Law
+                </h2>
+                <p>
+                  This Policy is governed by Indian law. Any disputes shall be subject to the jurisdiction of courts in Jaipur, Rajasthan.
                 </p>
+              </div>
 
-                <h2 className="text-2xl font-semibold mt-8 mb-4">4. Data Security</h2>
-                <p className="mb-4">
-                    We implement industry-standard security measures and comply with the IT Act, 2000 and GDPR principles. Only authorized personnel can access your information. However, no transmission or storage is 100% secure.
+              {/* Contact Information */}
+              <div className="pt-4 border-t border-border/80">
+                <p>
+                  If you have any questions or requests regarding your privacy, please write to us at{" "}
+                  <a href="mailto:hello@skillar.ai" className="text-accent font-medium hover:underline">
+                    hello@skillar.ai
+                  </a>.
                 </p>
+              </div>
 
-                <h2 className="text-2xl font-semibold mt-8 mb-4">5. Data Integrity and Retention</h2>
-                <p className="mb-4">
-                    We retain personal information only as long as necessary for service purposes or legal obligations. You can request access, updates, or deletion by contacting <a href="mailto:hello@skillar.ai" className="text-blue-600">hello@skillar.ai</a>.
-                </p>
-
-                <h2 className="text-2xl font-semibold mt-8 mb-4">6. Governing Law and Jurisdiction</h2>
-                <p className="mb-4">
-                    This Privacy Policy is governed by the laws of India. Disputes are subject to the exclusive jurisdiction of courts in Jaipur, Rajasthan, India.
-                </p>
-
-                <h2 className="text-2xl font-semibold mt-8 mb-4">Contact Us</h2>
-                <p className="mb-2">
-                    Skillar.ai (a part of Appyzie)
-                </p>
-                <p className="mb-2">
-                    Email: <a href="mailto:hello@skillar.ai" className="text-blue-600">hello@skillar.ai</a>
-                </p>
-                <p className="mb-2">
-                    Phone: +91 9256219292
-                </p>
-            </main>
-            <Footer />
-        </div>
-    );
+            </div>
+          </div>
+        </section>
+      </main>
+      <Footer />
+    </>
+  );
 }

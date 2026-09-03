@@ -1,23 +1,60 @@
-import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
+import type { Metadata } from "next";
+import { Newsreader, Public_Sans, IBM_Plex_Mono } from "next/font/google";
 import Script from "next/script";
+import "./globals.css";
+import { SITE_CONFIG } from "@/lib/site-config";
 
-const inter = Inter({
+// Type system, chosen deliberately rather than inherited:
+// - Newsreader: a literary text serif with real optical sizing. Warmer and less
+//   saturated than the display faces every generated site reaches for.
+// - Public Sans: designed for the U.S. federal web standards, which is exactly
+//   the register of a compliance product. Plainspoken, sturdy, human.
+// - IBM Plex Mono: used only where content is genuinely data or measurement,
+//   never as a costume for "technical".
+const newsreader = Newsreader({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-newsreader",
+  display: "swap",
+  style: ["normal"],
+  axes: ["opsz"],
+});
+
+const publicSans = Public_Sans({
+  subsets: ["latin"],
+  variable: "--font-public-sans",
+  display: "swap",
+});
+
+const plexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  variable: "--font-plex-mono",
+  display: "swap",
+  weight: ["400", "500", "600"],
 });
 
 export const metadata: Metadata = {
-  title: "Skillar.ai - Accelerate Your Skills with AI-Powered Learning",
-  description: "Join thousands of professionals who will 3x their skill development speed with personalized learning journeys aligned with your specific skill goals and industry demands.",
-  keywords: "AI learning, career development, skill building, personalized coaching, professional development",
-  authors: [{ name: "Skillar.ai Team" }],
-};
-
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1.0,
+  metadataBase: new URL(SITE_CONFIG.siteUrl),
+  title: "Skillar.ai | Workforce Compliance & Skill Intelligence",
+  description: "Skillar maps the skills each role is accountable for, assesses them on a schedule, and generates revision roadmaps for whatever the results flag.",
+  openGraph: {
+    title: "Skillar.ai | Workforce Compliance & Skill Intelligence",
+    description: "Assessment-led learning: skill maps, scheduled assessments, revision roadmaps, certification tracking.",
+    type: "website",
+    images: [
+      {
+        url: "/og.png",
+        width: 1200,
+        height: 630,
+        alt: "Skillar.ai: know what your people need to learn next.",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Skillar.ai | Workforce Compliance & Skill Intelligence",
+    description: "Assessment-led learning: skill maps, scheduled assessments, revision roadmaps, certification tracking.",
+    images: ["/og.png"],
+  },
 };
 
 export default function RootLayout({
@@ -26,9 +63,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="scroll-smooth">
-      <body className={`${inter.variable} font-sans antialiased`}>
+    <html
+      lang="en"
+      className={`${newsreader.variable} ${publicSans.variable} ${plexMono.variable}`}
+    >
+      <body>
+        <a href="#main-content" className="skip-link">Skip to content</a>
         {children}
+        {/* Apollo website tracker, added on main in PR #11 and carried
+            forward here so the redesign doesn't silently drop it. */}
         <Script id="apollo-tracker" strategy="afterInteractive">
           {`
             function initApollo(){

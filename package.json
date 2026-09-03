@@ -8,6 +8,9 @@
     "build": "npx prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
+    "check:css": "node scripts/check-css-refs.mjs",
+    "check:a11y": "node scripts/check-a11y.mjs",
+    "check": "npm run check:css && npm run lint && npx tsc --noEmit",
     "postinstall": "npx prisma generate",
     "seed": "npx tsx prisma/seed.ts"
   },
