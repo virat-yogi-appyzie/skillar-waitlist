@@ -41,6 +41,40 @@ function mulberry32(seed: number) {
   };
 }
 
+/**
+ * Eases a numeric readout toward its target so a change reads as counting
+ * rather than snapping. Collapses to an instant swap under
+ * prefers-reduced-motion.
+ */
+function useCountUp(target: number, duration: number): number {
+  const [shown, setShown] = useState(target);
+  const shownRef = useRef(target);
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      shownRef.current = target;
+      setShown(target);
+      return;
+    }
+    const from = shownRef.current;
+    if (from === target) return;
+    const start = performance.now();
+    let raf = 0;
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      const value = Math.round(from + (target - from) * eased);
+      shownRef.current = value;
+      setShown(value);
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, duration]);
+
+  return shown;
+}
+
 const COUNT = 210;
 const THRESHOLD = 0.72; // fraction of field height treated as mastery line
 /** ms between one column beginning to settle and the next. */
@@ -102,6 +136,12 @@ export default function HeroField({
     for (const p of particles) if (p.level < THRESHOLD) counts[p.col] += 1;
     return counts;
   }, [particles]);
+  const totalBelow = useMemo(
+    () => belowCounts.reduce((a, b) => a + b, 0),
+    [belowCounts]
+  );
+  /** The below-the-line readout counts up as the columns settle. */
+  const belowShown = useCountUp(assessed ? totalBelow : 0, 900);
 
   useEffect(() => {
     if (assessed && !assessedRef.current) {
@@ -282,8 +322,19 @@ export default function HeroField({
 
   return (
     <div className="rounded-2xl bg-[#0B1424] border border-white/10 shadow-2xl shadow-navy/40 text-white overflow-hidden">
-      {/* State control */}
+      {/* Product chrome: the console names the surface it stands for and
+          declares its numbers sample data, so it reads as the product without
+          claiming to be a live one. */}
       <div className="px-5 sm:px-7 py-4 border-b border-white/10 flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-3 min-w-0">
+          <span className="w-2 h-2 rounded-full bg-cyan-300/80 shrink-0" aria-hidden="true" />
+          <span className="text-sm font-medium text-white/90 truncate">
+            {heroField.chrome.surface}
+          </span>
+          <span className="text-[11px] font-mono text-white/45 border border-white/15 rounded-full px-2.5 py-0.5 whitespace-nowrap">
+            {heroField.chrome.sampleTag}
+          </span>
+        </div>
         <div
           role="group"
           aria-label="Field state"
@@ -307,8 +358,51 @@ export default function HeroField({
         </div>
       </div>
 
+      {/* Readout row. Every figure is derived from the marks drawn below;
+          before assessment the middle cell shows nothing, because nothing
+          has been measured yet — that empty readout is the argument. */}
+      <div className="grid grid-cols-3 divide-x divide-white/10 border-b border-white/10">
+        <div className="px-5 sm:px-7 py-3">
+          <span className="block text-[11px] text-white/50">
+            {heroField.chrome.readouts.marks}
+          </span>
+          <span className="block mt-0.5 font-mono tabular text-lg leading-tight text-white/90">
+            {COUNT}
+          </span>
+        </div>
+        <div className="px-5 sm:px-7 py-3">
+          <span className="block text-[11px] text-white/50">
+            {heroField.chrome.readouts.below}
+          </span>
+          {assessed ? (
+            <span className="block mt-0.5 font-mono tabular text-lg leading-tight text-rose-300">
+              {belowShown}
+            </span>
+          ) : (
+            <span className="block mt-1 text-[13px] leading-tight text-white/40">
+              {heroField.chrome.readouts.unmeasured}
+            </span>
+          )}
+        </div>
+        <div className="px-5 sm:px-7 py-3">
+          <span className="block text-[11px] text-white/50">
+            {heroField.chrome.readouts.families}
+          </span>
+          <span className="block mt-0.5 font-mono tabular text-lg leading-tight text-white/90">
+            {heroField.columns.length}
+          </span>
+        </div>
+      </div>
+
       {/* Field */}
-      <div ref={wrapRef} className="relative h-[340px] sm:h-[420px]">
+      <div ref={wrapRef} className="relative h-[340px] sm:h-[420px] overflow-hidden">
+        {/* Aurora behind the marks: two cold washes drifting very slowly, so
+            the unmeasured state reads as night sky rather than flat void.
+            Sub-perceptual on purpose; the particles stay the story. */}
+        <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
+          <div className="field-aurora field-aurora-a" />
+          <div className="field-aurora field-aurora-b" />
+        </div>
         <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" aria-hidden="true" />
 
         {/* The unmeasured state narrates itself; the scatter alone reads as
@@ -357,6 +451,50 @@ export default function HeroField({
       <div className="px-5 sm:px-7 py-3.5 border-t border-white/10">
         <p className="text-sm text-white/70 leading-relaxed">{heroField.caption}</p>
       </div>
+
+      <style jsx>{`
+        .field-aurora {
+          position: absolute;
+          width: 72%;
+          height: 120%;
+          border-radius: 9999px;
+          filter: blur(60px);
+        }
+        .field-aurora-a {
+          left: -12%;
+          top: -35%;
+          background: radial-gradient(circle, rgba(99, 102, 241, 0.16), transparent 70%);
+          animation: auroraDriftA 36s ease-in-out infinite alternate;
+        }
+        .field-aurora-b {
+          right: -16%;
+          bottom: -40%;
+          background: radial-gradient(circle, rgba(56, 189, 248, 0.1), transparent 70%);
+          animation: auroraDriftB 44s ease-in-out infinite alternate;
+        }
+        @keyframes auroraDriftA {
+          from {
+            transform: translate(0, 0);
+          }
+          to {
+            transform: translate(9%, 6%);
+          }
+        }
+        @keyframes auroraDriftB {
+          from {
+            transform: translate(0, 0);
+          }
+          to {
+            transform: translate(-8%, -7%);
+          }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .field-aurora-a,
+          .field-aurora-b {
+            animation: none;
+          }
+        }
+      `}</style>
     </div>
   );
 }

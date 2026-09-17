@@ -3,23 +3,25 @@ import { ArrowRight } from "lucide-react";
 import { finalCta } from "@/content/home";
 
 /**
- * Quiet close. The heading deliberately bookends the hero's promise; nothing
- * decorative competes with the two buttons.
+ * Quiet close. The heading deliberately bookends the hero's promise, and
+ * iteration 09 centers the composition to mirror the hero's new axis; a
+ * left block in a full-bleed dark band left the right half of the section
+ * empty. Nothing decorative competes with the two buttons.
  */
 export default function FinalCTA() {
   return (
     <section className="section-dark bg-navy py-20 lg:py-28">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-3xl">
-          <h2 className="font-serif text-[clamp(2.4rem,5.5vw,4.25rem)] font-normal leading-[1.05] tracking-[-0.028em] text-white text-balance">
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="font-serif text-[length:var(--text-hero)] font-normal leading-[1.05] tracking-[-0.028em] text-white text-balance">
             {finalCta.heading}
           </h2>
 
-          <p className="mt-6 text-lg sm:text-xl max-w-xl text-white/70 leading-relaxed">
+          <p className="mt-6 text-lg sm:text-xl max-w-xl mx-auto text-white/70 leading-relaxed">
             {finalCta.lede}
           </p>
 
-          <div className="mt-10 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/skills-gap-diagnostic" className="btn-primary group">
               <span>{finalCta.primaryCta}</span>
               <ArrowRight

@@ -55,14 +55,23 @@ export default function Header() {
   const productTriggerRef = useRef<HTMLButtonElement>(null);
   const solutionsTriggerRef = useRef<HTMLButtonElement>(null);
   const lastScrollY = useRef(0);
+  const progressRef = useRef<HTMLDivElement>(null);
 
   // The nav is a floating pill that sits over the page, so anything it covers is
   // unreadable. Retract it while the reader scrolls down; bring it straight back
-  // the moment they scroll up (or reach the top).
+  // the moment they scroll up (or reach the top). The same handler drives the
+  // reading-progress hairline at the viewport's top edge, written straight to
+  // the element so scrolling never re-renders the header.
   useEffect(() => {
     const handleScroll = () => {
       const y = window.scrollY;
       setScrolled(y > 100);
+
+      const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+      if (progressRef.current) {
+        const p = scrollable > 0 ? Math.min(1, y / scrollable) : 0;
+        progressRef.current.style.transform = `scaleX(${p})`;
+      }
 
       const delta = y - lastScrollY.current;
       if (Math.abs(delta) > 6) {
@@ -71,11 +80,16 @@ export default function Header() {
       }
     };
     lastScrollY.current = window.scrollY;
+    handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener("resize", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
+    };
   }, []);
 
-  // Never retract while a menu is open — the close control must stay reachable.
+  // Never retract while a menu is open ΓÇö the close control must stay reachable.
   const isRetracted = hidden && !isOpen && activeMega === null;
 
   useEffect(() => {
@@ -127,6 +141,20 @@ export default function Header() {
 
   return (
     <>
+      {/* How far through the page the reader is, as a hairline on the top
+          edge. Scroll-linked position, not an animation, so it needs no
+          reduced-motion branch. */}
+      <div
+        aria-hidden="true"
+        className="fixed top-0 inset-x-0 h-[2px] z-[60] pointer-events-none"
+      >
+        <div
+          ref={progressRef}
+          className="h-full bg-accent origin-left"
+          style={{ transform: "scaleX(0)" }}
+        />
+      </div>
+
       <header
         // rounded-full matters: shadow-nav is painted on this element, and a
         // box-shadow follows the border-box. Without a radius here the shadow
@@ -143,10 +171,10 @@ export default function Header() {
           <Link href="/" className="relative z-10 flex items-center shrink-0 mr-4">
             <Image
               src="/skillar-logo.svg"
-              alt="Skillar"
-              width={1170}
-              height={263}
-              className="h-7 w-auto"
+              alt="Skillar.ai"
+              width={1824}
+              height={361}
+              className="h-[18px] sm:h-5 w-auto"
               priority
             />
           </Link>
@@ -181,9 +209,9 @@ export default function Header() {
                 Product
               </button>
 
-              {/* ═══════════════════════════════════════════════
-                  PRODUCT MEGA MENU — Premium Preview Panels
-              ═══════════════════════════════════════════════ */}
+              {/* ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+                  PRODUCT MEGA MENU ΓÇö Premium Preview Panels
+              ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ */}
               {activeMega === "product" && (
                 <div className="absolute top-full left-0 mt-2 w-[800px] bg-white backdrop-blur-2xl border border-navy-200/80 rounded-2xl shadow-xl shadow-navy/8 overflow-hidden">
                   <div className="flex">
@@ -226,7 +254,7 @@ export default function Header() {
                     {/* Interactive Preview Panel */}
                     <div className="w-[340px] border-l border-border/60 bg-surface/30 p-6 flex flex-col justify-center">
 
-                      {/* ── Skill Intelligence Preview ── */}
+                      {/* ΓöÇΓöÇ Skill Intelligence Preview ΓöÇΓöÇ */}
                       {activePreview === "intelligence" && (
                         <div style={{ animation: 'megaPreviewIn 180ms ease-out' }}>
                           <span className="label-mono text-[10px] text-accent tracking-[0.1em] block mb-3">{capabilityPreview.eyebrow}</span>
@@ -274,7 +302,7 @@ export default function Header() {
                         </div>
                       )}
 
-                      {/* ── Adaptive Learning Preview ── */}
+                      {/* ΓöÇΓöÇ Adaptive Learning Preview ΓöÇΓöÇ */}
                       {activePreview === "adaptive" && (
                         <div style={{ animation: 'megaPreviewIn 180ms ease-out' }}>
                           <span className="label-mono text-[10px] text-accent tracking-[0.1em] block mb-3">{adaptivePreview.eyebrow}</span>
@@ -312,7 +340,7 @@ export default function Header() {
                         </div>
                       )}
 
-                      {/* ── AI Authoring Preview ── */}
+                      {/* ΓöÇΓöÇ AI Authoring Preview ΓöÇΓöÇ */}
                       {activePreview === "authoring" && (
                         <div style={{ animation: 'megaPreviewIn 180ms ease-out' }}>
                           <span className="label-mono text-[10px] text-accent tracking-[0.1em] block mb-3">{authoringPreview.eyebrow}</span>
@@ -340,7 +368,7 @@ export default function Header() {
                         </div>
                       )}
 
-                      {/* ── Analytics Preview ── */}
+                      {/* ΓöÇΓöÇ Analytics Preview ΓöÇΓöÇ */}
                       {activePreview === "analytics" && (
                         <div style={{ animation: 'megaPreviewIn 180ms ease-out' }}>
                           <span className="label-mono text-[10px] text-accent tracking-[0.1em] block mb-3">{analyticsPreview.eyebrow}</span>
@@ -465,9 +493,9 @@ export default function Header() {
                 Solutions
               </button>
 
-              {/* ═══════════════════════════════════════════════
-                  SOLUTIONS MEGA MENU — Premium Preview Panels
-              ═══════════════════════════════════════════════ */}
+              {/* ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+                  SOLUTIONS MEGA MENU ΓÇö Premium Preview Panels
+              ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ */}
               {activeMega === "solutions" && (
                 <div className="absolute top-full left-0 mt-2 w-[800px] bg-white backdrop-blur-2xl border border-navy-200/80 rounded-2xl shadow-xl shadow-navy/8 overflow-hidden">
                   <div className="flex">
@@ -518,7 +546,7 @@ export default function Header() {
                     {/* Interactive Preview Panel */}
                     <div className="w-[340px] border-l border-border/60 bg-surface/30 p-6 flex flex-col justify-center">
 
-                      {/* ── Overview Preview ── */}
+                      {/* ΓöÇΓöÇ Overview Preview ΓöÇΓöÇ */}
                       {(activeSolutionPreview === "overview" || !activeSolutionPreview) && (
                         <div style={{ animation: 'megaPreviewIn 180ms ease-out' }}>
                           <span className="label-mono text-[10px] text-accent tracking-[0.1em] block mb-3 font-bold">{solutionsOverviewPreview.eyebrow}</span>
@@ -539,7 +567,7 @@ export default function Header() {
                         </div>
                       )}
 
-                      {/* ── L&D Preview ── */}
+                      {/* ΓöÇΓöÇ L&D Preview ΓöÇΓöÇ */}
                       {activeSolutionPreview === "ld" && (
                         <div style={{ animation: 'megaPreviewIn 180ms ease-out' }}>
                           <span className="label-mono text-[10px] text-accent tracking-[0.1em] block mb-3">{ldPreview.eyebrow}</span>
@@ -558,7 +586,7 @@ export default function Header() {
                         </div>
                       )}
 
-                      {/* ── HR Preview ── */}
+                      {/* ΓöÇΓöÇ HR Preview ΓöÇΓöÇ */}
                       {activeSolutionPreview === "hr" && (
                         <div style={{ animation: 'megaPreviewIn 180ms ease-out' }}>
                           <span className="label-mono text-[10px] text-accent tracking-[0.1em] block mb-3">{hrPreview.eyebrow}</span>
@@ -573,7 +601,7 @@ export default function Header() {
                         </div>
                       )}
 
-                      {/* ── Managers Preview ── */}
+                      {/* ΓöÇΓöÇ Managers Preview ΓöÇΓöÇ */}
                       {activeSolutionPreview === "managers" && (
                         <div style={{ animation: 'megaPreviewIn 180ms ease-out' }}>
                           <span className="label-mono text-[10px] text-accent tracking-[0.1em] block mb-3">{managersPreview.eyebrow}</span>
@@ -601,7 +629,7 @@ export default function Header() {
                         </div>
                       )}
 
-                      {/* ── Enterprise Preview ── */}
+                      {/* ΓöÇΓöÇ Enterprise Preview ΓöÇΓöÇ */}
                       {activeSolutionPreview === "enterprise" && (
                         <div style={{ animation: 'megaPreviewIn 180ms ease-out' }}>
                           <span className="label-mono text-[10px] text-accent tracking-[0.1em] block mb-3">{enterprisePreview.eyebrow}</span>
@@ -612,7 +640,7 @@ export default function Header() {
                                   className={`text-[10px] mt-0.5 shrink-0 ${item.live ? "text-emerald-500" : "text-navy-300"}`}
                                   aria-hidden="true"
                                 >
-                                  {item.live ? "✓" : "○"}
+                                  {item.live ? "Γ£ô" : "Γùï"}
                                 </span>
                                 <div className="min-w-0">
                                   <span className="text-[10px] font-medium text-navy block">{item.label}</span>
@@ -663,10 +691,21 @@ export default function Header() {
             </div>
 
             <Link
+              href="/pricing"
+              className={`relative px-4 py-2 text-sm font-medium transition-colors duration-200 rounded-full ${
+                pathname === "/pricing"
+                  ? "text-navy bg-navy-100 font-semibold"
+                  : "text-navy-600 hover:text-navy hover:bg-navy-50"
+              }`}
+            >
+              Pricing
+            </Link>
+
+            <Link
               href="/about"
               className={`relative px-4 py-2 text-sm font-medium transition-colors duration-200 rounded-full ${
                 pathname === "/about"
-                  ? "text-navy bg-navy-100"
+                  ? "text-navy bg-navy-100 font-semibold"
                   : "text-navy-600 hover:text-navy hover:bg-navy-50"
               }`}
             >

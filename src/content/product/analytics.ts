@@ -53,7 +53,7 @@ export const metricShift = {
   ],
   newMetrics: [
     { name: "Assessed skill score", reason: "Scored per concept by the scheduled assessment, not per course" },
-    { name: "Concepts below mastery", reason: "Named by Bayesian Knowledge Tracing, person by person" },
+    { name: "Concepts below mastery", reason: "Identified by advanced mastery-tracing algorithms, person by person" },
     { name: "Certification currency", reason: "Who is certified, who is overdue, whose certificate expires next" },
     { name: "Acknowledgement coverage", reason: "Which policies each person has read and signed, with dates" },
   ],
@@ -90,5 +90,5 @@ export const finalCta = {
   title: "Walk through the compliance dashboard with us.",
   body:
     "We will use your own roles and certifications, and show you exactly what an auditor would be handed. Skillar is pre-launch, so you will be talking to the people building it.",
-  buttonLabel: "Book a demo",
+  buttonLabel: "Book a walkthrough",
 } as const;

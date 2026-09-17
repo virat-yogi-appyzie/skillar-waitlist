@@ -11,6 +11,7 @@ import {
   type RoleOption,
   type SkillOption,
 } from "@/lib/dropdown-actions";
+import { diagnostic } from "@/content/home";
 
 /**
  * The only section on the homepage the visitor operates rather than looks at.
@@ -75,19 +76,65 @@ export default function InlineDiagnostic() {
   const chipOn = "bg-accent border-accent text-white shadow-xs";
 
   return (
-    <section className="py-16 sm:py-20 lg:py-28 bg-surface border-y border-border/70">
+    <section className="py-16 sm:py-20 lg:py-24 bg-surface border-y border-border/70">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-3xl mx-auto text-center mb-10">
-          <h2 className="font-serif text-[clamp(1.9rem,4vw,3rem)] font-normal text-navy leading-[1.08] tracking-[-0.025em] mb-4 text-balance">
-            What would Skillar measure in your team?
+        <div className="max-w-3xl mb-12">
+          <h2 className="font-serif text-[length:var(--text-display)] font-normal text-navy leading-tight tracking-[-0.025em] mb-5 text-balance">
+            {diagnostic.heading}
           </h2>
-          <p className="text-navy-500 text-base sm:text-lg leading-relaxed">
-            Pick a sector and a role. These are the real competencies we benchmark, pulled
-            from the same taxonomy the full diagnostic runs on. No signup.
+          <p className="text-navy-500 text-lg leading-relaxed">
+            {diagnostic.lede}
           </p>
         </div>
 
-        <div className="max-w-3xl mx-auto rounded-3xl border border-border bg-surface-elevated shadow-card p-6 sm:p-8">
+        <div className="max-w-3xl rounded-3xl border border-border bg-surface-elevated shadow-card p-6 sm:p-8">
+          {/* Where the visitor is in the three picks. Purely a readout of the
+              state below it; the chips remain the only controls. */}
+          <ol
+            aria-label="Diagnostic progress"
+            className="flex items-center gap-2 mb-6 text-[13px]"
+          >
+            {[
+              { label: "Sector", done: industry !== null },
+              { label: "Role", done: role !== null },
+              { label: "Benchmark", done: role !== null && skills.length > 0 },
+            ].map((step, i, steps) => {
+              const isNext = !step.done && (i === 0 || steps[i - 1].done);
+              return (
+                <li
+                  key={step.label}
+                  className={`flex items-center gap-2 min-w-0 ${i > 0 ? "flex-1" : ""}`}
+                >
+                  {i > 0 && (
+                    <span
+                      aria-hidden="true"
+                      className={`flex-1 min-w-3 h-px transition-colors duration-300 ${
+                        step.done || isNext ? "bg-accent/50" : "bg-border"
+                      }`}
+                    />
+                  )}
+                  <span
+                    className={`flex items-center gap-1.5 whitespace-nowrap transition-colors duration-300 ${
+                      step.done
+                        ? "text-accent font-medium"
+                        : isNext
+                          ? "text-navy font-medium"
+                          : "text-navy-400"
+                    }`}
+                  >
+                    <span
+                      aria-hidden="true"
+                      className={`w-1.5 h-1.5 rounded-full transition-colors duration-300 ${
+                        step.done ? "bg-accent" : isNext ? "bg-navy-400" : "bg-border"
+                      }`}
+                    />
+                    {step.label}
+                  </span>
+                </li>
+              );
+            })}
+          </ol>
+
           {/* Step 1 — note the persistent CTA below the fold of this card: the
               conversion point must exist for a visitor who never interacts. */}
           <fieldset className="mb-6">
@@ -196,7 +243,7 @@ export default function InlineDiagnostic() {
         {/* Always present. A visitor who scrolls past without touching the chips
             still needs somewhere to go — this is the page's mid-point CTA. */}
         {!role && (
-          <p className="max-w-3xl mx-auto text-center mt-6 text-sm text-navy-500">
+          <p className="max-w-3xl mt-6 text-sm text-navy-500">
             Or{" "}
             <Link
               href="/skills-gap-diagnostic"

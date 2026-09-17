@@ -2,7 +2,7 @@
  * Copy for /about, the manifesto.
  *
  * A manifesto is allowed ambition, but its mechanism claims still have to be
- * true: assessment-led capability mapping, BKT pinpointing, generated revision
+ * true: assessment-led capability mapping, advanced mastery-tracing, generated revision
  * roadmaps. No "autonomous", no "real-time", no "instantly".
  */
 
@@ -18,7 +18,7 @@ export const hero = {
   lede:
     "Not the other way around. For decades, enterprise software has forced human potential to adapt to rigid catalogs. The paradigm is finally flipping.",
   primaryCta: "Read the three theses",
-  secondaryCta: "Book a demo",
+  secondaryCta: "Book a walkthrough",
 } as const;
 
 export const theses = [
@@ -51,6 +51,6 @@ export const theses = [
 export const closing = {
   title: "Stop tracking consumption. Start managing capability.",
   lede: "The paradigm is shifting. See how Skillar measures and builds workforce capability.",
-  primaryCta: "Book a demo",
+  primaryCta: "Book a walkthrough",
   secondaryCta: "Run the free diagnostic",
 } as const;

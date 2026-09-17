@@ -52,7 +52,7 @@ export const loopSection = {
 /** Footnote per PRODUCT_LOOP stage, in the same order. */
 const loopFootnotes = [
   "Scheduled, not self-reported",
-  "Bayesian Knowledge Tracing",
+  "Advanced mastery-tracing",
   "Grounded in your documents",
   "Certificate with expiry tracking",
 ] as const;

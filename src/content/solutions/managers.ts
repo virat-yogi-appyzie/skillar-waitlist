@@ -80,7 +80,7 @@ export const loopPhases = [
     marker: "Per person",
     title: "A roadmap for the concepts still below mastery",
     body:
-      "Bayesian Knowledge Tracing reads the assessment and flags the specific concepts below threshold. The roadmap Skillar generates covers only those, grounded in your own SOPs and policy documents rather than the open internet.",
+      "Skillar's advanced algorithms read the assessment and flag the specific concepts below threshold. The roadmap Skillar generates covers only those, grounded in your own SOPs and policy documents rather than the open internet.",
     chipLeft: "Assigned: lockout/tagout revision, 4 steps",
     chipRight: "Rohit Verma",
     tone: "neutral",

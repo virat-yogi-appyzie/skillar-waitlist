@@ -65,9 +65,13 @@ export const ReportTemplate = ({
       {/* Header */}
       <View style={styles.headerContainer}>
         <View style={styles.logoContainer}>
-          {/* eslint-disable-next-line jsx-a11y/alt-text */}
           {/* Stable public asset; react-pdf's Image cannot render SVG, and the
               previous hashed _next/static URL broke on every app redeploy. */}
+          {/* react-pdf's Image is a PDF primitive with no alt prop; the rule
+              matches on the component name alone. The directive must sit
+              directly above the element - a comment between them makes it a
+              no-op, which is what produced both warnings here. */}
+          {/* eslint-disable-next-line jsx-a11y/alt-text */}
           <Image
             src={`${SITE_CONFIG.appUrl}/full-skillar-logo.png`}
             style={{ width: 140 }}

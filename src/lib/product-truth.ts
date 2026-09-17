@@ -4,7 +4,7 @@
  *
  * Verified against the platform's business documentation (shyam-skillar /
  * BUSINESS_DOCUMENTATION.md) plus two confirmed shipping capabilities: RAG-
- * grounded generation and BKT revision roadmaps. If marketing copy needs a
+ * grounded generation and mastery-tracing revision roadmaps. If marketing copy needs a
  * claim that is not representable here, the claim is wrong — fix the copy,
  * or extend this file only after verifying against the platform.
  *
@@ -33,7 +33,7 @@ export const PRODUCT_LOOP = [
     id: "pinpoint",
     label: "Pinpoint",
     title: "Find the exact weak areas",
-    desc: "Bayesian Knowledge Tracing reads each assessment and flags the specific concepts still below mastery threshold — person by person, not cohort averages.",
+    desc: "Our advanced mastery-tracing algorithms read each assessment and flag the specific concepts still below mastery threshold — person by person, not cohort averages.",
   },
   {
     id: "remediate",
@@ -57,7 +57,7 @@ export const PERSONALIZATION = {
   short:
     "After each assessment, Skillar pinpoints the concepts still below mastery and generates a revision roadmap that targets exactly those areas.",
   mechanism:
-    "Bayesian Knowledge Tracing identifies below-threshold concepts from assessment evidence; a personalized revision roadmap is generated for each learner covering only what they need.",
+    "Advanced mastery-tracing algorithms identify below-threshold concepts from assessment evidence; a personalized revision roadmap is generated for each learner covering only what they need.",
   grounding:
     "Roadmap and assessment content is generated with retrieval-augmented AI, grounded in your organisation's own documents rather than the open internet.",
 } as const;

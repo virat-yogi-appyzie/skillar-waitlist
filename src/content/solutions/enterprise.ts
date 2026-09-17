@@ -153,5 +153,5 @@ export const nextChapter = {
   statement: "See how Skillar works for your organisation.",
   label: "Next: an enterprise walkthrough",
   href: "/demo",
-  cta: "Book a demo",
+  cta: "Book an enterprise walkthrough",
 } as const;

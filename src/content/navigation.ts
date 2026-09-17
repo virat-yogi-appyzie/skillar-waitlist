@@ -283,7 +283,7 @@ export const footerCompanyLinks = [
 export const footerGovernanceLinks = [
   { label: "Privacy Policy", href: "/privacy-policy" },
   { label: "Terms of Service", href: "/terms" },
-  { label: "Enterprise Security", href: "/solutions/enterprise" },
+  { label: "Enterprise Security", href: "/solutions/enterprise#security" },
 ] as const;
 
 export const footerSocialLinks = [

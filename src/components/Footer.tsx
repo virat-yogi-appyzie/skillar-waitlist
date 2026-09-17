@@ -55,8 +55,8 @@ export default function Footer() {
               <Image
                 src="/skillar-logo.svg"
                 alt="Skillar.ai"
-                width={1170}
-                height={263}
+                width={1824}
+                height={361}
                 className="h-7 w-auto"
               />
             </Link>
@@ -208,21 +208,9 @@ export default function Footer() {
         {/* Sub-Footer Utility Bar */}
         <div className="pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-navy-700">
           
-          {/* Left: Copyright & Appyzie Link */}
+          {/* Left: Copyright */}
           <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-4 gap-y-1 font-medium">
             <span>© {new Date().getFullYear()} Skillar.ai. All rights reserved.</span>
-            <span>
-              Skillar.ai is a part of{" "}
-              <a
-                href="https://www.appyzie.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-navy-950 font-bold hover:text-accent transition-colors inline-flex items-center gap-0.5 group underline decoration-navy-400 hover:decoration-accent underline-offset-4"
-              >
-                <span>Appyzie</span>
-                <ArrowUpRight className="w-3.5 h-3.5 text-navy-600 group-hover:text-accent transition-colors" />
-              </a>
-            </span>
           </div>
 
           {/* Right: Quick Links & Back to Top */}
