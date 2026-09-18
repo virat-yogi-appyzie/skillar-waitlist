@@ -146,7 +146,7 @@ class AIService {
     Write 3-4 numbered points drawn ONLY from these true capabilities:
     1. [Learning roadmaps and assessment quizzes are AI-generated from a topic and level, grounded in the organisation's own uploaded documents rather than the open internet]
     2. [Content is targeted to ${input.userIndustry} and to what ${input.userRole} is accountable for]
-    3. [Bayesian Knowledge Tracing reads each assessment result and flags the concepts still below mastery, person by person]
+    3. [Advanced mastery-tracing algorithms read each assessment result and flag the concepts still below mastery, person by person]
     4. [A revision roadmap covering only those flagged concepts is generated, and a follow-up assessment confirms the gap on ${input.lowestScoringSkill} has closed]
 
     **3.2 How A Rollout Runs**

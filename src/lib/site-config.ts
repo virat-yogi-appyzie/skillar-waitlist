@@ -8,7 +8,7 @@
 
 export const SITE_CONFIG = {
   name: "Skillar",
-  legalName: "Skillar Inc.",
+  legalName: "Skillar.ai",
   domain: "skillar.ai",
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL || "https://skillar.ai",
   /** Primary learning platform / application portal (previously app.skillar.ai) */

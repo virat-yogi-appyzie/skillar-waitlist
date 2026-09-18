@@ -256,5 +256,5 @@ export const outcomeSection = {
     { label: "Managers", line: "Know who is cleared.", palette: "emerald" },
     { label: "Enterprise", line: "Know what you can prove.", palette: "purple" },
   ],
-  cta: { label: "Book a demo", href: "/demo" },
+  cta: { label: "Book a walkthrough", href: "/demo" },
 } as const;

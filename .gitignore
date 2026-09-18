@@ -52,3 +52,6 @@ design
 .opencode
 .impeccable
 .hallmark
+
+# Local-only DB setup scripts (run manually, not deployed)
+scripts/setup-events-schema.*

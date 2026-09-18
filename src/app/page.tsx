@@ -2,46 +2,63 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 import HeroSection from "@/components/home/HeroSection";
-import QuestionsChapter from "@/components/home/QuestionsChapter";
-import NewModelSection from "@/components/home/NewModelSection";
-import InlineDiagnostic from "@/components/home/InlineDiagnostic";
+import ProblemSection from "@/components/home/ProblemSection";
+import HowItWorks from "@/components/home/HowItWorks";
 import LoopStory from "@/components/home/LoopStory";
 import SkillIntelligenceSection from "@/components/home/SkillIntelligenceSection";
 import TodayVsSkillar from "@/components/home/TodayVsSkillar";
-import Thesis from "@/components/home/Thesis";
-import AIAuthoringSection from "@/components/home/AIAuthoringSection";
+import AudienceSection from "@/components/home/AudienceSection";
+import InlineDiagnostic from "@/components/home/InlineDiagnostic";
+import FAQSection from "@/components/home/FAQSection";
 import FinalCTA from "@/components/home/FinalCTA";
 
 /**
- * Homepage, iteration 06: three pinned chapters.
+ * Homepage, iteration 09: the conversion pass.
  *
- * The user's verdict on iteration 05 was that LoopStory was "by far the
- * best" section, so its scroll-driven idiom now carries three chapters:
- * the hero field (scroll performs the assessment), QuestionsChapter (the
- * three unanswerable questions with a pinned scene panel), and LoopStory
- * itself. Everything else stays still so the motion keeps meaning. Brand
- * stays light/blue; the dark navy panels are the accent, not the ground.
+ * A competitor AI's single-page rebuild of skillar.ai beat us on product
+ * presence and conversion furniture while losing to us on truth and real
+ * plumbing. This iteration ports its wins without its fabrications:
+ * - HeroField gained product chrome: a surface title, a "Sample data" tag,
+ *   and a readout row whose every figure is derived from the marks actually
+ *   drawn. The field's canvas animation is untouched, by explicit user
+ *   preference; only the console around it changed.
+ * - LoopStory keeps its scroll scrub and orbit transition untouched, also by
+ *   explicit user preference, and gains only a beat rail above the stage:
+ *   the five beats named, the active one filling with scroll progress, each
+ *   clickable to jump the scroll there.
+ * - FAQSection answers the six pre-pilot objections between the diagnostic
+ *   and the final CTA; copy is truth-verified against product-truth.ts.
+ * - Header gained a reading-progress hairline; the primary button gained a
+ *   one-pass light sweep on hover.
  *
- * Previous iteration notes:
- * Iteration 05: the anti-slop pass.
+ * Iteration 08 (the plain-language pass) below, still current:
  *
- * What changed from iteration 04 and why:
- * - One motion budget. LoopStory is the page's single authored, scroll-driven
- *   moment (one gap closing, five beats). Everything else is static: no
- *   per-section fade-up reveals, no magnetic buttons, no pulsing dots.
- * - One piece of product UI. The interactive CapabilityMap remains; the other
- *   synthetic dashboards (hero landscape, problem tabs, engine console,
- *   authoring pipeline, CTA core) were replaced with typographic ledgers or
- *   removed with their sections.
- * - No eyebrow labels, no decorative section numbering, no two-tone or
- *   italicised headline devices, no unicode glyphs standing in for icons,
- *   no em dashes in copy.
- * - Section shapes now genuinely differ: editorial hero, question-and-answer
- *   ledger, definition list, live form, pinned scroll story, product UI,
- *   dense table, letter, from/to ledger, quiet close.
+ * Driven by user testing of iteration 07: "reads like a research paper, too
+ * technical, too textual, headings you can't parse without knowing the
+ * product". The hero and its scroll-scrubbed field stay by explicit user
+ * preference. What changed and why:
+ * - Every heading and body in src/content/home.ts was rewritten in plain
+ *   words at roughly half the length. No claim changed, only its wording.
+ * - QuestionsChapter (pinned dark data panels) collapsed into ProblemSection,
+ *   three big questions and one line each; the hero field above already
+ *   shows unmeasured-versus-measured, so nothing visual repeats.
+ * - NewModelSection's five-input inventory became HowItWorks: the product in
+ *   four verbs (Test, Find, Fix, Prove), with the old AIAuthoringSection
+ *   absorbed as the "where the material comes from" ledger beneath it.
+ * - Thesis was cut from the flow; its argument lives on /about, which
+ *   ProblemSection links to.
+ * - TodayVsSkillar dropped from five rows to four with one-line cells.
+ * - Photography: art-directed scenes (factory operator, expert reviewer)
+ *   composited with product chips, per the LearnRush-style reference, are
+ *   wired in where the imagery pass lands them.
  *
- * Cut from the flow (files kept): IntelligenceEngine, AdaptiveLearningSection,
- * GapToAction, EditorialPause. Their stories are told by LoopStory.
+ * Motion budget holds: the hero field and LoopStory carry the scroll-driven
+ * moments; everything else stays still.
+ *
+ * Cut from the flow (files kept): QuestionsChapter, Thesis, plus iteration
+ * 07's cuts (IntelligenceEngine, AdaptiveLearningSection, GapToAction,
+ * EditorialPause). NewModelSection and AIAuthoringSection were removed with
+ * their content exports.
  */
 export default function Home() {
   return (
@@ -49,14 +66,14 @@ export default function Home() {
       <Header />
       <main id="main-content">
         <HeroSection />
-        <QuestionsChapter />
-        <NewModelSection />
-        <InlineDiagnostic />
+        <ProblemSection />
+        <HowItWorks />
         <LoopStory />
         <SkillIntelligenceSection />
         <TodayVsSkillar />
-        <Thesis />
-        <AIAuthoringSection />
+        <AudienceSection />
+        <InlineDiagnostic />
+        <FAQSection />
         <FinalCTA />
       </main>
       <Footer />

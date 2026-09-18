@@ -167,7 +167,7 @@ export const adapt = {
     "A certificate is a date, not a finish line. Assessments come round again on a schedule, and each round shows where mastery has slipped since the last one.",
   steps: [
     { label: "Assess", desc: "The scheduled assessment runs" },
-    { label: "Pinpoint", desc: "BKT flags concepts below mastery" },
+    { label: "Pinpoint", desc: "Advanced algorithms flag concepts below mastery" },
     { label: "Revise", desc: "A roadmap covering only those" },
     { label: "Re-assess", desc: "Confirm the gap has closed" },
     { label: "Certify", desc: "Certificate issued, expiry tracked" },
@@ -272,5 +272,5 @@ export const productIndex = {
     },
   ],
   exploreLabel: "Explore",
-  ctaLabel: "Book a demo",
+  ctaLabel: "Book a walkthrough",
 } as const;

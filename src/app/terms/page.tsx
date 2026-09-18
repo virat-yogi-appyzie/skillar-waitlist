@@ -5,7 +5,7 @@ import Link from "next/link";
 export const metadata = {
   title: "Terms of Service | Skillar.ai",
   description:
-    "Terms of Service for Skillar.ai describing the rules and regulations for using our platform and services.",
+    "Terms of Service for Skillar.ai, an AI-powered LMS platform for workforce skill mapping and assessments.",
 };
 
 export default function TermsOfService() {
@@ -26,89 +26,249 @@ export default function TermsOfService() {
         <section className="py-14 sm:py-20">
           <div className="w-full max-w-7xl xl:max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-12 xl:px-16">
             <div className="max-w-3xl space-y-8 text-navy-500 text-[15px] sm:text-base leading-[1.8] font-normal [&_p]:max-w-none">
-              
-              {/* Introduction */}
-              <p>
-                These Terms of Service (&ldquo;Terms&rdquo;) govern your access to and use of <strong className="text-navy font-medium">www.skillar.ai</strong> and related services (&ldquo;Service&rdquo;), owned and operated by <strong className="text-navy font-medium">Appyzie Technologies Private Limited</strong>, having its registered office at 4th Floor, Triveni Flyover, 1A, Gopalpura Bypass Rd, 10-B Scheme, Vishveshvariya Nagar, Gopal Pura Mode, Jaipur, Rajasthan 302018 (hereinafter referred to as &ldquo;Skillar.ai&rdquo;, &ldquo;We&rdquo;, &ldquo;Us&rdquo; or &ldquo;Our&rdquo;).
+
+              <p className="font-medium text-navy">
+                Effective Date: September 7, 2026
               </p>
-
-              <p>
-                By accessing or using our Service, you agree to be bound by these Terms. If you disagree with any part of the terms, you may not access the Service.
+            
+            <section className="space-y-3 pt-2">
+              <h2 className="font-serif text-xl sm:text-2xl font-normal text-navy tracking-[-0.02em]">
+                1. Introduction & Definitions
+              </h2>
+              <p className="text-navy-500 text-[15px] sm:text-base leading-[1.8]">
+                Welcome to Skillar.ai (&ldquo;Company&rdquo;, &ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;us&rdquo;), a company registered in Jaipur, Rajasthan, India. By accessing or using our platform, you agree to be bound by these Terms of Service (&ldquo;Terms&rdquo;).
               </p>
+              <p className="text-navy-500 text-[15px] sm:text-base leading-[1.8]">
+                The following definitions apply throughout these Terms:
+              </p>
+              <ul className="list-disc ml-6 space-y-1.5 text-navy-500 text-[15px] sm:text-base leading-[1.8]">
+                <li><strong>Services:</strong> Skillar.ai&rsquo;s offerings including skill mapping, assessment engine, AI learning paths, certification tracking, and workforce analytics.</li>
+                <li><strong>Platform:</strong> Our website, applications, and associated software provided by Skillar.ai.</li>
+                <li><strong>Content:</strong> All text, information, materials, data, software, executable code, images, and other content provided by us.</li>
+                <li><strong>User Content:</strong> Any information, data, or materials uploaded or submitted by you.</li>
+                <li><strong>Organisation Account:</strong> An account created by a business or educational entity.</li>
+                <li><strong>Subscription:</strong> A paid or free-tier plan providing access to the Platform.</li>
+                <li><strong>Administrator:</strong> A user authorised to manage an Organisation Account.</li>
+                <li><strong>Learner:</strong> An individual user accessing the Platform to utilize educational and assessment services.</li>
+              </ul>
+            </section>
 
-              {/* 1. Accounts and Registration */}
-              <div className="space-y-3 pt-2">
-                <h2 className="font-serif text-xl sm:text-2xl font-normal text-navy tracking-[-0.02em]">
-                  1. Accounts and Registration
-                </h2>
-                <p>
-                  When you create an account with us, you must provide accurate, complete, and current information. You are responsible for safeguarding the password and credentials used to access the Service and for any activities or actions under your account.
-                </p>
-              </div>
+            <section className="space-y-3 pt-2">
+              <h2 className="font-serif text-xl sm:text-2xl font-normal text-navy tracking-[-0.02em]">
+                2. Eligibility & Account Registration
+              </h2>
+              <p className="text-navy-500 text-[15px] sm:text-base leading-[1.8]">
+                You must be at least 18 years old or have explicit institutional authorization to use the Services. When you register, you agree to provide accurate and complete information. Organisation Administrators are responsible for managing and authorizing their team&rsquo;s access to the Platform.
+              </p>
+              <p className="text-navy-500 text-[15px] sm:text-base leading-[1.8]">
+                You are strictly responsible for maintaining the security of your account credentials. Sharing login credentials is not permitted; one person per account is strictly enforced.
+              </p>
+            </section>
 
-              {/* 2. Acceptable Use */}
-              <div className="space-y-3 pt-2">
-                <h2 className="font-serif text-xl sm:text-2xl font-normal text-navy tracking-[-0.02em]">
-                  2. Acceptable Use
-                </h2>
-                <p>
-                  You agree not to misuse the Service, interfere with its normal operation, attempt to gain unauthorized access to our systems, or use the Service for any unlawful or unauthorized purpose.
-                </p>
-              </div>
+            <section className="space-y-3 pt-2">
+              <h2 className="font-serif text-xl sm:text-2xl font-normal text-navy tracking-[-0.02em]">
+                3. Description of Services
+              </h2>
+              <p className="text-navy-500 text-[15px] sm:text-base leading-[1.8]">
+                Skillar.ai provides an AI-powered learning management system designed to accelerate workforce capabilities. Features include:
+              </p>
+              <ul className="list-disc ml-6 space-y-1.5 text-navy-500 text-[15px] sm:text-base leading-[1.8]">
+                <li>AI-powered skill mapping tailored per role.</li>
+                <li>Automated assessment scheduling and execution.</li>
+                <li>Personalized learning roadmap generation.</li>
+                <li>Certification and compliance tracking.</li>
+                <li>Workforce analytics and reporting dashboards.</li>
+                <li>API integrations with third-party HRMS and enterprise systems.</li>
+              </ul>
+            </section>
 
-              {/* 3. Intellectual Property */}
-              <div className="space-y-3 pt-2">
-                <h2 className="font-serif text-xl sm:text-2xl font-normal text-navy tracking-[-0.02em]">
-                  3. Intellectual Property
-                </h2>
-                <p>
-                  The Service and its original content, features, and functionality are and will remain the exclusive property of Skillar.ai and its licensors. Our trademarks, logos, and service marks may not be used without prior written consent.
-                </p>
-              </div>
+            <section className="space-y-3 pt-2">
+              <h2 className="font-serif text-xl sm:text-2xl font-normal text-navy tracking-[-0.02em]">
+                4. Subscription Plans & Payments
+              </h2>
+              <p className="text-navy-500 text-[15px] sm:text-base leading-[1.8]">
+                We offer a free tier (waitlist or basic access) and paid subscription plans for individuals and enterprise clients on monthly or annual billing cycles. All prices are in Indian Rupees (INR) and are subject to Goods and Services Tax (GST) as applicable.
+              </p>
+              <p className="text-navy-500 text-[15px] sm:text-base leading-[1.8]">
+                Payments must be made through our authorized payment gateways. Subscriptions auto-renew automatically unless cancelled. We will provide a 15-day advance notice before auto-renewal charges apply for annual plans. Any price changes will be communicated with a 30-day notice.
+              </p>
+              <p className="text-navy-500 text-[15px] sm:text-base leading-[1.8]">
+                <strong>Refund Policy:</strong> We offer a pro-rata refund for annual subscriptions if cancelled early. Monthly subscriptions are non-refundable after the first 7 days of the billing cycle.
+              </p>
+            </section>
 
-              {/* 4. Data and Privacy */}
-              <div className="space-y-3 pt-2">
-                <h2 className="font-serif text-xl sm:text-2xl font-normal text-navy tracking-[-0.02em]">
-                  4. Data and Privacy
-                </h2>
-                <p>
-                  Your use of the Service is also governed by our{" "}
-                  <Link href="/privacy-policy" className="text-accent font-medium hover:underline">
-                    Privacy Policy
-                  </Link>
-                  , which is incorporated into these Terms by reference.
-                </p>
-              </div>
+            <section className="space-y-3 pt-2">
+              <h2 className="font-serif text-xl sm:text-2xl font-normal text-navy tracking-[-0.02em]">
+                5. User Responsibilities & Acceptable Use
+              </h2>
+              <p className="text-navy-500 text-[15px] sm:text-base leading-[1.8]">
+                You agree not to misuse the Services. The following actions are strictly prohibited:
+              </p>
+              <ul className="list-disc ml-6 space-y-1.5 text-navy-500 text-[15px] sm:text-base leading-[1.8]">
+                <li>Cheating, plagiarizing, or manipulating assessments.</li>
+                <li>Sharing login credentials with other individuals.</li>
+                <li>Using automated scripts, scraping, or data harvesting tools on the Platform.</li>
+                <li>Reverse-engineering the Platform algorithms or software.</li>
+                <li>Uploading malicious content, viruses, or malware.</li>
+                <li>Using the Platform to build or support competing products.</li>
+                <li>Engaging in harassment or discriminatory behaviour towards other users.</li>
+                <li>Circumventing access controls or security measures.</li>
+              </ul>
+            </section>
 
-              {/* 5. Limitation of Liability */}
-              <div className="space-y-3 pt-2">
-                <h2 className="font-serif text-xl sm:text-2xl font-normal text-navy tracking-[-0.02em]">
-                  5. Limitation of Liability
-                </h2>
-                <p>
-                  In no event shall Skillar.ai, its directors, employees, partners, agents, suppliers, or affiliates be liable for any indirect, incidental, special, exemplary, consequential, or punitive damages arising from your access to or use of the Service.
-                </p>
-              </div>
+            <section className="space-y-3 pt-2">
+              <h2 className="font-serif text-xl sm:text-2xl font-normal text-navy tracking-[-0.02em]">
+                6. Intellectual Property
+              </h2>
+              <p className="text-navy-500 text-[15px] sm:text-base leading-[1.8]">
+                Skillar.ai retains all ownership and intellectual property rights in the Platform, including code, AI models, assessment frameworks, branding, and documentation. You retain ownership of all User Content you upload to the Platform.
+              </p>
+              <p className="text-navy-500 text-[15px] sm:text-base leading-[1.8]">
+                By uploading User Content, you grant Skillar.ai a non-exclusive, worldwide, royalty-free licence to host, display, and process your content strictly for the purpose of service delivery. Data belonging to an Organisation remains the sole property of that Organisation.
+              </p>
+            </section>
 
-              {/* 6. Governing Law */}
-              <div className="space-y-3 pt-2">
-                <h2 className="font-serif text-xl sm:text-2xl font-normal text-navy tracking-[-0.02em]">
-                  6. Governing Law
-                </h2>
-                <p>
-                  These Terms shall be governed by and construed in accordance with the laws of India, without regard to its conflict of law provisions. Any disputes shall be subject to the exclusive jurisdiction of courts in Jaipur, Rajasthan, India.
-                </p>
-              </div>
+            <section className="space-y-3 pt-2">
+              <h2 className="font-serif text-xl sm:text-2xl font-normal text-navy tracking-[-0.02em]">
+                7. User-Generated Content
+              </h2>
+              <p className="text-navy-500 text-[15px] sm:text-base leading-[1.8]">
+                You are entirely responsible for the legality, accuracy, and appropriateness of any content you generate or upload. Skillar.ai reserves the right, but has no obligation, to moderate, monitor, or remove content that violates our guidelines or the law.
+              </p>
+              <p className="text-navy-500 text-[15px] sm:text-base leading-[1.8]">
+                We comply with the Indian Information Technology Act, 2000, and will respond to DMCA-equivalent takedown notices for verified intellectual property infringements.
+              </p>
+            </section>
 
-              {/* Contact Information */}
-              <div className="pt-4 border-t border-border/80">
-                <p>
-                  If you have any questions or requests regarding these Terms of Service, please write to us at{" "}
-                  <a href="mailto:hello@skillar.ai" className="text-accent font-medium hover:underline">
-                    hello@skillar.ai
-                  </a>.
-                </p>
-              </div>
+            <section className="space-y-3 pt-2">
+              <h2 className="font-serif text-xl sm:text-2xl font-normal text-navy tracking-[-0.02em]">
+                8. Data & Privacy
+              </h2>
+              <p className="text-navy-500 text-[15px] sm:text-base leading-[1.8]">
+                Your use of the Services is governed by our{" "}
+                <Link href="/privacy-policy" className="text-accent font-medium hover:underline">
+                  Privacy Policy
+                </Link>
+                , which adheres to the SPDI Rules 2011 and other applicable data protection laws. 
+              </p>
+              <p className="text-navy-500 text-[15px] sm:text-base leading-[1.8]">
+                For our Enterprise clients, you may elect to enter into a separate Data Processing Agreement (DPA). In such relationships, Skillar.ai acts as a data processor processing data solely on behalf of the organisation, which remains the data controller.
+              </p>
+            </section>
+
+            <section className="space-y-3 pt-2">
+              <h2 className="font-serif text-xl sm:text-2xl font-normal text-navy tracking-[-0.02em]">
+                9. AI-Powered Features Disclaimer
+              </h2>
+              <p className="text-navy-500 text-[15px] sm:text-base leading-[1.8]">
+                Skillar.ai utilizes artificial intelligence to provide skill assessments and learning path recommendations. These features are intended as assistive tools and do not represent definitive professional evaluations.
+              </p>
+              <p className="text-navy-500 text-[15px] sm:text-base leading-[1.8]">
+                We do not guarantee specific learning outcomes, career advancement, or employment results based on our AI recommendations. Any critical decisions derived from AI-generated content should be independently reviewed by qualified professionals. We continuously strive to improve our AI accuracy, but we do not guarantee error-free results.
+              </p>
+            </section>
+
+            <section className="space-y-3 pt-2">
+              <h2 className="font-serif text-xl sm:text-2xl font-normal text-navy tracking-[-0.02em]">
+                10. Third-Party Integrations
+              </h2>
+              <p className="text-navy-500 text-[15px] sm:text-base leading-[1.8]">
+                The Platform may integrate with third-party systems such as HRMS, SSO providers, payment gateways, and content platforms. Skillar.ai is not responsible for the availability, data practices, or terms and conditions of these third-party services. We encourage users to review the independent terms of any integrated third party.
+              </p>
+            </section>
+
+            <section className="space-y-3 pt-2">
+              <h2 className="font-serif text-xl sm:text-2xl font-normal text-navy tracking-[-0.02em]">
+                11. Service Availability & SLA
+              </h2>
+              <p className="text-navy-500 text-[15px] sm:text-base leading-[1.8]">
+                We aim for a best-effort 99.5% uptime target for the Services. We will provide advance notice for any scheduled maintenance. However, we do not guarantee uninterrupted or completely error-free service operations, and we are not liable for force majeure disruptions.
+              </p>
+              <p className="text-navy-500 text-[15px] sm:text-base leading-[1.8]">
+                Enterprise Service Level Agreements (SLAs) are available under separate enterprise agreements.
+              </p>
+            </section>
+
+            <section className="space-y-3 pt-2">
+              <h2 className="font-serif text-xl sm:text-2xl font-normal text-navy tracking-[-0.02em]">
+                12. Limitation of Liability
+              </h2>
+              <p className="text-navy-500 text-[15px] sm:text-base leading-[1.8]">
+                To the maximum extent permitted by Indian law, particularly under the Indian Contract Act 1872, Skillar.ai shall bear no liability for any indirect, incidental, special, consequential, or punitive damages arising out of your use of the Services.
+              </p>
+              <p className="text-navy-500 text-[15px] sm:text-base leading-[1.8]">
+                In all instances, Skillar.ai&rsquo;s total aggregate liability shall be capped at the total fees paid by you in the 12 months immediately preceding the claim (or INR 10,000 for users on the free-tier), regardless of the form of action.
+              </p>
+            </section>
+
+            <section className="space-y-3 pt-2">
+              <h2 className="font-serif text-xl sm:text-2xl font-normal text-navy tracking-[-0.02em]">
+                13. Indemnification
+              </h2>
+              <p className="text-navy-500 text-[15px] sm:text-base leading-[1.8]">
+                You agree to indemnify and hold harmless Skillar.ai, its directors, employees, and affiliates from any claims, damages, liabilities, and expenses arising from your misuse of the Platform, violation of these Terms, infringement of third-party intellectual property, violation of applicable laws, or any User Content that causes harm.
+              </p>
+            </section>
+
+            <section className="space-y-3 pt-2">
+              <h2 className="font-serif text-xl sm:text-2xl font-normal text-navy tracking-[-0.02em]">
+                14. Termination & Suspension
+              </h2>
+              <p className="text-navy-500 text-[15px] sm:text-base leading-[1.8]">
+                You may terminate your account at any time via your account settings or by contacting us. Skillar.ai reserves the right to suspend or terminate your access due to violations of these terms, non-payment of fees, extended inactivity exceeding 12 months, or as required by law.
+              </p>
+              <p className="text-navy-500 text-[15px] sm:text-base leading-[1.8]">
+                Upon termination, users will have a 30-day data export window, after which data will be permanently deleted (subject to standard legal retention requirements). If an annual subscription is terminated by Skillar.ai without cause, a pro-rata refund will be issued.
+              </p>
+            </section>
+
+            <section className="space-y-3 pt-2">
+              <h2 className="font-serif text-xl sm:text-2xl font-normal text-navy tracking-[-0.02em]">
+                15. Governing Law & Dispute Resolution
+              </h2>
+              <p className="text-navy-500 text-[15px] sm:text-base leading-[1.8]">
+                These Terms are governed by and construed in accordance with the laws of India. 
+              </p>
+              <p className="text-navy-500 text-[15px] sm:text-base leading-[1.8]">
+                In the event of a dispute, parties shall first attempt resolution through good-faith negotiation for a period of 30 days. If unresolved, the dispute shall proceed to mediation under the Mediation Act 2023. If mediation fails to resolve the matter, it will be subject to the exclusive jurisdiction of the courts located in Jaipur, Rajasthan, India.
+              </p>
+            </section>
+
+            <section className="space-y-3 pt-2">
+              <h2 className="font-serif text-xl sm:text-2xl font-normal text-navy tracking-[-0.02em]">
+                16. General Provisions
+              </h2>
+              <ul className="list-disc ml-6 space-y-1.5 text-navy-500 text-[15px] sm:text-base leading-[1.8]">
+                <li><strong>Severability:</strong> If any provision of these Terms is deemed invalid or unenforceable, the remaining provisions will continue in full force and effect.</li>
+                <li><strong>Entire Agreement:</strong> These Terms constitute the entire agreement between you and Skillar.ai, superseding any prior agreements or understandings.</li>
+                <li><strong>No Waiver:</strong> Our failure to enforce any right or provision of these Terms will not be considered a waiver of those rights.</li>
+                <li><strong>Assignment:</strong> Skillar.ai may assign or transfer its rights under these Terms at any time. Users may not assign their rights without our prior written consent.</li>
+                <li><strong>Force Majeure:</strong> Neither party will be liable for performance failures resulting from causes beyond their reasonable control.</li>
+                <li><strong>Notices:</strong> All official notices will be delivered via the email address registered with your account or through Platform notifications.</li>
+                <li><strong>Amendments:</strong> Skillar.ai may update or modify these Terms with a 30-day advance notice. Continued use implies acceptance.</li>
+              </ul>
+            </section>
+
+            {/* Contact Section */}
+            <section className="pt-4 border-t border-border/80">
+              <h3 className="text-base sm:text-lg font-semibold text-navy mb-2">
+                Contact Us
+              </h3>
+              <p className="text-navy-500 text-[15px] sm:text-base leading-[1.8]">
+                If you have any questions about these Terms, please contact us at:
+              </p>
+              <p className="text-navy-500 text-[15px] sm:text-base leading-[1.8] mt-2">
+                Skillar.ai<br />
+                Jaipur, Rajasthan, India<br />
+                Email: <a href="mailto:hello@skillar.ai" className="text-accent font-medium hover:underline">hello@skillar.ai</a>
+              </p>
+            </section>
+
+            <div className="pt-4 border-t border-border/80">
+              <p className="text-navy-400 text-sm">
+                Last Updated: September 7, 2026
+              </p>
+            </div>
 
             </div>
           </div>

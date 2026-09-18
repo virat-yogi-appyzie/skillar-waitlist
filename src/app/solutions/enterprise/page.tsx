@@ -223,7 +223,7 @@ export default function EnterpriseSolutionsPage() {
         </section>
 
         {/* Security and governance, stated honestly */}
-        <section className="py-24 lg:py-32 bg-bg border-t border-border/80">
+        <section id="security" className="py-24 lg:py-32 bg-bg border-t border-border/80 scroll-mt-24">
           <div className="w-full max-w-7xl xl:max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-12 xl:px-16 space-y-10">
 
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">

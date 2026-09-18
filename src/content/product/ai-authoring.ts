@@ -45,7 +45,7 @@ export const humanControl = {
   title: "AI drafts. The expert who owns the SOP approves.",
   body:
     "Nothing reaches a learner unreviewed. Retrieval keeps every step tied to the document it came from, so a reviewer can check a claim against the source rather than trusting a model.",
-  cta: "Book a demo",
+  cta: "Book a walkthrough",
 } as const;
 
 export const nextChapter = {

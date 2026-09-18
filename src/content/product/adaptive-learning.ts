@@ -1,8 +1,8 @@
 /**
  * Copy for /product/adaptive-learning.
  *
- * Personalization here is post-assessment and targeted: Bayesian Knowledge
- * Tracing names the concepts below mastery, and a revision roadmap covers
+ * Personalization here is post-assessment and targeted: advanced mastery-tracing
+ * algorithms name the concepts below mastery, and a revision roadmap covers
  * exactly those. Not real-time adaptive difficulty; the platform does not
  * do that.
  *
@@ -14,7 +14,7 @@ import { PERSONALIZATION } from "@/lib/product-truth";
 export const meta = {
   title: "Adaptive Learning | Skillar",
   description:
-    "After each assessment, Bayesian Knowledge Tracing flags the concepts still below mastery and Skillar generates a revision roadmap covering only those.",
+    "After each assessment, Skillar's advanced algorithms flag the concepts still below mastery and generate a revision roadmap covering only those.",
 } as const;
 
 export const hero = {
@@ -33,7 +33,7 @@ export const branching = {
   title: "A missed concept branches the roadmap, not the whole course.",
   steps: [
     "A scheduled assessment returns a score per concept, not one overall mark",
-    "Bayesian Knowledge Tracing flags the concepts still below the mastery threshold",
+    "Advanced mastery-tracing algorithms flag the concepts still below the mastery threshold",
     "Skillar generates a revision roadmap covering only those concepts",
     "Its steps are drawn from your own SOPs and policies, with a quiz at the end",
     "Re-assessment confirms the gap is closed, and the certificate is issued",
@@ -43,7 +43,7 @@ export const branching = {
 
 export const closing = {
   statement: "Nobody should re-sit a module they already passed to fix the one they didn't.",
-  cta: "Book a demo",
+  cta: "Book a walkthrough",
 } as const;
 
 export const nextChapter = {

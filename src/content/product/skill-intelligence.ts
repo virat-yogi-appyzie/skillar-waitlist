@@ -100,7 +100,7 @@ export const priority = {
 
 export const closing = {
   title: "Know the gap. Know what to do about it.",
-  cta: "Book a demo",
+  cta: "Book a walkthrough",
 } as const;
 
 export const nextChapter = {

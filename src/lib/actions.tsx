@@ -82,8 +82,12 @@ export async function generatePuppeteerPdf(input?: {
 
   } else {
     //  Local Development
-        const packageName = 'puppeteer';
-        const puppeteer = await import(packageName);
+    // Magic comments, not a variable. The indirection kept webpack from
+    // bundling puppeteer, but at the cost of a critical-dependency warning;
+    // these tell both bundlers to leave the specifier for Node to resolve.
+    const puppeteer = await import(
+      /* webpackIgnore: true */ /* turbopackIgnore: true */ 'puppeteer'
+    )
 
     browser = await puppeteer.default.launch({
       headless: true,

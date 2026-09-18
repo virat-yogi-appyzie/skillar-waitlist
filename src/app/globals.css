@@ -367,6 +367,28 @@ svg text[font-family="ui-monospace"] {
   box-shadow: var(--shadow-btn);
   transition: all 200ms var(--ease-premium);
   text-decoration: none;
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+}
+/* A single light sweep on hover. The sheen parks off-canvas on the left and
+   crosses once per entry; it rides ::after so the label never moves. */
+.btn-primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.28) 50%,
+    transparent 62%
+  );
+  transform: translateX(-110%);
+  pointer-events: none;
+}
+.btn-primary:hover::after {
+  transform: translateX(110%);
+  transition: transform 650ms var(--ease-premium);
 }
 .btn-primary:hover {
   background: var(--color-accent-hover);
@@ -375,6 +397,11 @@ svg text[font-family="ui-monospace"] {
 }
 .btn-primary:active {
   transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn-primary::after {
+    display: none;
+  }
 }
 
 .btn-secondary {
@@ -393,6 +420,7 @@ svg text[font-family="ui-monospace"] {
   box-shadow: var(--shadow-card);
   transition: all 200ms var(--ease-premium);
   text-decoration: none;
+  white-space: nowrap;
 }
 .btn-secondary:hover {
   background: var(--color-surface);
@@ -456,4 +484,207 @@ a {
 }
 .tabular {
   font-variant-numeric: tabular-nums;
+}
+
+/* ─── Ambient Animated Gradient Orbs ─── */
+@keyframes ambient-blob-1 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(60px, -50px) scale(1.18);
+  }
+  66% {
+    transform: translate(-40px, 30px) scale(0.92);
+  }
+}
+
+@keyframes ambient-blob-2 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(-50px, 60px) scale(1.15);
+  }
+  66% {
+    transform: translate(45px, -35px) scale(0.88);
+  }
+}
+
+@keyframes ambient-blob-3 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  50% {
+    transform: translate(50px, 45px) scale(1.12);
+  }
+}
+
+.animate-ambient-1 {
+  animation: ambient-blob-1 16s ease-in-out infinite;
+}
+
+.animate-ambient-2 {
+  animation: ambient-blob-2 20s ease-in-out infinite;
+}
+
+.animate-ambient-3 {
+  animation: ambient-blob-3 18s ease-in-out infinite;
+}
+
+
+/* Floating product chips over the homepage photo scenes (iteration 08).
+   One slow drift, staggered per chip via inline animation-delay. */
+.chip-float {
+  animation: chipFloat 7s ease-in-out infinite;
+}
+@keyframes chipFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chip-float {
+    animation: none;
+  }
+}
+
+/* Scroll reveal for enumerable groups (iteration 08). Applied only where a
+   sequence exists, never as a blanket entrance on every section. */
+/* Hidden only where scripting can actually reveal it again. A browser that
+   does not support this query, or has JS disabled, never hides the content
+   in the first place. */
+@media (scripting: enabled) {
+  .reveal {
+    opacity: 0;
+    transform: translateY(14px);
+    transition:
+      opacity 700ms var(--ease-out-expo),
+      transform 700ms var(--ease-out-expo);
+  }
+  .reveal-in {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* The full-bleed band's slow settle: the image eases back to rest instead of
+   sitting static behind the scrim. */
+.band-img {
+  transform: scale(1.08);
+  transition: transform 2200ms var(--ease-out-expo);
+}
+.reveal-in .band-img {
+  transform: scale(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .reveal-in {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .band-img,
+  .reveal-in .band-img {
+    transform: none;
+    transition: none;
+  }
+}
+
+/* LoopStory stage (iteration 08).
+
+   A true circular entrance. Each half swings along an arc around a pivot
+   below it (transform-origin 50% 145%), so it travels a curved path rather
+   than sliding in a straight line: the card orbits clockwise into place and
+   carries on clockwise out, the text mirrors it anti-clockwise. The inner
+   element counter-rotates by the same angle, which keeps the content upright
+   while it rides the curve, so the motion reads as circular travel instead of
+   a tumbling card.
+
+   An earlier revision rotated each half about its own left edge, which was a
+   tilt-and-slide and did not read as circular at all. */
+.story-orbit,
+.story-orbit-inner {
+  transition:
+    opacity 980ms cubic-bezier(0.45, 0, 0.25, 1),
+    transform 980ms cubic-bezier(0.45, 0, 0.25, 1);
+  will-change: transform, opacity;
+}
+.story-orbit {
+  transform-origin: 50% 145%;
+}
+/* The handover is staged, not simultaneous. The outgoing half leaves on a
+   front-loaded curve so it is gone almost at once, and the incoming half
+   waits out that exit before starting its own arc. Running both together on
+   the same in-out curve left the two legible on top of each other in the
+   middle of the sweep, which read as a jumble. */
+.story-orbit[data-state="prev"],
+.story-orbit[data-state="prev"] .story-orbit-inner {
+  transition-duration: 520ms;
+  transition-timing-function: cubic-bezier(0.3, 0.9, 0.4, 1);
+  transition-delay: 0ms;
+}
+.story-orbit[data-state="active"],
+.story-orbit[data-state="active"] .story-orbit-inner {
+  transition-delay: 150ms;
+}
+
+.story-card[data-state="next"] {
+  opacity: 0;
+  transform: rotate(-42deg);
+}
+.story-card[data-state="next"] .story-orbit-inner {
+  transform: rotate(42deg);
+}
+.story-card[data-state="prev"] {
+  opacity: 0;
+  transform: rotate(42deg);
+}
+.story-card[data-state="prev"] .story-orbit-inner {
+  transform: rotate(-42deg);
+}
+
+.story-text[data-state="next"] {
+  opacity: 0;
+  transform: rotate(42deg);
+}
+.story-text[data-state="next"] .story-orbit-inner {
+  transform: rotate(-42deg);
+}
+.story-text[data-state="prev"] {
+  opacity: 0;
+  transform: rotate(-42deg);
+}
+.story-text[data-state="prev"] .story-orbit-inner {
+  transform: rotate(42deg);
+}
+
+.story-orbit[data-state="active"],
+.story-orbit[data-state="active"] .story-orbit-inner {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .story-orbit,
+  .story-orbit-inner {
+    transition: opacity 200ms linear;
+    will-change: auto;
+    transform: none !important;
+  }
+}
+
+/* LoopStory scroll track. The tall track exists only where the stage pins;
+   below lg the section is an ordinary stacked list and must not inherit a
+   five-viewport height. The value comes from the step count via
+   --story-track-h, set on the element. */
+@media (min-width: 1024px) {
+  .story-track {
+    height: var(--story-track-h);
+  }
 }

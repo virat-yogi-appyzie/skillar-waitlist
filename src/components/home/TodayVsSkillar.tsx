@@ -11,7 +11,7 @@ const rows = todayVsSkillar.rows;
 
 export default function TodayVsSkillar() {
   return (
-    <section className="py-20 lg:py-32 bg-surface-warm border-y border-border-warm">
+    <section className="py-16 sm:py-20 lg:py-24 bg-bg-stone border-y border-border-warm">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mb-12">
           <h2 className="font-serif text-[length:var(--text-display)] font-normal text-navy leading-tight tracking-[-0.025em] mb-5">
