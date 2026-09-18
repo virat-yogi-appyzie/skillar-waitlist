@@ -82,12 +82,10 @@ export async function generatePuppeteerPdf(input?: {
 
   } else {
     //  Local Development
-    // Magic comments, not a variable. The indirection kept webpack from
-    // bundling puppeteer, but at the cost of a critical-dependency warning;
-    // these tell both bundlers to leave the specifier for Node to resolve.
-    const puppeteer = await import(
-      /* webpackIgnore: true */ /* turbopackIgnore: true */ 'puppeteer'
-    )
+    // Specifier stays a variable so TypeScript cannot resolve it: puppeteer is a
+    // devDependency, absent on Vercel, where puppeteer-core is used instead.
+    const packageName = 'puppeteer'
+    const puppeteer = await import(/* webpackIgnore: true */ /* turbopackIgnore: true */ packageName)
 
     browser = await puppeteer.default.launch({
       headless: true,
